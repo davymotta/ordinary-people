@@ -4,32 +4,43 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import DashboardLayout from "./components/DashboardLayout";
 import Home from "./pages/Home";
+import Personas from "./pages/Personas";
+import PersonaDetail from "./pages/PersonaDetail";
+import Campaigns from "./pages/Campaigns";
+import CampaignCreate from "./pages/CampaignCreate";
+import Simulation from "./pages/Simulation";
+import Results from "./pages/Results";
+import SimulationDetail from "./pages/SimulationDetail";
+import GroundTruth from "./pages/GroundTruth";
+import Calibration from "./pages/Calibration";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <DashboardLayout>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/personas" component={Personas} />
+        <Route path="/personas/:id" component={PersonaDetail} />
+        <Route path="/campaigns" component={Campaigns} />
+        <Route path="/campaigns/new" component={CampaignCreate} />
+        <Route path="/simulation" component={Simulation} />
+        <Route path="/results" component={Results} />
+        <Route path="/results/:id" component={SimulationDetail} />
+        <Route path="/ground-truth" component={GroundTruth} />
+        <Route path="/calibration" component={Calibration} />
+        <Route path="/404" component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </DashboardLayout>
   );
 }
-
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />
