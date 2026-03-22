@@ -110,3 +110,29 @@
 - [x] tRPC router calibratedSampler: sampleOne, sampleBatch, batchStats, listClusters
 - [x] Filtri: cluster culturale, generazione, genere, orientamento politico, urbanizzazione
 - [x] Profilo include: Inglehart-Welzel coordinates, dieta mediatica, attention_span, advertising_cynicism, sharing_propensity
+
+### Ristrutturazione Architetturale — Tre Ambienti Separati
+
+#### Admin Console (/admin)
+- [x] AdminLayout con sidebar dark dedicata
+- [x] Admin Dashboard: stato emotivo agenti + world events recenti + azioni rapide
+- [x] Route /admin/agents, /admin/world, /admin/life-history, /admin/simulations
+
+#### Lab (/lab)
+- [x] LabLayout con sidebar dark tecnica
+- [x] Lab Dashboard: status motori + dataset + link a tutti i motori
+- [x] Route /lab/archetypes, /lab/sampler, /lab/life-history, /lab/campaign-testing
+
+#### Client Portal (/app)
+- [x] ClientLayout con sidebar warm terracotta
+- [x] Client Dashboard: onboarding, metriche, simulazioni recenti
+- [x] Targeting Panel /app/simulate/new: filtri demografici + preview pool + batchStats
+- [x] Routing App.tsx: tre ambienti separati con redirect da / a /app
+- [x] Redesign CSS: palette terracotta, Playfair Display, token per tre ambienti
+
+#### Da completare
+- [ ] Simulazione Live /app/simulate/:id: feed reazioni real-time + analytics
+- [ ] Report /app/simulate/:id/report: Executive Summary, KPI, Interview Zone
+- [ ] Loop sociale: agente vede reazioni contatti prima di finalizzare
+- [ ] Avatar agenti: illustrazioni stilizzate con colore archetipo come accento
+- [ ] Radar chart Big Five come componente identitario di ogni agente
