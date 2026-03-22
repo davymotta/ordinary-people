@@ -41,6 +41,9 @@ import {
   generateProfileBatch,
   computeBatchStats,
 } from "./calibrated-sampler";
+import { ingestCampaign, ingestTextCampaign, ingestImageCampaign } from "./ingestion/digest-builder";
+import { buildPerceptualPrompt, buildPerceptualFrames } from "./ingestion/perceptual-filter";
+import { detectContentType, estimateIngestionCost } from "./ingestion/detect";
 export const appRouter = router({
   system: systemRouter,
 
@@ -881,6 +884,112 @@ export const appRouter = router({
           { id: "sub_saharan_africa",name: "Sub-Saharan Africa",countries: "NGA, GHA, KEN, ZAF" },
           { id: "southeast_asia",    name: "Southeast Asia",    countries: "THA, PHL, IDN, MYS" },
         ];
+      }),
+  }),
+
+  // ─── Campaign Ingestion Pipeline ─────────────────────────────────────────
+  ingestion: router({
+    // Rileva il tipo di contenuto da un file o URL
+    detect: publicProcedure
+      .input(z.object({
+        fileName: z.string().optional(),
+        mimeType: z.string().optional(),
+        socialUrl: z.string().optional(),
+        hasText: z.boolean().optional(),
+      }))
+      .query(({ input }) => {
+        return detectContentType({
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+          socialUrl: input.socialUrl,
+          textContent: input.hasText ? "text" : undefined,
+        });
+      }),
+
+    // Stima il costo di ingestione
+    estimateCost: publicProcedure
+      .input(z.object({
+        sourceType: z.enum(["image", "video", "text", "social_link"]),
+        durationSeconds: z.number().optional(),
+      }))
+      .query(({ input }) => {
+        return estimateIngestionCost(input.sourceType, input.durationSeconds);
+      }),
+
+    // Ingestione da testo (brief, copy)
+    ingestText: protectedProcedure
+      .input(z.object({
+        campaign_id: z.string(),
+        text: z.string().min(10),
+        channel: z.string().optional(),
+        brand_category: z.string().optional(),
+        client_notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const digest = await ingestTextCampaign(input);
+        return { success: !!digest, digest };
+      }),
+
+    // Ingestione da URL immagine
+    ingestImageUrl: protectedProcedure
+      .input(z.object({
+        campaign_id: z.string(),
+        image_url: z.string().url(),
+        channel: z.string().optional(),
+        brand_category: z.string().optional(),
+        client_notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const digest = await ingestImageCampaign(input);
+        return { success: !!digest, digest };
+      }),
+
+    // Ingestione generica (routing automatico)
+    ingest: protectedProcedure
+      .input(z.object({
+        campaign_id: z.string(),
+        source_type: z.enum(["image", "video", "text", "social_link"]),
+        source_format: z.string(),
+        file_url: z.string().optional(),
+        file_path: z.string().optional(),
+        text_content: z.string().optional(),
+        social_url: z.string().optional(),
+        channel: z.string().optional(),
+        brand_category: z.string().optional(),
+        client_notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await ingestCampaign(input as Parameters<typeof ingestCampaign>[0]);
+        return result;
+      }),
+
+    // Genera il frame percettivo per un agente specifico
+    buildPerceptualFrame: publicProcedure
+      .input(z.object({
+        agent: z.object({
+          id: z.string(),
+          name: z.string(),
+          age: z.number().optional(),
+          gender: z.string().optional(),
+          generation: z.string().optional(),
+          archetype: z.string().optional(),
+          openness: z.number().optional(),
+          conscientiousness: z.number().optional(),
+          extraversion: z.number().optional(),
+          agreeableness: z.number().optional(),
+          neuroticism: z.number().optional(),
+          advertising_cynicism: z.number().optional(),
+          attention_span: z.number().optional(),
+          status_orientation: z.number().optional(),
+          price_sensitivity: z.number().optional(),
+          emotional_susceptibility: z.number().optional(),
+          haidt_authority: z.number().optional(),
+          haidt_care: z.number().optional(),
+        }),
+        digest: z.any(), // CampaignDigest
+      }))
+      .query(({ input }) => {
+        return buildPerceptualPrompt(input.agent, input.digest);
       }),
   }),
 });

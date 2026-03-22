@@ -136,3 +136,18 @@
 - [ ] Loop sociale: agente vede reazioni contatti prima di finalizzare
 - [ ] Avatar agenti: illustrazioni stilizzate con colore archetipo come accento
 - [ ] Radar chart Big Five come componente identitario di ogni agente
+
+### Campaign Ingestion Pipeline — Fase 4
+- [x] server/ingestion/schema.ts — TypeScript types del Campaign Digest (VisualDigest, AudioDigest, VideoDigest, MessagingDigest, PerceptualFrame, IngestionResult)
+- [x] server/ingestion/detect.ts — rileva tipo di contenuto dall'upload (image/video/text/social)
+- [x] server/ingestion/processors/image.ts — immagine → Vision API → digest
+- [x] server/ingestion/processors/text.ts — testo/PDF → LLM → digest
+- [x] server/ingestion/processors/video.ts — video → ffmpeg → frames + audio → digest
+- [x] server/ingestion/digest-builder.ts — orchestratore con routing automatico per tipo
+- [x] server/ingestion/perceptual-filter.ts — genera prompt percettivo per agente (seleziona tratti salienti per campagna)
+- [x] tRPC router ingestion: detect, estimateCost, ingestText, ingestImageUrl, ingest, buildPerceptualFrame
+- [x] UI /app/ingest: CampaignIngestion.tsx con input URL/testo, metadati, preview digest strutturato
+- [x] Vitest: 27 test per detect.ts, perceptual-filter.ts, schema validation (tutti passati)
+- [ ] Integrazione con Campaign Testing Engine: usa digest + perceptual filter invece del testo grezzo (Fase 5)
+- [ ] File upload drag&drop (Fase 5)
+- [ ] Integrazione con simulazione live /app/simulate/:id (Fase 5)

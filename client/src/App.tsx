@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 // ── Client Portal (/app) ──────────────────────────────────────────────────────
 import ClientDashboard from "./pages/client/ClientDashboard";
 import TargetingPanel from "./pages/client/TargetingPanel";
+import CampaignIngestion from "./pages/client/CampaignIngestion";
 
 // ── Admin Console (/admin) ────────────────────────────────────────────────────
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -54,6 +55,9 @@ function Router() {
       </Route>
       <Route path="/app/simulations">
         <ClientDashboard />
+      </Route>
+      <Route path="/app/ingest">
+        <CampaignIngestion />
       </Route>
 
       {/* ── Admin Console ── */}
