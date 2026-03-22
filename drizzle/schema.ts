@@ -302,6 +302,13 @@ export const campaignReactions = mysqlTable("campaignReactions", {
   stateAtReaction: json("stateAtReaction"), // stato dell'agente al momento della reazione
   // Social influence
   socialInfluence: json("socialInfluence"), // come i contatti hanno influenzato
+  // Cascata 4 livelli — dati diagnostici
+  scrolledPast: boolean("scrolledPast").default(false), // L1: ha scrollato senza leggere
+  attentionScore: float("attentionScore"), // L1: 0-1 probabilità di attenzione
+  gutReactionScore: float("gutReactionScore"), // L2: reazione viscerale pre-LLM [-1,+1]
+  emotionalSignature: json("emotionalSignature"), // L2: {activatedVars: [{name, value, resonance, direction}], dominantTags: string[]}
+  rationalAdjustment: float("rationalAdjustment"), // L3: aggiustamento razionale [-1,+1]
+  socialAdjustment: float("socialAdjustment"), // L4: influenza sociale [-1,+1]
   status: mysqlEnum("status", ["pending", "processing", "complete", "failed"]).default("pending"),
   processedAt: timestamp("processedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

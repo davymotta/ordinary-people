@@ -589,6 +589,47 @@ export const appRouter = router({
           .orderBy(desc(groundTruthPosts.publishedAt))
           .limit(input.limit);
       }),
+    // GTE: Get aggregate stats for a brand
+    getStats: publicProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return null;
+        const { groundTruthPosts } = await import("../drizzle/schema");
+        const { eq: eqD, isNotNull, avg, count, max, min } = await import("drizzle-orm");
+        const posts = await dbConn
+          .select()
+          .from(groundTruthPosts)
+          .where(eqD(groundTruthPosts.brandAgentId, input.brandAgentId));
+        if (posts.length === 0) return { total: 0, normalized: 0, platforms: {}, contentTypes: {}, viewsStats: null };
+        const normalized = posts.filter(p => p.normComposite !== null).length;
+        const platforms: Record<string, number> = {};
+        const contentTypes: Record<string, number> = {};
+        let totalViews = 0, maxViews = 0, minViews = Infinity, viewCount = 0;
+        for (const p of posts) {
+          platforms[p.platform] = (platforms[p.platform] ?? 0) + 1;
+          contentTypes[p.contentType] = (contentTypes[p.contentType] ?? 0) + 1;
+          const m = p.metrics48h as Record<string, number> | null;
+          if (m && m.views && m.views > 0) {
+            totalViews += m.views;
+            maxViews = Math.max(maxViews, m.views);
+            minViews = Math.min(minViews, m.views);
+            viewCount++;
+          }
+        }
+        return {
+          total: posts.length,
+          normalized,
+          platforms,
+          contentTypes,
+          viewsStats: viewCount > 0 ? {
+            avg: Math.round(totalViews / viewCount),
+            max: maxViews,
+            min: minViews === Infinity ? 0 : minViews,
+            count: viewCount,
+          } : null,
+        };
+      }),
   }),
 
   // --- Calibration ---

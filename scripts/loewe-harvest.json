@@ -1,0 +1,4150 @@
+{
+  "brand": "Loewe",
+  "brand_agent_id": 1,
+  "harvested_at": "2026-03-22",
+  "channel_id": "UCIkFEXV_zvjOlmOcKEHW_hg",
+  "total_posts": 159,
+  "stats": {
+    "official": 60,
+    "ugc": 99,
+    "with_views": 60,
+    "avg_views": 38433,
+    "max_views": 1283312
+  },
+  "posts": [
+    {
+      "platform": "youtube",
+      "external_id": "056OoaQV1GQ",
+      "url": "https://www.youtube.com/watch?v=056OoaQV1GQ",
+      "title": "Crafting the Amazona 180",
+      "description": "",
+      "published_at": "1 day ago",
+      "metrics": {
+        "views": 1093,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 32,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/056OoaQV1GQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBKt3UE8JMLRstmw-mYcGD4fk0T1Q",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "8S9Tg3LgH10",
+      "url": "https://www.youtube.com/watch?v=8S9Tg3LgH10",
+      "title": "Up close: The LOEWE Flamenco clutch Woven",
+      "description": "",
+      "published_at": "1 month ago",
+      "metrics": {
+        "views": 2196,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 30,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/8S9Tg3LgH10/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLARQPuZjgogTpnslkwLBd1Wn3biew",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "201q5rTEQ_4",
+      "url": "https://www.youtube.com/watch?v=201q5rTEQ_4",
+      "title": "Crafting the LOEWE Leather parka jacket",
+      "description": "",
+      "published_at": "2 months ago",
+      "metrics": {
+        "views": 1719,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 37,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/201q5rTEQ_4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLA3uyji3ebkGAdHf1QLHWsgPXIhNg",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "tGG48-M2iwk",
+      "url": "https://www.youtube.com/watch?v=tGG48-M2iwk",
+      "title": "Crafting the new LOEWE Biker jacket",
+      "description": "",
+      "published_at": "3 months ago",
+      "metrics": {
+        "views": 3268,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 29,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/tGG48-M2iwk/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDltZY-8jicpGk4Mk9l8Sa5mbjYzg",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "X4HWacx7PjQ",
+      "url": "https://www.youtube.com/watch?v=X4HWacx7PjQ",
+      "title": "Making the LOEWE Flamenco clutch Panta",
+      "description": "",
+      "published_at": "4 months ago",
+      "metrics": {
+        "views": 4087,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 41,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/X4HWacx7PjQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLC0PBVusc6HGreVTuK2Cql-Xdokww",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "9o_Fnw5_R4c",
+      "url": "https://www.youtube.com/watch?v=9o_Fnw5_R4c",
+      "title": "LOEWE Spring Summer 2026 precollection campaign with Brand Ambassador GISELLE",
+      "description": "",
+      "published_at": "4 months ago",
+      "metrics": {
+        "views": 2616,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 45,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/9o_Fnw5_R4c/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBDcCGC_t-1aTdigBKitLjNnqILsQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "VzXhEaFTG9I",
+      "url": "https://www.youtube.com/watch?v=VzXhEaFTG9I",
+      "title": "Through the eyes of Louis Wain",
+      "description": "",
+      "published_at": "4 months ago",
+      "metrics": {
+        "views": 3144,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 67,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/VzXhEaFTG9I/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDvK_SuUE-nEkaDn-v6IDn5sGKAVg",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "T1FXzGL228k",
+      "url": "https://www.youtube.com/watch?v=T1FXzGL228k",
+      "title": "Making the LOEWE x Albers Mini Squeeze Bag",
+      "description": "",
+      "published_at": "4 months ago",
+      "metrics": {
+        "views": 2340,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 53,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/T1FXzGL228k/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCGY9fuABqyQHuADzlo7KmLlrrbNQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "0bJ3_SZkiDg",
+      "url": "https://www.youtube.com/watch?v=0bJ3_SZkiDg",
+      "title": "LOEWE x On—In sync with the city",
+      "description": "",
+      "published_at": "5 months ago",
+      "metrics": {
+        "views": 2865,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 30,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/0bJ3_SZkiDg/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDyJegTD2rj_4bxYJemr9CVbUP_WA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "m9qU7BuxOgo",
+      "url": "https://www.youtube.com/watch?v=m9qU7BuxOgo",
+      "title": "Making the LOEWE x Albers Flamenco Bag",
+      "description": "",
+      "published_at": "6 months ago",
+      "metrics": {
+        "views": 3700,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 42,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/m9qU7BuxOgo/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLC5pRjArZfDZqncBKpg45pdo_fCcQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "6v6dWhg-V8I",
+      "url": "https://www.youtube.com/watch?v=6v6dWhg-V8I",
+      "title": "Making the LOEWE Fall Winter 2025 Nappa Leather Jacket",
+      "description": "",
+      "published_at": "6 months ago",
+      "metrics": {
+        "views": 2605,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 44,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/6v6dWhg-V8I/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLC3U23eYwAsqckeAQUckYEBEwixKA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "4phRCHiW7BY",
+      "url": "https://www.youtube.com/watch?v=4phRCHiW7BY",
+      "title": "LOEWE Fall Winter 2025 campaign x Albers",
+      "description": "",
+      "published_at": "6 months ago",
+      "metrics": {
+        "views": 3991,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 54,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/4phRCHiW7BY/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLB5r81ZCI3G0EKdzKLsorJwvF5MSA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "_vwJOFT0tZc",
+      "url": "https://www.youtube.com/watch?v=_vwJOFT0tZc",
+      "title": "LOEWE Fall Winter 2025 campaign",
+      "description": "",
+      "published_at": "7 months ago",
+      "metrics": {
+        "views": 7787,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 30,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/_vwJOFT0tZc/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAwx-hcyfBxjGQjMJoEwfgA3JECEg",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "6h7MVYk_cqM",
+      "url": "https://www.youtube.com/watch?v=6h7MVYk_cqM",
+      "title": "LOEWE FOUNDATION | Craft Prize exhibition 2025",
+      "description": "",
+      "published_at": "9 months ago",
+      "metrics": {
+        "views": 5954,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 41,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/6h7MVYk_cqM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCn2wiUTB1qyK9q3F92Jg-Dz2oTIw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "w1DpAFIb7BM",
+      "url": "https://www.youtube.com/watch?v=w1DpAFIb7BM",
+      "title": "Making the LOEWE Puzzle 10 collection",
+      "description": "",
+      "published_at": "9 months ago",
+      "metrics": {
+        "views": 4021,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 47,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/w1DpAFIb7BM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAR-CkOexjcpL5Z9cWIZE3Qbro5bw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "2laKbBajA2I",
+      "url": "https://www.youtube.com/watch?v=2laKbBajA2I",
+      "title": "LOEWE Puzzle 10 Collection",
+      "description": "",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 7432,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 46,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/2laKbBajA2I/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCmTihg41L-sTHooRtLbSDLCdJ1KA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "VOmuLl_qqgI",
+      "url": "https://www.youtube.com/watch?v=VOmuLl_qqgI",
+      "title": "LOEWE Fall Winter 2025 precollection campaign",
+      "description": "",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 11653,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 60,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/VOmuLl_qqgI/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLALEDw-lM20JTT1VTlyuQM95OZz0A",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "KWTUHAc0rLQ",
+      "url": "https://www.youtube.com/watch?v=KWTUHAc0rLQ",
+      "title": "LOEWE x On—the craft of movement",
+      "description": "",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 4900,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 56,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/KWTUHAc0rLQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBS4jIuQYC43GJ2KQNJBOV_SrBI1w",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "J3H3A4I8WZk",
+      "url": "https://www.youtube.com/watch?v=J3H3A4I8WZk",
+      "title": "LOEWE Paula's Ibiza 2025 campaign",
+      "description": "",
+      "published_at": "11 months ago",
+      "metrics": {
+        "views": 8061,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 30,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/J3H3A4I8WZk/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDgGhsuasTOQZNm_r7ejOzJCh4mSA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "qsVF8qAZGg4",
+      "url": "https://www.youtube.com/watch?v=qsVF8qAZGg4",
+      "title": "LOEWE | Teapots 2025",
+      "description": "",
+      "published_at": "11 months ago",
+      "metrics": {
+        "views": 3717,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 38,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/qsVF8qAZGg4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDdPe7nQ9h2aLQHhaI-KxA28tfzNw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ogFFRRkYCoU",
+      "url": "https://www.youtube.com/watch?v=ogFFRRkYCoU",
+      "title": "LOEWE Madrid bag | An ode to our home city",
+      "description": "",
+      "published_at": "11 months ago",
+      "metrics": {
+        "views": 7510,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 87,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ogFFRRkYCoU/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCpVplFTWOb1WUdCnrQzrm27EUjxA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "HXoNtrnysIM",
+      "url": "https://www.youtube.com/watch?v=HXoNtrnysIM",
+      "title": "LOEWE FOUNDATION | Becoming a 17th-generation Kama craftsman",
+      "description": "",
+      "published_at": "11 months ago",
+      "metrics": {
+        "views": 3286,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 204,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/HXoNtrnysIM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBFREtkxzlubLq4ZHZ8tPKF5riY3Q",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "JVajwPAfRRs",
+      "url": "https://www.youtube.com/watch?v=JVajwPAfRRs",
+      "title": "LOEWE x Josef & Anni Albers Foundation",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 6041,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 224,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/JVajwPAfRRs/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDHNTl0srGjfe35Dm0iVWftmWUwfA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "E_OIYb8Zz6g",
+      "url": "https://www.youtube.com/watch?v=E_OIYb8Zz6g",
+      "title": "LOEWE Spring Summer 2025 campaign by David Sims",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 15467,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 85,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/E_OIYb8Zz6g/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBtvWZ-bJnz5QTSF6_KnA4kiCMuJA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "a8B5vc05Hw4",
+      "url": "https://www.youtube.com/watch?v=a8B5vc05Hw4",
+      "title": "'Spring Awakening: Dance of the Snake' – a short film in celebration of the New Year",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 4799,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 111,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/a8B5vc05Hw4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAv5aqhxGJZ4NokH2jkPGAmufnatw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "pYJxsj0YU4U",
+      "url": "https://www.youtube.com/watch?v=pYJxsj0YU4U",
+      "title": "Year of the Snake: Making of the Flamenco",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 4762,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 43,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/pYJxsj0YU4U/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDDOCFHs7nJiTIPdwgumfa-oKm-EQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "qUALD555dO4",
+      "url": "https://www.youtube.com/watch?v=qUALD555dO4",
+      "title": "The Whimsical Worlds of Suna Fujita",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 6729,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 24,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/qUALD555dO4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBPPNE02WLJZ8AdfVCRS1Qi8z9NkA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "9gaIOJ7Rstk",
+      "url": "https://www.youtube.com/watch?v=9gaIOJ7Rstk",
+      "title": "Dancers, divers, and duelling knights. A film by Juergen Teller.",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 7191,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 118,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/9gaIOJ7Rstk/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCkjzIgfxELekjTw2kO-Rc0Qy16sA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "7uidZyyW1EU",
+      "url": "https://www.youtube.com/watch?v=7uidZyyW1EU",
+      "title": "LOEWE Perfumes campaign 2024",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 20040,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 49,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/7uidZyyW1EU/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAa-R9CY2kPSvD3w4zS5-8dt94P3g",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "vzwH1o2oni8",
+      "url": "https://www.youtube.com/watch?v=vzwH1o2oni8",
+      "title": "Making the LOEWE Squeeze bag",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 7643,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 56,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/vzwH1o2oni8/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCZyN1gVTWpZ34Z_5Qn-kSkUnlnpw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "jTCkTwreBzs",
+      "url": "https://www.youtube.com/watch?v=jTCkTwreBzs",
+      "title": "Making the LOEWE Puzzle Wallet | Part 2",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 6720,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 43,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/jTCkTwreBzs/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBoGC7KOcKY9rzIAZaaBbtzX7c60w",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "CrmMVVZrZac",
+      "url": "https://www.youtube.com/watch?v=CrmMVVZrZac",
+      "title": "Making the LOEWE Puzzle Wallet | Part 1",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 6069,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 46,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/CrmMVVZrZac/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLB3AEuU_i0i1aOWP7428h7cY8HhPA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "G0U34XfIPO0",
+      "url": "https://www.youtube.com/watch?v=G0U34XfIPO0",
+      "title": "Making the LOEWE Knot Wallet | Part 2",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 4672,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 47,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/G0U34XfIPO0/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLD_cnG7gN3VeG1u6XT4l2xF0xZ7wQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "FcwZ7bXkF_4",
+      "url": "https://www.youtube.com/watch?v=FcwZ7bXkF_4",
+      "title": "Making the LOEWE Knot Wallet | Part 1",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 4103,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 43,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/FcwZ7bXkF_4/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLADeRRGOr9NPuNrpu6gF2uAHkw1ZQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "p48C4FZPKkU",
+      "url": "https://www.youtube.com/watch?v=p48C4FZPKkU",
+      "title": "LOEWE Surplus Project l Flamenco Surplus bag",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 10061,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 61,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/p48C4FZPKkU/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDyyJ6qd4QFBdQJD8XcvZVJHYAnJw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "uoule0al2Nw",
+      "url": "https://www.youtube.com/watch?v=uoule0al2Nw",
+      "title": "LOEWE FOUNDATION Craft Prize exhibition 2024",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 10281,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 85,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/uoule0al2Nw/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLB5EBKJl9jgQEsB2ZrxoqRjDqoXPQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "12KQKafbB50",
+      "url": "https://www.youtube.com/watch?v=12KQKafbB50",
+      "title": "Yebba - Paranoia Purple | LOEWE Paula's Ibiza 2024",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 53641,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 173,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/12KQKafbB50/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDHhW2oE7PctPqAT5qc98P9oiRXrw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "pEToiwvF7eQ",
+      "url": "https://www.youtube.com/watch?v=pEToiwvF7eQ",
+      "title": "LOEWE l Salone del Mobile 2024",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 6888,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 131,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/pEToiwvF7eQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBWB08CBYhTdxfCTjcpKQLIDWaMAg",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "MOsCUefJ5S0",
+      "url": "https://www.youtube.com/watch?v=MOsCUefJ5S0",
+      "title": "LOEWE Paula's Ibiza 2024 campaign",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 27939,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 46,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/MOsCUefJ5S0/hqdefault.jpg?sqp=-oaymwE1CKgBEF5IVfKriqkDKAgBFQAAiEIYAXABwAEG8AEB-AH-CYAC0AWKAgwIABABGCMgTyh_MA8=&rs=AOn4CLDaElpnsaVRuINNnsd3rqN1iGUiZw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ihIZVg1-ztM",
+      "url": "https://www.youtube.com/watch?v=ihIZVg1-ztM",
+      "title": "LOEWE | DECADES OF CONFUSION",
+      "description": "",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 1283312,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 157,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ihIZVg1-ztM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLADpd_r5UNWe3l7J7qlWbQk2frV3g",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "wxzOHvBqKEA",
+      "url": "https://www.youtube.com/watch?v=wxzOHvBqKEA",
+      "title": "Making the LOEWE Flamenco Purse",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 12803,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 42,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/wxzOHvBqKEA/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDphrrWUFTgvlXa7SGuDny-6XDY5w",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "OszKgR7SoVw",
+      "url": "https://www.youtube.com/watch?v=OszKgR7SoVw",
+      "title": "LOEWE PRESENTS: THE LADYBUG / 天道虫",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 479402,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 31,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/OszKgR7SoVw/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLC-pBmez9IPpek0hh0jji65ooWcLA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "UYktUyUJwIE",
+      "url": "https://www.youtube.com/watch?v=UYktUyUJwIE",
+      "title": "LOEWE For The Love of Jade",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 10128,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 210,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/UYktUyUJwIE/hqdefault.jpg?sqp=-oaymwE1CKgBEF5IVfKriqkDKAgBFQAAiEIYAXABwAEG8AEB-AH-CYACpAWKAgwIABABGDwgZShAMA8=&rs=AOn4CLCeSaAT7Hwj_dF6rpqRqJ9a-04cqA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "hKlWoU2a3Pc",
+      "url": "https://www.youtube.com/watch?v=hKlWoU2a3Pc",
+      "title": "LOEWE x Suna Fujita",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 24850,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 105,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/hKlWoU2a3Pc/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAmQpkuc62fRvJ8oHwZKv-FLOsuyw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "42aHF9ioeOY",
+      "url": "https://www.youtube.com/watch?v=42aHF9ioeOY",
+      "title": "LOEWE | Inside CASA LOEWE Omotesando",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 11743,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 61,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/42aHF9ioeOY/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLC0UUVmKuoVfHXR3QgO8OvHj5eyvQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "Tbvh1bnBaiM",
+      "url": "https://www.youtube.com/watch?v=Tbvh1bnBaiM",
+      "title": "LOEWE Spring Summer 2024 precollection campaign",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 19964,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 98,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/Tbvh1bnBaiM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDqRubpiaoAbIoVGKYzFugvmy0w2w",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "scs8h3jbD_M",
+      "url": "https://www.youtube.com/watch?v=scs8h3jbD_M",
+      "title": "LOEWE x On—the Cloudtilt campaign",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 17846,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 56,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/scs8h3jbD_M/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAdm3yqF1mtFgactlmZg4jF3iWf-g",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ZyECBR56KqA",
+      "url": "https://www.youtube.com/watch?v=ZyECBR56KqA",
+      "title": "Making the LOEWE Puzzle Edge bag",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 16660,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 65,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ZyECBR56KqA/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBj1RvG5-PK6ZCl-_WBH89tkG0Diw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "fpoe0e4_5ys",
+      "url": "https://www.youtube.com/watch?v=fpoe0e4_5ys",
+      "title": "LOEWE Spring Summer 2024 jewellery in collaboration with Lynda Benglis",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 4469,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 60,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/fpoe0e4_5ys/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBHkR44ygJSaJyiHTOocDQxLOEEpA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "KCZwhzprnbI",
+      "url": "https://www.youtube.com/watch?v=KCZwhzprnbI",
+      "title": "LOEWE Perfumes Botanical Rainbow 2023 campaign",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 12398,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 31,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/KCZwhzprnbI/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBXK5PYRyJIojdEveNrwxufL2gKXQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "I8Yfcicrtek",
+      "url": "https://www.youtube.com/watch?v=I8Yfcicrtek",
+      "title": "Making the LOEWE Squeeze bag",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 14377,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 69,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/I8Yfcicrtek/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAEIr3oRGTeARbRPE7_0r3BDtl2yQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "6lLfs-cCFLs",
+      "url": "https://www.youtube.com/watch?v=6lLfs-cCFLs",
+      "title": "Qixi Festival campaign featuring Leo Wu and Wang Zhenzhen",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 15173,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 60,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/6lLfs-cCFLs/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLA1iPUOWT5OVIFNKJxmonYsusVl9Q",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "4gzqeGURHec",
+      "url": "https://www.youtube.com/watch?v=4gzqeGURHec",
+      "title": "I Dreamt of LOEWE",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 21003,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 180,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/4gzqeGURHec/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDp0dHEj8SQhblwebyBa-zZ38Tr7A",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "n7Rno3UkO_0",
+      "url": "https://www.youtube.com/watch?v=n7Rno3UkO_0",
+      "title": "LOEWE Home Scents campaign featuring Charlie McCormick",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 6478,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 38,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/n7Rno3UkO_0/hqdefault.jpg?sqp=-oaymwE1CKgBEF5IVfKriqkDKAgBFQAAiEIYAXABwAEG8AEB-AH-CYAC0AWKAgwIABABGGAgZSg1MA8=&rs=AOn4CLBvRuBXVr7Y6rephLea54RJzecK8A",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "YeddWaetJ4M",
+      "url": "https://www.youtube.com/watch?v=YeddWaetJ4M",
+      "title": "LOEWE Fall Winter 2023 precollection campaign",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 11713,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 125,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/YeddWaetJ4M/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDoADHXR-XZ1SWlYBC0M7-X9Ouq1A",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "zOQl4M8icaw",
+      "url": "https://www.youtube.com/watch?v=zOQl4M8icaw",
+      "title": "LOEWE FOUNDATION | Craft Prize exhibition 2023",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 4127,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 45,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/zOQl4M8icaw/hqdefault.jpg?sqp=-oaymwE1CKgBEF5IVfKriqkDKAgBFQAAiEIYAXABwAEG8AEB-AH-CYAC0AWKAgwIABABGGUgUyhHMA8=&rs=AOn4CLBMj-VodI2kGrV8FfwFTNDWg3kUGw",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "HhuEYhRzCsw",
+      "url": "https://www.youtube.com/watch?v=HhuEYhRzCsw",
+      "title": "LOEWE | Communities of craft, from Colombia to Madagascar",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 4865,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 130,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/HhuEYhRzCsw/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDH9dz2-x7WjKT1iTraxB0SQBHKwA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "-pNqui8PlRI",
+      "url": "https://www.youtube.com/watch?v=-pNqui8PlRI",
+      "title": "LOEWE Paula's Ibiza 2023 campaign",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 23952,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 31,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/-pNqui8PlRI/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBE4VtZPpYBnVuH5cFxWcvGbszlCg",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "MLymyJhNIVc",
+      "url": "https://www.youtube.com/watch?v=MLymyJhNIVc",
+      "title": "LOEWE | Chairs 2023",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 3569,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 29,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/MLymyJhNIVc/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLD_x8lZq5UKRwAgP5ZLQAUe2P6UNA",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "zO8iIvbLYsc",
+      "url": "https://www.youtube.com/watch?v=zO8iIvbLYsc",
+      "title": "LOEWE FOUNDATION | The ancient craft of Kama",
+      "description": "",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 6158,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "LOEWE",
+        "nickname": "LOEWE",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 226,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/zO8iIvbLYsc/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLCGhQqspmFEPeNIKx6URYtiBET7wQ",
+      "brand_agent_id": 1,
+      "is_official": true,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "q6f7zwHBtcM",
+      "url": "https://www.youtube.com/watch?v=q6f7zwHBtcM",
+      "title": "LOEWE Flamenco bag unboxing 💃❤️‍🔥 #LoeweUnboxing #LuxuryUnboxing #DesignerBag #LoeweBag",
+      "description": null,
+      "published_at": "11 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/q6f7zwHBtcM/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIF8oVDAP&rs=AOn4CLBgxaHUgcljyybwMy0CyFalrQTnJg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "t9Y42tLNPGI",
+      "url": "https://www.youtube.com/watch?v=t9Y42tLNPGI",
+      "title": "Elegant wine red. #loewe #bag #unboxing",
+      "description": "Our goal is to make buying designer products as easy as possible. You don't have to spend a lot of money to find a good quality ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/t9Y42tLNPGI/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhlIEkoVjAP&rs=AOn4CLCT766HzvVyXk-l4iEH1qqFK-MwUQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "3UwfXGKbcJg",
+      "url": "https://www.youtube.com/watch?v=3UwfXGKbcJg",
+      "title": "Unboxing my Loewe Puzzle bag 🥹✨ #unboxing #loewepuzzlebag #luxurybag #handbags #luxury #loewe",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/3UwfXGKbcJg/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIFkoTzAP&rs=AOn4CLArPGoYbZh4CwWio4W_-uWIgpifsA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "uMoiS6x9Whw",
+      "url": "https://www.youtube.com/watch?v=uMoiS6x9Whw",
+      "title": "Loewe Anagram Tank Top’s Unboxing 🤍🖤 #loewe #harrods",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/uMoiS6x9Whw/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhyIFsoPzAP&rs=AOn4CLCD-llsnjliYwMNEvJ2ESu2u-BySw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "OfbvIEzNMd8",
+      "url": "https://www.youtube.com/watch?v=OfbvIEzNMd8",
+      "title": "LOEWE UNBOXING #luxuryunboxinghaul #luxurylifestyle #luxuryhandbags #loewepuzzle #luxuryhaul",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/OfbvIEzNMd8/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhnIGcoZzAP&rs=AOn4CLA7fIshlM3RbAQ33KLHKGdb-NtpBw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "JsWnC_f9IN4",
+      "url": "https://www.youtube.com/watch?v=JsWnC_f9IN4",
+      "title": "The Perfect summer bag 🤍 #fashion #loewe #unboxing #luxuryunboxing",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/JsWnC_f9IN4/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhQIFUoZTAP&rs=AOn4CLAyl_aKBCTKr9YngBkL8AMVXbg4EA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "kCuVtIkwPgU",
+      "url": "https://www.youtube.com/watch?v=kCuVtIkwPgU",
+      "title": "loewe raffia bag unboxing #raffiabag #loewe #unboxing #luxury #shorts",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/kCuVtIkwPgU/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIFsoTzAP&rs=AOn4CLAlQBEe3MP60pwJ1lwfYfW1ghR0VA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ci6dmKZlCQ8",
+      "url": "https://www.youtube.com/watch?v=ci6dmKZlCQ8",
+      "title": "Unbox my new #loewe wallet with me #italy #rome",
+      "description": null,
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ci6dmKZlCQ8/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhgIGAoYDAP&rs=AOn4CLBSA2s1PNmwCyUZJ28553arRxo1Wg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "_G7-GMZZqCc",
+      "url": "https://www.youtube.com/watch?v=_G7-GMZZqCc",
+      "title": "buying dumb stuff so you don’t have to 🫶 #loewe #loewetank #designer #luxury #unboxing #haul #hauls",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/_G7-GMZZqCc/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhyIE0oLTAP&rs=AOn4CLBhx3LfrIoMZj48kYfLh-JsWhbXcg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "-cjl8_l9HTg",
+      "url": "https://www.youtube.com/watch?v=-cjl8_l9HTg",
+      "title": "HUGE LUXURY DESIGNER UNBOXING HAUL 2026 | GUCCI, FERRAGAMO LOEWE",
+      "description": "Join me on a luxury haul unboxing experience like no other, as I take you on a shopping spree to the designer outlet in Madrid, ...",
+      "published_at": "2 days ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/-cjl8_l9HTg/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB_gmAAtAFigIMCAAQARhhIFsoZTAP&rs=AOn4CLAQ6EUm_g1VsrcsDHjXNYhhMXUT8g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "CPD4ND4Q2zM",
+      "url": "https://www.youtube.com/watch?v=CPD4ND4Q2zM",
+      "title": "LUXURY HAUL UNBOXING! Celine & Loewe | Mel in Melbourne",
+      "description": "UNBOX WITH ME! What I bought from Celine & Loewe + A Special Reveal! JOIN the FaMELy! ➡️ YOUTUBE SUBSCRIBE ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/CPD4ND4Q2zM/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB_RosQUi1Wt85VbqibKTog9o5d5w",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "tosyEjIfrqA",
+      "url": "https://www.youtube.com/watch?v=tosyEjIfrqA",
+      "title": "FINALLY BOUGHT THE LOEWE SNEAKERS.. | Loewe Luxury Unboxing and Styling #luxuryunboxing #loewe",
+      "description": "Yes, I'll finally shut about these Loewe sneakers. I've had these classic designer sneakers on my radar for years, and during my ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/tosyEjIfrqA/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhDIFEocjAP&rs=AOn4CLB8J0KhzNHzJRbTeKQ36VQSeX91eA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "hThJ_YrVvfM",
+      "url": "https://www.youtube.com/watch?v=hThJ_YrVvfM",
+      "title": "Loewe x ON Cloudtilt 1, 2.0 & Cloud 6 Unboxing Haul & Shopping Vlog *with prices*| ℳ.ℳ ♛",
+      "description": "1279 | Loewe x ON Cloudtilt 1, 2.0 & Cloud 6 Unboxing Haul & Shopping Vlog *with prices*| ℳadam ℳ.ℳ Stylℯicℴn ♛",
+      "published_at": "6 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/hThJ_YrVvfM/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC2L763RP7zgof9nA4-H8hGRUjxGQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "K2TttpUis1w",
+      "url": "https://www.youtube.com/watch?v=K2TttpUis1w",
+      "title": "The feeling of checking off a wishlist item 😍 #loewe #unboxing #wishlist",
+      "description": "Loewe Basket Bag Small Tan.",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/K2TttpUis1w/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhRIGUoQzAP&rs=AOn4CLAHJm0xQsPZhoWzqbTE87HDRKh7-Q",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "RSnSfVWaTgU",
+      "url": "https://www.youtube.com/watch?v=RSnSfVWaTgU",
+      "title": "Unboxing the LOEWE jacket that screams effortless luxury 🖤 #Loewe #jacket #newyorkcity #fashion",
+      "description": "Say hello to the LOEWE Anagram Workwear Jacket, where modern minimalism meets refined craftsmanship Crafted from ...",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/RSnSfVWaTgU/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBvgSAAoAIigIMCAAQARhlIGUoZTAP&rs=AOn4CLD_7BqG71CuUvB95htHZNXRx9KC-g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "Ps0EvXX3-5U",
+      "url": "https://www.youtube.com/watch?v=Ps0EvXX3-5U",
+      "title": "#loewe#loewepuzzlebag#unboxing#unpacking#loewepuzzle",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/Ps0EvXX3-5U/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARh_IEQoLzAP&rs=AOn4CLAh7v1-BdbQlKMsJdov616j0GUJpw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "kyLfWzNF4Vw",
+      "url": "https://www.youtube.com/watch?v=kyLfWzNF4Vw",
+      "title": "LUXURY HAUL in Paradise 🏝️ Chanel, Louis Vuitton Murakami, Loewe, Miu Miu",
+      "description": "Sharing my first luxury haul of 2026, filmed while on holiday in beautiful Vanuatu I will be unboxing 2 brand new bags, ...",
+      "published_at": "1 month ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/kyLfWzNF4Vw/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC8s3QXlxh1tp-jZ_hGmX_VCs1tTg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "KP_xK0n5FXk",
+      "url": "https://www.youtube.com/watch?v=KP_xK0n5FXk",
+      "title": "Unboxing the Loewe small basket bag 🤍✨ my summer dream bag #loewe #unboxing #summerbag #fashion",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/KP_xK0n5FXk/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARg_IE8oZTAP&rs=AOn4CLCY9p4oSI5uXXt-RYVBznAkysdBQw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "8lRFpLTsk9o",
+      "url": "https://www.youtube.com/watch?v=8lRFpLTsk9o",
+      "title": "LOEWE bag and strap review! #loewe #loewepuzzlebag #puzzlebag #fashion #unboxing",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/8lRFpLTsk9o/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhyIFMoPjAP&rs=AOn4CLDa3epuQW2FIBhRNTG3PpLjFojlGw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "sfmsOUJtALg",
+      "url": "https://www.youtube.com/watch?v=sfmsOUJtALg",
+      "title": "CONS TO THE LOEWE PUZZLE BAG  💕😘 REASONS WHY NOT TO BUY THE LOEWE PUZZLE handbags PUZZLE bag",
+      "description": "CONS TO THE LOEWE PUZZLE BAG REASONS WHY NOT TO BUY THE LOEWE PUZZLE handbags PUZZLE bag What ...",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/sfmsOUJtALg/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB8GOLnitwYvzmrR4qs24hL8ivHhA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "YxyBxzkocX8",
+      "url": "https://www.youtube.com/watch?v=YxyBxzkocX8",
+      "title": "Loewe Puzzle Bag | 6 year review! Wear and tear, would I still recommend it?",
+      "description": "The Loewe puzzle bag recently celebrated its 10 year anniversary. I've had this bag since late 2019/early 2020 and have gotten ...",
+      "published_at": "2 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/YxyBxzkocX8/hqdefault.jpg?sqp=-oaymwE2COADEI4CSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB_gmAAtAFigIMCAAQARhlIFcoSTAP&rs=AOn4CLC9BcXdDxCy76V71tDYYkCm3VYm5g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "L9qByrQeFFg",
+      "url": "https://www.youtube.com/watch?v=L9qByrQeFFg",
+      "title": "Watch this before you buy the LOEWE PUZZLE BAG | Quiet luxury bag Review | Everyday bag | Timeless",
+      "description": "Hi lovelies, Welcome back to my channel. In this video I am going to do a review of the Loewe Puzzle Bags and go through the ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/L9qByrQeFFg/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDWA4V4D6Vpyp9IabwBOb5h2okBsA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "Sp_ydgQ__ek",
+      "url": "https://www.youtube.com/watch?v=Sp_ydgQ__ek",
+      "title": "Would you buy the Loewe Puzzle bag?",
+      "description": "Ana Sofia, a FASHIONPHILE Procurement Specialist, delves into the world of luxury handbags to showcase the timeless and ...",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/Sp_ydgQ__ek/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDz16bhpuP-TbcKMQJrWaK5kuavfQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "HvK_rLnidGQ",
+      "url": "https://www.youtube.com/watch?v=HvK_rLnidGQ",
+      "title": "Loewe Puzzle Bag Review: 1 Year Update, Wear and Tear, Pros and Cons, What Fits",
+      "description": "Now that I've owned the bag for about a year, I wanted to give you an update on my thoughts on it, its wear and tear, and pros and ...",
+      "published_at": "5 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/HvK_rLnidGQ/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB1AaAAuADigIMCAAQARhyIEgoPDAP&rs=AOn4CLBlMySM6LllzKSjq_vlUUk6HXMrwQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "k9IlohPilNQ",
+      "url": "https://www.youtube.com/watch?v=k9IlohPilNQ",
+      "title": "LOEWE PUZZLE | REVIEW & WHAT’S IN MY BAG",
+      "description": "Open For More Information✨ My favourite, most used, only handbag I need! The puzzle will always have my heart!",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/k9IlohPilNQ/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC0BGSBzofOerFVWw78pJ4e2hTz3Q",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "WMDatR060Qw",
+      "url": "https://www.youtube.com/watch?v=WMDatR060Qw",
+      "title": "Loewe Puzzle Bag Review | Pros, Cons and Size Comparisons",
+      "description": "Hi loves, today's video is all about the Loewe Puzzle bag. I'm sharing the bag's pros, cons and comparing two sizes. What are ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/WMDatR060Qw/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBc_HA-v92EFcWaqRKEBhrAV6tK5w",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "QSodvH_3zds",
+      "url": "https://www.youtube.com/watch?v=QSodvH_3zds",
+      "title": "LOEWE! Puzzle Bag: Worth It? HONEST Luxury Review (Brand New!)",
+      "description": "Score a STEAL on Luxury?! This year, I snagged a pre-loved Loewe Puzzle that was practically brand new (with stickers intact!)",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/QSodvH_3zds/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLATE8jE2xGcfrDzP0HsL2YHw9JANQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "AzSafgDs-Cs",
+      "url": "https://www.youtube.com/watch?v=AzSafgDs-Cs",
+      "title": "Loewe Puzzle Bag: 4 Years Review | Edge vs. Original, Wear & Tear, etc.",
+      "description": "Bonjour everyone and welcome back to my channel. This year, the Loewe Puzzle Bag, created by Jonathan Anderson, ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/AzSafgDs-Cs/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLALtmLpHDQSOjqE3ra2AvEAY5KHIg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "EHQu5L9CfIE",
+      "url": "https://www.youtube.com/watch?v=EHQu5L9CfIE",
+      "title": "Is Mlouye better than Loewe? | DISSECTION | Comparing Luxury Leather Handbags | Leather Bag Review",
+      "description": "Which bag would you pick? Here are my thoughts after dissecting two leather handbags, Loewe's Mini Puzzle bag and Mlouye's ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/EHQu5L9CfIE/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhMIFgoZTAP&rs=AOn4CLBDXnP9gkLwPQwm_rBVlGFidMCzXg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "jcYeeXghNNc",
+      "url": "https://www.youtube.com/watch?v=jcYeeXghNNc",
+      "title": "Loewe Puzzle Bag Small | 3 year review, is it worth it? modshots, what fits",
+      "description": "In this video, I share my honest review on the Loewe Puzzle Bag in the small size. What are your thoughts on the price increae ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/jcYeeXghNNc/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBjzFE_6thqdtEjYsHD3w4oaaAsjg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "jrhjer8_9Bs",
+      "url": "https://www.youtube.com/watch?v=jrhjer8_9Bs",
+      "title": "LOEWE PUZZLE BAG REVIEW | SHOULD YOU GET IT?",
+      "description": "WHERE TO BUY THE LOEWE PUZZLE BAG: Make sure to check prices: My Theresa: https://bit.ly/3qG9MOe Saks: ...",
+      "published_at": "8 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/jrhjer8_9Bs/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBrpuV9aXU9t8w15k9tgbhLMjpOdg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "EAeSXGZh_uQ",
+      "url": "https://www.youtube.com/watch?v=EAeSXGZh_uQ",
+      "title": "Why I Don’t Own the Loewe Puzzle Bag ❌",
+      "description": "Many of you have asked me why I don't own the Loewe Puzzle Bag, so I share my reasons in this video! xx ...",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/EAeSXGZh_uQ/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB6-MWQPkAn9LJ0oNb5KFbtuciCCQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "NH5EJ9bhlC0",
+      "url": "https://www.youtube.com/watch?v=NH5EJ9bhlC0",
+      "title": "LOEWE PUZZLE BAG REVIEW | CAROL SUMMER",
+      "description": "OPEN ME FOR MORE INFO ↓ After over 6 months of bliss with this bag I am able to give you my pros and cons about it. Since I'm ...",
+      "published_at": "7 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/NH5EJ9bhlC0/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCa5WrF6sKIyCARJ8EGbxBRdqmyfA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "536YXokyd5s",
+      "url": "https://www.youtube.com/watch?v=536YXokyd5s",
+      "title": "Classic vs. Edge: The Loewe Puzzle Bag Showdown (Which One’s Worth It?)",
+      "description": "In this video, we're diving deep into a luxury handbag comparison between the Loewe Puzzle Edge and the Loewe Classic ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/536YXokyd5s/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD7_mP_bxQWjfImlCwIBiDg1l2_4A",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "S2a8KEHBtcY",
+      "url": "https://www.youtube.com/watch?v=S2a8KEHBtcY",
+      "title": "Loewe Puzzle Bag Review | Mellow Calfskin Black | Features, Quality, and Style",
+      "description": "In this video, I dive deep into a detailed review of the Loewe Puzzle Bag in mellow calfskin black, one of the most iconic luxury ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/S2a8KEHBtcY/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAOsEj0xwxhqfkAhapIxBRKKHhnMw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "36Ht2CRjutY",
+      "url": "https://www.youtube.com/watch?v=36Ht2CRjutY",
+      "title": "LOEWE PUZZLE BAG | 5 YEARS LATER",
+      "description": "Open For More Information✨ What are your thoughts on Loewe - do you love the brand? Please leave me any questions in the ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/36Ht2CRjutY/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBfSWrfPLAb0MseYsnJNGr8zAMdEA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "yzZmORKxq4I",
+      "url": "https://www.youtube.com/watch?v=yzZmORKxq4I",
+      "title": "BAG REVIEW: Loewe Small Puzzle | Old vs. New Puzzle, What Fits & Modshots",
+      "description": "Subscribe for more and let's be Luxe besties ♡ YouTube: https://youtube.com/@luxebyangela TikTok: ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/yzZmORKxq4I/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD7F1Gb29wEovKDINTY9WaNY92dYw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "k6krR-kDurs",
+      "url": "https://www.youtube.com/watch?v=k6krR-kDurs",
+      "title": "LOEWE PUZZLE BAG 5 YEAR UPDATE: Review and Wear&Tear",
+      "description": "OPEN ME FOR MORE INFO ↓ Here's an update on a gem of a bag: the Loewe Puzzle bag in medium size. I've had this beauty ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/k6krR-kDurs/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCYB1gPmPFEGWi2x7oZOb04_f76uA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "z-iyYv6ycOo",
+      "url": "https://www.youtube.com/watch?v=z-iyYv6ycOo",
+      "title": "What Fits Inside My Small Loewe Puzzle Bag",
+      "description": null,
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/z-iyYv6ycOo/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIFQoSDAP&rs=AOn4CLDyzWXS7saJW1yC2GpCBJAlUBbX_Q",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ZaCGBoJ0Fio",
+      "url": "https://www.youtube.com/watch?v=ZaCGBoJ0Fio",
+      "title": "Loewe Amazona 28 / Handbag Review, What Fits? Loewe Puzzle Comparison",
+      "description": "Should you buy Loewe's most iconic bag? In this video I give you my honest opinion on the Loewe Amazona 28 in smooth nappa ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ZaCGBoJ0Fio/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBB-aKtqEeGgl22cqFlbyCC9sQGrg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "A_lNgnM_SwU",
+      "url": "https://www.youtube.com/watch?v=A_lNgnM_SwU",
+      "title": "Pre-Loved Loewe Amazona Handbag II New in Purchase from a Resale Site II TRHOLKO",
+      "description": "In this video, I will be sharing my recent pre-loved purchase with you. Please like, comment, and subscribe.",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/A_lNgnM_SwU/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBMphunGucvt5qAQRtRk4lfQG364g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "K_W-YbggBss",
+      "url": "https://www.youtube.com/watch?v=K_W-YbggBss",
+      "title": "NEW BAGS ✨Loewe Amazona 180, Soft Lady Dior, Chanel SS26, Miu Miu Vivant & More! {ep. 31}",
+      "description": "Alrighty, so so much for the upcoming/recent Spring Summer 2026 collections! We're going to be going over Loewe's new ...",
+      "published_at": "3 weeks ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/K_W-YbggBss/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBqwCrJHXYA25hiHXWD7mkcfbvniA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "3LldwXOdswQ",
+      "url": "https://www.youtube.com/watch?v=3LldwXOdswQ",
+      "title": "The LOEWE AMAZONA *LUXURY BAG* Overview (Everything YOU Need To Know)",
+      "description": "Luxurybag #Luxuryhandbag #Luxuryhandbagcollection #designerbags #designerhandbags #Loewe #loeweamazona We will ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/3LldwXOdswQ/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLA0onvcHk2PZMDAVcNyQFsqld3EQg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "IsHcyhzl0sk",
+      "url": "https://www.youtube.com/watch?v=IsHcyhzl0sk",
+      "title": "Loewe Amazona 180 👻 Flamenco brain returns!",
+      "description": "Hermes Plume + Balenciaga Rodeo = Loewe Amazona 180 (the only math I enjoy)!!! My instagram: ...",
+      "published_at": "4 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/IsHcyhzl0sk/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDRgKO4dXvVjmsBmpntrAIVIRO8dg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "zgfVBwKFsqM",
+      "url": "https://www.youtube.com/watch?v=zgfVBwKFsqM",
+      "title": "Review : Loewe Amazona Bag",
+      "description": "Hello Shopaholics, I hope you enjoy this review on my Loewe Amazona bag. Please LIKE & SUBSCRIBE to my vid and do check ...",
+      "published_at": "10 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/zgfVBwKFsqM/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBs2E2bn-WbjVLRgqSg_WIR09HSJg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "jEYRcwbn54o",
+      "url": "https://www.youtube.com/watch?v=jEYRcwbn54o",
+      "title": "5 Luxury Designer Handbags I WOULD Buy & WHY 2025 | Comparing 10 bags | Sanecyndy",
+      "description": "Happy New Year My fabulous YouTube friends!! Hope all is well with you! I'm sharing a video on 5 luxury designer handbags (1 is ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/jEYRcwbn54o/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCO1NNWfWD0c2UqSVVG3fH0e27OaA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "qUUNZWThDpw",
+      "url": "https://www.youtube.com/watch?v=qUUNZWThDpw",
+      "title": "The BEST 2026 Spring Summer Bags To Buy ... and SKIP",
+      "description": "I have yet to recover from the spring summer 2026 shows. There were so many AMAZING shows! If there was one thing that these ...",
+      "published_at": "3 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/qUUNZWThDpw/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAFgMjk09C3lftIjWC1A7iUveuzaw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "jSehJ0LWz4U",
+      "url": "https://www.youtube.com/watch?v=jSehJ0LWz4U",
+      "title": "THE BEST designer bags to buy in 2026! *YOU NEED TO SEE THESE*",
+      "description": "Loewe Amazona 180 - not out yet 6. Celine Triomphe Frame - https://go.shopmy.us/p-43808328 7. Miu Miu Utilitaire - (shoulder) ...",
+      "published_at": "1 month ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/jSehJ0LWz4U/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAICBV2a-S07An-ZhW9z2VfSXQthQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ZOiHm48BHvk",
+      "url": "https://www.youtube.com/watch?v=ZOiHm48BHvk",
+      "title": "LOEWE | The story behind our Amazona bag",
+      "description": "As part of a series highlighting the exceptional Métiers d'Excellence of its maisons, LVMH came to discover the story behind our ...",
+      "published_at": "4 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ZOiHm48BHvk/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCvU0uCv1ztfZWsdRT5V2-hyv2I_g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ZVfrq9epRtU",
+      "url": "https://www.youtube.com/watch?v=ZVfrq9epRtU",
+      "title": "LOEWE'S ICONIC AMAZONA BAG",
+      "description": "Loewe's creative director Stuart Vevers talks to Luxup about the iconic Amazona bag and his modern-day reinterpretation. Shop in ...",
+      "published_at": "13 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ZVfrq9epRtU/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDD0cqrRonU8pBXjQrB1JxoiQ1zcQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "YROxzR6wazA",
+      "url": "https://www.youtube.com/watch?v=YROxzR6wazA",
+      "title": "NYC LUXURY SHOPPING VLOG 2026 ft. Celine, Jacquemus, Loewe & MORE!",
+      "description": "We'll be seeing the brand new Loewe Amazona 180 bag in person, as well as the new controversial Versace launch and YSL's ...",
+      "published_at": "9 days ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/YROxzR6wazA/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLA7itq3dR7oC01KsPnKxW-lz1_8-Q",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "UEOoHIMxHMs",
+      "url": "https://www.youtube.com/watch?v=UEOoHIMxHMs",
+      "title": "LOEWE Amazona 28 or Puzzle Small If you're wondering...! What's in my bag? Japan",
+      "description": "Both are lovely bags that you will love for the rest of your life. Introducing the size and the contents of the bag loosely ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/UEOoHIMxHMs/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCkQWIzKiJ1mKBp79YBx0NJu24r5w",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "4TDjRRTWCP4",
+      "url": "https://www.youtube.com/watch?v=4TDjRRTWCP4",
+      "title": "Vintage Loewe Amazona🤩",
+      "description": null,
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/4TDjRRTWCP4/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARh_ICMoTzAP&rs=AOn4CLD0_Y0W3THb76QjJEGsvzAjdVXLOA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "CA-e7czneu8",
+      "url": "https://www.youtube.com/watch?v=CA-e7czneu8",
+      "title": "Loewe amazona 28",
+      "description": "lets talk about my current handbag obsession the #loewe #amazona28 what are you thought about it, lets continue the ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/CA-e7czneu8/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB_gmAAtAFigIMCAAQARhEIFIocjAP&rs=AOn4CLDr-hJhzX-4aVaTN1Rttqw0xvqTXw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "ZvcVMMWu4NY",
+      "url": "https://www.youtube.com/watch?v=ZvcVMMWu4NY",
+      "title": "❤️ Loewe Amazona 23 Cropped Bag in Nappa Calfskin Black ⏩️https://katystore.com.ua/ua/",
+      "description": "Loewe Amazona 23 Cropped Bag in Nappa Calfskin Black (Арт: 99800) Наш магазин⏩️https://katystore.com.ua/ua/",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/ZvcVMMWu4NY/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIFwoUTAP&rs=AOn4CLAR0cjaKRi_RBSi67enNEHEezmfZA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "QSzGsemOz28",
+      "url": "https://www.youtube.com/watch?v=QSzGsemOz28",
+      "title": "❤️ Loewe Amazona 23 Cropped Bag in Nappa Calfskin Black ⏩️https://katystore.com.ua/ua/",
+      "description": "Loewe Amazona 23 Cropped Bag in Nappa Calfskin Black (Арт: 99800) Наш магазин⏩️https://katystore.com.ua/ua/",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/QSzGsemOz28/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIGUoZTAP&rs=AOn4CLCkq5Mf1lfqOqtBDW58IJENXXEBpQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "qVphLe6Yp2Y",
+      "url": "https://www.youtube.com/watch?v=qVphLe6Yp2Y",
+      "title": "Loewe is the Hottest Luxury Fashion Brand of 2023 – Here's Why!",
+      "description": "Discover why (and how) Loewe became the hottest luxury fashion brand in 2023 in this insightful video. We delve into the world of ...",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/qVphLe6Yp2Y/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCw05-IKvxogVHhilPX-n2vo4JQ9A",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "bqm9OqIUXNg",
+      "url": "https://www.youtube.com/watch?v=bqm9OqIUXNg",
+      "title": "Ranking ALL luxury bag brands from low to ULTRA luxury #luxury #fashion #bags #brands",
+      "description": "This is how luxury brands are ranked from low level to Ultra Luxury the pyramid is split into three main parts accessible luxury and ...",
+      "published_at": "3 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/bqm9OqIUXNg/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhlIGUoZTAP&rs=AOn4CLDG00qvR9eX7dd30X4HiVbJhjNVmg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "bZprjwIxLA4",
+      "url": "https://www.youtube.com/watch?v=bZprjwIxLA4",
+      "title": "Loewe by Jack McCollough & Lazaro Hernandez Debut Explained (review) | SS26 Paris Fashion Week",
+      "description": "The fashion world is watching closely as Loewe enters a brand-new chapter under Jack McCollough & Lazaro Hernandez, who ...",
+      "published_at": "5 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/bZprjwIxLA4/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCOEDzk-tzyQekg45B1RHxQSknuFw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "A8d9ZU6EuDQ",
+      "url": "https://www.youtube.com/watch?v=A8d9ZU6EuDQ",
+      "title": "BEST LUXURY BAGS YOU CAN BUY!  YOU HAVE TO SEE THESE! ",
+      "description": "FIND MY DELIBERATE MISTAKE! HAVE I BEEN LIVING UNDER A ROCK? THESE GUCCI BAGS ARE INSANE! SO SO GOOD!",
+      "published_at": "3 hours ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/A8d9ZU6EuDQ/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB0f2putMxB5vgxve_Lgcdnv0IzFg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "QB89moQ9dS4",
+      "url": "https://www.youtube.com/watch?v=QB89moQ9dS4",
+      "title": "LOEWE OUTLET WITH PRICES | Laine’s Reviews",
+      "description": "Hello my fashion lovers, today we are going to the LOEWE OUTLET! Links - disclaimer - some links are affiliate links, which ...",
+      "published_at": "8 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/QB89moQ9dS4/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAVuk9R_wfYbDsyZaA4i94s1K70cg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "xnss87ItBIw",
+      "url": "https://www.youtube.com/watch?v=xnss87ItBIw",
+      "title": "LUXURY BAG REVIEW! Loewe, Bottega Veneta, Goyard & Jacquemus | NYC Vlog",
+      "description": "In this NYC vlog, I review luxury bags from Loewe, Bottega Veneta, Goyard & Jacquemus. If you're into mens luxury bags, this ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/xnss87ItBIw/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBWqOq8Psz9uWBCuzuZz-ubdY1FqQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "CJ1gBgicukY",
+      "url": "https://www.youtube.com/watch?v=CJ1gBgicukY",
+      "title": "Timeless Luxury Bags to Invest in 2025 - LOEWE, BOTTEGA VENETA, LORO PIANA, LOUIS VUITTON, HERMES",
+      "description": "Join this channel to get access to perks: https://www.youtube.com/channel/UC5Pd9Zq9Px28Uw9IHCiMbaw/join ❤️SUBSCRIBE ...",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/CJ1gBgicukY/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC0qycZ3D0qpYDx6po9V_YlL0kHnw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "NLb8HAbSQck",
+      "url": "https://www.youtube.com/watch?v=NLb8HAbSQck",
+      "title": "Luxury Fashion Haul | LOEWE",
+      "description": "Thank you so much for tuning into today's video - Luxury Fashion Haul | LOEWE. Hope you enjoy! xoxo ❤️ ⚡Please ...",
+      "published_at": "4 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/NLb8HAbSQck/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAvlW_1eTsI15DwlMFfShJv4M0-NA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "AAhaVRnt69E",
+      "url": "https://www.youtube.com/watch?v=AAhaVRnt69E",
+      "title": "MORE Luxury Bags Under $2,000 from Louis Vuitton, Chanel, Fendi, Loewe, and More! || Autumn Beckman",
+      "description": "Click \"more\" for more information from this video. MORE Luxury Bags Under $2000 from Louis Vuitton, Chanel, Fendi, Loewe, and ...",
+      "published_at": "22 hours ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/AAhaVRnt69E/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAiTLI2czvTT1WsUKamEgFcWwnquA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "OO4jC10BiSc",
+      "url": "https://www.youtube.com/watch?v=OO4jC10BiSc",
+      "title": "Navigating the Luxury Leather Jungle: Unveiling the Matrix",
+      "description": "Dive into the world of leather goods with our latest creation - the Leatherverse Brand Matrix! Join me as I unveil a ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/OO4jC10BiSc/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDH1Ud71IQjLCr5zEfj60MRf_Iixw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "Fk3v9yX1cWs",
+      "url": "https://www.youtube.com/watch?v=Fk3v9yX1cWs",
+      "title": "The Unexpected Rise Of LOEWE",
+      "description": "Everyone's talking about Loewe. But almost no one knows how it got here. It wasn't always front-row at Fashion Week. It didn't ...",
+      "published_at": "10 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/Fk3v9yX1cWs/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCVOjpWGRN6jSlTDzO_xOXkfNLB0A",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "RtBUGjrW79I",
+      "url": "https://www.youtube.com/watch?v=RtBUGjrW79I",
+      "title": "I Ranked Every Major Luxury Brand After Cutting Them Open",
+      "description": "I destroyed over 30 luxury bags, spent $1000000+, and dissected the biggest names in fashion to answer one question: Which ...",
+      "published_at": "2 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/RtBUGjrW79I/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBVu_l6-ImrjeW5XkFNNl5FXchftA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "EC6_EUHshIo",
+      "url": "https://www.youtube.com/watch?v=EC6_EUHshIo",
+      "title": "'Luxury' Items That Scream 'I'm Poor' to REAL Rich People",
+      "description": "5 'Luxury' Items That Scream 'I'm Poor' to REAL Rich People Think you're flaunting wealth? You might be waving a red flag!",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/EC6_EUHshIo/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAvU5QXjN68vJvPMwRt50D65LVn9Q",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "6oC_DVEfelU",
+      "url": "https://www.youtube.com/watch?v=6oC_DVEfelU",
+      "title": "5 mid-range luxury bag brands you NEED to know about!",
+      "description": "Luxury designer bags feel more expensive than ever and unfortunately, the quality doesn't always reflect the price. In this video ...",
+      "published_at": "7 days ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/6oC_DVEfelU/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLACjw2mAjS44Tq-HjblgHHXKxzvcA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "QcauG8d0oVw",
+      "url": "https://www.youtube.com/watch?v=QcauG8d0oVw",
+      "title": "Hemming 101, Yaser Shaw shawls, some more Eileen Fisher",
+      "description": "ALL THE LINKS: What I'm wearing: Frances de Lourdes navy Johnny tee in xs ...",
+      "published_at": "7 hours ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/QcauG8d0oVw/hqdefault.jpg?sqp=-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBitHvsdw7oTC3ivWTSl-ZfS35h-w",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "OHeHFmu_PHk",
+      "url": "https://www.youtube.com/watch?v=OHeHFmu_PHk",
+      "title": "Best Bags from Men's Collections (LV, Coach, Loewe & More)",
+      "description": "Don't sleep on bags from the Men's Collections! I'll show bags from #louisvuitton, #loewe, #bottegaveneta, and #coach. Coach ...",
+      "published_at": "6 days ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/OHeHFmu_PHk/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAcWa1s0tyAfcixmGHRkdq8QbWfSg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "cg-ha6-Nu8o",
+      "url": "https://www.youtube.com/watch?v=cg-ha6-Nu8o",
+      "title": "NO MORE LUXURY SHOPPING | EXCEPT FOR THIS BAG! + Q&A",
+      "description": "WHICH BAG IS TEMPTING ME TO SPEND! FIND OUT HERE! PLUS Q&A! SOME JUICY QUESTIONS! FIND OUT MORE ABOUT ...",
+      "published_at": "3 days ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/cg-ha6-Nu8o/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCaaRkdC2e0FMtfyJb_eYnH5nkGJw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "NEjmKwqmoQ0",
+      "url": "https://www.youtube.com/watch?v=NEjmKwqmoQ0",
+      "title": "15 Luxury Bag brands NOBODY's Buying Anymore (Brands Are SLASHING Prices)",
+      "description": "15 Luxury Bag Brands NOBODY's Buying Anymore (Prices SLASHED!) Luxury handbags were once status symbols—but now ...",
+      "published_at": "2 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/NEjmKwqmoQ0/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBmKaG7GC_9t7HqhCNJklwqDgnafg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "FfJYyQe4uwI",
+      "url": "https://www.youtube.com/watch?v=FfJYyQe4uwI",
+      "title": "UPDATED LUXURY SLG COLLECTION 2023 👛 ft. LV, Fendi, Dior, etc!",
+      "description": "OPEN FIRST PLEASE ↓ [ VIDEO SETTINGS HIGHER PICTURE QUALITY ] Chums! Here's my updated slg and bandeau/silk ...",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/FfJYyQe4uwI/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD2SCHzFbHTBNeIxcDa4uDmNmModQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "x9bj8cCrMgc",
+      "url": "https://www.youtube.com/watch?v=x9bj8cCrMgc",
+      "title": "Hermès FINALLY Listened… The Bag I Added to My Collection 😍",
+      "description": "Hermès finally listened… and this might be one of the most wearable bags they've released in years. In today's video, I'm sharing ...",
+      "published_at": "8 hours ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/x9bj8cCrMgc/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD6ebh3iKzN2W1Cs7M2a9po21aoyw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "pF9ei1rpBVY",
+      "url": "https://www.youtube.com/watch?v=pF9ei1rpBVY",
+      "title": "Interior Designer Reacts to Mandy Moore’s AD House Tour (I’m VERY Shocked!)",
+      "description": "Back with another Architectural Digest house tour reaction, and this time we're stepping inside Mandy Moore & Taylor Goldsmith's ...",
+      "published_at": "4 hours ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/pF9ei1rpBVY/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBuYelko4OBX3qSKXe59QiyJN5Elw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "Z5q-X8Mxxpk",
+      "url": "https://www.youtube.com/watch?v=Z5q-X8Mxxpk",
+      "title": "👜👜👜ARE LOEWE HANDBAGS WORTH IT? 👜👜👜❓ ❗ LOEWE HANDBAG REVIEW 👜👜 LOEWE WORTH IT HANDBAG LOVERS",
+      "description": "ARE LOEWE HANDBAGS WORTH IT? ❓ ❗ LOEWE HANDBAG REVIEW LOEWE WORTH IT HANDBAG LOVERS ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/Z5q-X8Mxxpk/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCXGXWwxdd7WewU8DVLWx0R46-PbQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "RYkJI7bx6X4",
+      "url": "https://www.youtube.com/watch?v=RYkJI7bx6X4",
+      "title": "LOEWE DICE POCKET 6-MONTH REVIEW",
+      "description": "I have now owned the Loewe Dice Pocket for a bit over 6 months and in this video I share why it has become my most used luxury ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/RYkJI7bx6X4/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBisW3MAFPH48QS3MmOskFh8taNqQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "XLM0GyRQIbU",
+      "url": "https://www.youtube.com/watch?v=XLM0GyRQIbU",
+      "title": "Loewe Flamenco: Worth the HYPE?",
+      "description": "The Loewe Flamenco is one of my favorite and most used bags in my collection! In this video, I will share with you all the reasons ...",
+      "published_at": "4 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/XLM0GyRQIbU/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDoWPWvKotuwVEm3wE__Eif53EwSg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "9P_tFVLRbgI",
+      "url": "https://www.youtube.com/watch?v=9P_tFVLRbgI",
+      "title": "Loewe Leather Sandal Review 2023",
+      "description": "Loewe is a luxury fashion brand known for its high-quality craftsmanship and attention to detail. Their leather thong sandals are ...",
+      "published_at": "2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/9P_tFVLRbgI/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC-t8TBakxnRQxjpqgqZJttklUeuw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "OFM_SYw1ccg",
+      "url": "https://www.youtube.com/watch?v=OFM_SYw1ccg",
+      "title": "LOEWE Spring Summer 2026 women’s runway collection",
+      "description": "Watch the LOEWE Spring Summer 2026 women's runway show from Paris. CONNECT WITH #LOEWE Web: ...",
+      "published_at": "Streamed 5 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/OFM_SYw1ccg/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDrWWVZtS9hjAfGmEz8w7SfEal58g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "2HoR8yPYCKw",
+      "url": "https://www.youtube.com/watch?v=2HoR8yPYCKw",
+      "title": "Loewe  | Spring/Summer 2025 | Paris Fashion Week",
+      "description": "Loewe Spring/Summer 2025 show by Jonathan Anderson at Paris Fashion Week Find Us On Like us on Facebook: ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/2HoR8yPYCKw/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCZo9XJBZZuKxrpT_qLGiAychFkbw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "wqZby80VMq0",
+      "url": "https://www.youtube.com/watch?v=wqZby80VMq0",
+      "title": "LOEWE Spring Summer 2025 women’s runway collection",
+      "description": "LOEWE Spring Summer 2025 women's runway show in Paris. Creative direction Jonathan Anderson Styling Benjamin Bruno ...",
+      "published_at": "Streamed 1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/wqZby80VMq0/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBImTiW-hG-11Ux4DHGh33-5EhkZg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "nn1wvGkGk-I",
+      "url": "https://www.youtube.com/watch?v=nn1wvGkGk-I",
+      "title": "Loewe | Spring/Summer 2026 | Paris Fashion Week",
+      "description": "Loewe | Spring/Summer 2026 | Paris Fashion Week Loewe Spring/Summer 2026 fashion show by Jack McCollough and Lazaro ...",
+      "published_at": "5 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/nn1wvGkGk-I/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDfvcOfOcp4StC2M8LfS1eHEBW5KA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "Gdv1ibxfCGE",
+      "url": "https://www.youtube.com/watch?v=Gdv1ibxfCGE",
+      "title": "Loewe  | Spring/Summer 2025 | Paris Fashion Week - 4K",
+      "description": "Loewe Spring/Summer 2025 show by Jonathan Anderson at Paris Fashion Week Find Us On Like us on Facebook: ...",
+      "published_at": "11 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/Gdv1ibxfCGE/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCqzsUqpQe029QtvewkPgEsujNnaw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "_KB-oVj4FRo",
+      "url": "https://www.youtube.com/watch?v=_KB-oVj4FRo",
+      "title": "Loewe Menswear | Spring/Summer 2025 | Paris Fashion Week",
+      "description": "Loewe Menswear Spring/Summer 2025 show by Jonathan Anderson at Paris Fashion Week #Loewe #LoeweSummer25 ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/_KB-oVj4FRo/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBqE6KPbFTJ3f7j1C-rpaWuS_PBvQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "td_QxmnReG8",
+      "url": "https://www.youtube.com/watch?v=td_QxmnReG8",
+      "title": "LOEWE Spring Summer 2025 men’s runway collection",
+      "description": "LOEWE Spring Summer 2025 men's runway show from Paris. CONNECT WITH #LOEWE Web: https://www.loewe.com TikTok: ...",
+      "published_at": "Streamed 1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/td_QxmnReG8/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC_y93oW1P5mf7I7CXq3mL5g48xuw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "zKfKl3BiVGw",
+      "url": "https://www.youtube.com/watch?v=zKfKl3BiVGw",
+      "title": "Loewe | Spring/Summer 2026 | Paris Fashion Week - 4K",
+      "description": "Loewe | Spring/Summer 2026 | Paris Fashion Week - 4K Loewe Spring/Summer 2026 fashion show by Jack McCollough and ...",
+      "published_at": "2 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/zKfKl3BiVGw/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC-Y1oobET-LL1JO3KfCoL74zjugA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "GkUMYsevTQQ",
+      "url": "https://www.youtube.com/watch?v=GkUMYsevTQQ",
+      "title": "#LOEWE Spring Summer 2025 men's runway show by Jonathan Anderson.",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/GkUMYsevTQQ/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhpIDEofzAP&rs=AOn4CLD6AMiZEjp6k6FAkRncAg7ZS-TDZQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "VPP05ejDlvM",
+      "url": "https://www.youtube.com/watch?v=VPP05ejDlvM",
+      "title": "Loewe | Spring/Summer 2025 | Paris Fashion Week - 4K",
+      "description": "Loewe Spring/Summer 2025 show by Jonathan Anderson at Paris Fashion Week Find Us On Like us on Facebook: ...",
+      "published_at": "7 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/VPP05ejDlvM/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAec_24RixsZjP4nbZmwv8i1iRKOA",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "3pXxidlFxho",
+      "url": "https://www.youtube.com/watch?v=3pXxidlFxho",
+      "title": "Loewe Menswear | Spring/Summer 2025 | Paris Fashion Week",
+      "description": "Loewe Menswear Spring/Summer 2025 show by Jonathan Anderson at Paris Fashion Week #Loewe #LoeweSummer25 ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/3pXxidlFxho/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDpWcg6lO6PDKZgV0M6S5Wy7QfpKw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "T9s7BS5Bwqo",
+      "url": "https://www.youtube.com/watch?v=T9s7BS5Bwqo",
+      "title": "#LOEWE Spring Summer 2025 women's runway show.",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/T9s7BS5Bwqo/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhlIGUoZTAP&rs=AOn4CLAwC1Ph0CIXp1p41lg6w4e2LSX8JQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "wzXj2uKUTds",
+      "url": "https://www.youtube.com/watch?v=wzXj2uKUTds",
+      "title": "#LOEWE Spring Summer 2025 campaign by David Sims.",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/wzXj2uKUTds/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhyIEIoVTAP&rs=AOn4CLCR36hOTuSt1Y5Xt-v3G7yWvQW-Eg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "9WdReSMQn80",
+      "url": "https://www.youtube.com/watch?v=9WdReSMQn80",
+      "title": "LOEWE Spring Summer 2024 women’s runway collection",
+      "description": "Reducing fashion to the silhouette, focusing on the outline, playing with the sections, altering the proportions. Looking from afar ...",
+      "published_at": "Streamed 2 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/9WdReSMQn80/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBJBPRCdPK4FFYKcimhM7DMGdheCw",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "f4lw6DIBr40",
+      "url": "https://www.youtube.com/watch?v=f4lw6DIBr40",
+      "title": "Loewe Spring/Summer 2025 Womenswear Collection | Paris Fashion Week® Highlights #pfw",
+      "description": "Here's a YouTube description tailored to \"Fashion Thunder\" with an emphasis on fashion updates: Welcome to Fashion Thunder ...",
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/f4lw6DIBr40/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhlIGUoZTAP&rs=AOn4CLD2T8Hl25BqIsKOQ_SR1ac6Il01eg",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "qoOnmn2ZlHE",
+      "url": "https://www.youtube.com/watch?v=qoOnmn2ZlHE",
+      "title": "LOEWE Spring Summer 2015 women's runway collection",
+      "description": "LOEWE PRESENTS THE DEBUT WOMEN'S COLLECTION FROM Jonathan Anderson. The SS15 collection is an exploration of ...",
+      "published_at": "11 years ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/qoOnmn2ZlHE/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB_gmAAtAFigIMCAAQARhlIFkoRzAP&rs=AOn4CLClYYzN9xL7k4tdXBVF9SfGiT3Z1g",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "TLGBwbMXzPM",
+      "url": "https://www.youtube.com/watch?v=TLGBwbMXzPM",
+      "title": "The guest at the Loewe runway 2025",
+      "description": "The first Loewe show in Paris, designed by Jack McCollough and Lazaro Hernandez, drew a notable guest list. The event ...",
+      "published_at": "5 months ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/TLGBwbMXzPM/hq720_2.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBtgiAAoAPigIMCAAQARhJIFMoZTAP&rs=AOn4CLA7tLGLjc1nHU7XnlLfNqGVYHbaSQ",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    },
+    {
+      "platform": "youtube",
+      "external_id": "qbFMEVcsK20",
+      "url": "https://www.youtube.com/watch?v=qbFMEVcsK20",
+      "title": "Tawan Vihokratana arrives to the #LOEWE Spring Summer 2025 men’s runway show by Jonathan Anderson.",
+      "description": null,
+      "published_at": "1 year ago",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
+      },
+      "author": {
+        "handle": "",
+        "nickname": "",
+        "followers": 0
+      },
+      "content_type": "video",
+      "duration_seconds": 0,
+      "hashtags": [],
+      "thumbnail": "https://i.ytimg.com/vi/qbFMEVcsK20/hq720.jpg?sqp=-oaymwE2COgCEMoBSFXyq4qpAygIARUAAIhCGABwAcABBvABAfgBzgWAAoAKigIMCAAQARhOIGUoYzAP&rs=AOn4CLCG30Trki27Yrfm2xEecKbKLZkT-w",
+      "brand_agent_id": 1,
+      "is_official": false,
+      "engagement_rate": 0.0
+    }
+  ]
+}

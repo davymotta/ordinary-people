@@ -398,3 +398,25 @@
 ### Integrazione
 - [ ] GTE-31 — Integrazione con Brand Agent onboarding: dopo saveBrandAgent, avvia auto-calibration GTE
 - [ ] GTE-32 — Post-simulation tracking: dopo che il cliente lancia una campagna reale, GTE scrapa i risultati a 48h
+
+## Sprint 7 — Seed + EmotionalSignature + Loewe GTE
+
+- [ ] SP7.1 — Eseguire seed 200 agenti via script server-side (agents-batch-seed.ts)
+- [ ] SP7.2 — Aggiungere `emotionalSignature` (JSON) e `scrolledPast` (boolean) alla tabella campaign_reactions
+- [ ] SP7.3 — Migrazione DB per i nuovi campi
+- [ ] SP7.4 — Aggiornare campaign-engine per salvare emotionalSignature e scrolledPast
+- [ ] SP7.5 — Mappare Loewe: harvest TikTok (@loewe) + YouTube (canale Loewe)
+- [ ] SP7.6 — Normalizzare post Loewe e simulare con il panel
+- [ ] SP7.7 — Calcolare primo Spearman rho per Loewe
+- [ ] SP7.8 — Aggiornare SimulateReport: scroll rate, emotional signature heatmap, cluster visualization
+- [ ] SP7.9 — Test Vitest aggiornati + checkpoint finale
+
+## Sprint 8 — Loewe GTE Harvest & Dashboard
+- [x] SP8.1 — Harvest YouTube canale Loewe (UCIkFEXV_zvjOlmOcKEHW_hg): 60 video ufficiali + 99 UGC = 159 post
+- [x] SP8.2 — Importazione 159 post Loewe nel database groundTruthPosts
+- [x] SP8.3 — Aggiunta procedura tRPC `groundTruth.getStats` per statistiche aggregate
+- [x] SP8.4 — Nuova pagina `/lab/gte` (GteDashboard.tsx): KPI cards, workflow step-by-step, top post per views, calibration report
+- [x] SP8.5 — Aggiunta voce "Ground Truth Engine" nella sidebar Lab
+- [ ] SP8.6 — Normalizzare i 159 post Loewe (calcolare percentile rank)
+- [ ] SP8.7 — Eseguire prima simulazione GTE su post Loewe
+- [ ] SP8.8 — Calcolare primo Spearman ρ per Loewe

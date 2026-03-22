@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `campaignReactions` ADD `scrolledPast` boolean DEFAULT false;\nALTER TABLE `campaignReactions` ADD `attentionScore` float;\nALTER TABLE `campaignReactions` ADD `gutReactionScore` float;\nALTER TABLE `campaignReactions` ADD `emotionalSignature` json;\nALTER TABLE `campaignReactions` ADD `rationalAdjustment` float;\nALTER TABLE `campaignReactions` ADD `socialAdjustment` float;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 23k7DxJkvxWkDiS.cfce7a4d6a95 --database BrhNBieBfyzPV9fR7mMkGf --execute ALTER TABLE `campaignReactions` ADD `scrolledPast` boolean DEFAULT false;\nALTER TABLE `campaignReactions` ADD `attentionScore` float;\nALTER TABLE `campaignReactions` ADD `gutReactionScore` float;\nALTER TABLE `campaignReactions` ADD `emotionalSignature` json;\nALTER TABLE `campaignReactions` ADD `rationalAdjustment` float;\nALTER TABLE `campaignReactions` ADD `socialAdjustment` float;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1061
+}

@@ -36,6 +36,7 @@ import PersonaDetail from "./pages/PersonaDetail";
 import Campaigns from "./pages/Campaigns";
 import CampaignCreate from "./pages/CampaignCreate";
 import GroundTruth from "./pages/GroundTruth";
+import GteDashboard from "./pages/lab/GteDashboard";
 import Calibration from "./pages/Calibration";
 import DashboardLayout from "./components/DashboardLayout";
 import { AdminLayout } from "./components/AdminLayout";
@@ -126,6 +127,11 @@ function Router() {
       <Route path="/lab/campaign-testing">
         <LabLayout>
           <CampaignTesting />
+        </LabLayout>
+      </Route>
+      <Route path="/lab/gte">
+        <LabLayout>
+          <GteDashboard />
         </LabLayout>
       </Route>
 

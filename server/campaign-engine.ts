@@ -75,6 +75,16 @@ export interface AgentReactionResult {
   repulsions: string[];
   tensions: string;
   motivations: string;
+  // Cascata 4 livelli — dati diagnostici
+  scrolledPast?: boolean;
+  attentionScore?: number;
+  gutReactionScore?: number;
+  emotionalSignature?: {
+    activatedVars: Array<{ name: string; value: number; resonance: number; direction: "positive" | "negative" | "neutral" }>;
+    dominantTags: string[];
+  };
+  rationalAdjustment?: number;
+  socialAdjustment?: number;
 }
 
 export interface CampaignTestProgress {
@@ -153,6 +163,12 @@ export async function runCampaignTest(
         motivations: result.motivations,
         stateAtReaction: state as any,
         memoryContext: memories.map(m => ({ title: m.title, valence: m.emotionalValence })) as any,
+        // Cascata 4 livelli — dati diagnostici
+        scrolledPast: result.scrolledPast ?? false,
+        attentionScore: result.attentionScore,
+        gutReactionScore: result.gutReactionScore,
+        emotionalSignature: result.emotionalSignature as any,
+        rationalAdjustment: result.rationalAdjustment,
         status: "complete",
         processedAt: new Date(),
       });
@@ -317,6 +333,10 @@ export async function processAgentCampaignReaction(
   // This gives the LLM a deterministic anchor that reflects the agent's
   // psychological profile and the campaign's semantic tags.
   let gutReactionScore = 0.0;
+  let attentionScore = 1.0; // default: piena attenzione
+  let scrolledPast = false;
+  let emotionalSignature: AgentReactionResult["emotionalSignature"] | undefined;
+  let rationalAdjustment = 0.0;
   let biasNarrative: string[] = [];
   let salienceContext = "";
   try {
@@ -355,6 +375,35 @@ export async function processAgentCampaignReaction(
     const biasVector = computeBiasVector(agent);
     gutReactionScore = applyBiases(gutReactionScore, biasVector, campaignSignals);
     biasNarrative = describeActiveBiases(biasVector, campaignSignals);
+
+    // ─── Level 1: Attention filter ──────────────────────────────────────
+    const psychProfile = agent.habitusProfile as Record<string, number> | null;
+    const attentionSpan = psychProfile?.attention_span ?? 0.5;
+    const cynicism = psychProfile?.advertising_cynicism ?? 0.3;
+    const formatBonus = campaignSignals.format === "video" ? 0.1 : campaignSignals.format === "image" ? 0.05 : 0;
+    attentionScore = clamp(attentionSpan * (1 - cynicism * 0.5) + formatBonus, 0, 1);
+    scrolledPast = attentionScore < DEFAULT_SYSTEM_PARAMS.THRESHOLD_ATTENTION;
+
+    // ─── Level 2: Emotional signature ────────────────────────────────────
+    emotionalSignature = {
+      activatedVars: salience.dominant.slice(0, 5).map(v => ({
+        name: v.variable,
+        value: v.value,
+        resonance: v.resonance,
+        direction: v.value > 0.6 ? "positive" : v.value < 0.4 ? "negative" : "neutral" as "positive" | "negative" | "neutral",
+      })),
+      dominantTags: campaignTags.slice(0, 5),
+    };
+
+    // ─── Level 3: Rational adjustment estimate ────────────────────────────
+    // Pre-compute a rational adjustment estimate based on topic match and price gap
+    const topicMatchScore = campaignTopics.length > 0 ? 0.5 : 0.3;
+    const priceGap = agent.priceSensitivity ?? 0.5;
+    const rationalScore = (topicMatchScore * 0.6 + (1 - priceGap) * 0.4) - 0.5; // [-0.5, +0.5]
+    rationalAdjustment = Math.abs(gutReactionScore) > DEFAULT_SYSTEM_PARAMS.THRESHOLD_CERTAINTY
+      ? gutReactionScore * 0.1  // confirmation bias only
+      : rationalScore * (1 - Math.abs(gutReactionScore));
+    rationalAdjustment = clamp(rationalAdjustment, -1, 1);
 
     // Build salience context for the LLM
     if (salience.dominant.length > 0) {
@@ -514,6 +563,12 @@ export async function processAgentCampaignReaction(
     repulsions: Array.isArray(parsed.repulsions) ? parsed.repulsions : [],
     tensions: parsed.tensions ?? "",
     motivations: parsed.motivations ?? "",
+    // Cascata 4 livelli — dati diagnostici
+    scrolledPast,
+    attentionScore,
+    gutReactionScore,
+    emotionalSignature,
+    rationalAdjustment,
   };
 }
 
