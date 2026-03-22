@@ -131,8 +131,8 @@
 - [x] Redesign CSS: palette terracotta, Playfair Display, token per tre ambienti
 
 #### Da completare
-- [ ] Simulazione Live /app/simulate/:id: feed reazioni real-time + analytics
-- [ ] Report /app/simulate/:id/report: Executive Summary, KPI, Interview Zone
+- [x] Simulazione Live /app/simulate/:id: feed reazioni real-time + analytics (Sprint 1)
+- [x] Report /app/simulate/:id/report: Executive Summary, KPI, Interview Zone (Sprint 1)
 - [ ] Loop sociale: agente vede reazioni contatti prima di finalizzare
 - [ ] Avatar agenti: illustrazioni stilizzate con colore archetipo come accento
 - [ ] Radar chart Big Five come componente identitario di ogni agente
@@ -151,3 +151,51 @@
 - [ ] Integrazione con Campaign Testing Engine: usa digest + perceptual filter invece del testo grezzo (Fase 5)
 - [ ] File upload drag&drop (Fase 5)
 - [ ] Integrazione con simulazione live /app/simulate/:id (Fase 5)
+
+---
+
+## SPRINT PLAN — Pilot Test Maggio 2026
+
+### Sprint 1 — "Il flusso funziona" (settimane 1-2) ✔ COMPLETATO
+*Obiettivo: un utente può caricare una campagna, lanciare una simulazione, vedere un report.*
+
+- [x] 1.4 — Aggiungere `/app/ingest` alla sidebar ClientLayout
+- [x] 1.5 — Rimuovere link rotti dalla sidebar (`/app/reports`, `/app/panel`)
+- [x] 1.1 — Collegare "Lancia simulazione" a `campaignTesting.launch` (crea campagna + test in background, naviga a `/app/simulate/:id`)
+- [x] 1.2 — Pagina simulazione live `/app/simulate/:id`: polling reazioni ogni 3s, barra avanzamento, feed citazioni live
+- [x] 1.3 — Pagina report `/app/simulate/:id/report`: Executive Summary, KPI, distribuzione score, risk flags, raccomandazioni
+- [ ] 5.2 — Persistere il Campaign Digest nel DB (campo JSON in `campaigns` o tabella `campaign_digests`) → Sprint 2
+
+### Sprint 2 — "Gli agenti vedono davvero" (settimane 3-4)
+*Obiettivo: campagna reale, agenti reali, percezioni filtrate.*
+
+- [ ] 5.1 — Collegare Perceptual Filter al Campaign Testing Engine (arricchire system prompt con `perceptual_prompt`)
+- [ ] 4.3 — Seed batch 200+ profili con distribuzione realistica (batch generator già implementato, da eseguire)
+- [ ] 1.6 — Integrare Campaign Digest nel targeting (passaggio `campaign_id` da `/app/ingest` a `/app/simulate/new`)
+- [ ] 1.7 — File upload drag&drop reale (input file → S3 via `storagePut` → `ingestion.ingestImageUrl`)
+
+### Sprint 3 — "È vendibile" (settimane 5-6)
+*Obiettivo: presentabile a un brand manager senza vergogna.*
+
+- [ ] Export PDF del report (deliverable che il cliente scarica e condivide su Slack/email al CMO)
+- [ ] Design identity: palette terracotta coerente, tipografia editoriale Playfair, radar chart Big Five come elemento identitario
+- [ ] 7.3 — Targeting Panel professionale stile Meta Ads Manager (preview reach, stima costo, distribuzione visiva)
+
+### Sprint 4 — "È superiore" (settimane 7-8)
+*Obiettivo: motore qualitativamente superiore a qualsiasi competitor.*
+
+- [ ] 2.1 — Formula a due fasi Sistema 1 → Sistema 2 (Kahneman)
+- [ ] 2.3 — Separare attraction e repulsion come dimensioni indipendenti
+- [ ] 2.4 — Effetto Veblen: inversione price_gap per segmenti status-oriented
+- [ ] 3.1 — Grafo di influenza tra agenti (reference_group / rejection_group)
+- [ ] 3.2 — Two-pass simulation: reazione individuale → influenza → reazione finale
+
+### Sprint 5+ — "È un ecosistema"
+- [ ] 4.1 — Drift identitario post-simulazione
+- [ ] 4.4 — Memoria semantica con retrieval per topic (cosine similarity o tag-based)
+- [ ] 5.3 — Integrazione GDELT per presente dinamico
+- [ ] 6.1 — Ground Truth con campagne reali italiane
+- [ ] 2.2 — Meccanismo di dominanza (Kahneman, Ariely)
+- [ ] 2.5 — Filtro di decodifica per cultural_capital (Bourdieu)
+- [ ] 2.8 — Regimi continui con isteresi (Polanyi, Kahneman)
+- [ ] Separazione architetturale Admin / Client (The Lab vs The Studio)

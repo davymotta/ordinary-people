@@ -689,6 +689,75 @@ export const appRouter = router({
         );
         return result;
       }),
+
+    // Launch: crea campagna on-the-fly + avvia test in background, ritorna testId subito
+    launch: protectedProcedure
+      .input(z.object({
+        simulationName: z.string(),
+        campaignBrief: z.string().optional(),
+        panelSize: z.number().min(1).max(500).default(10),
+        culturalCluster: z.string().optional(),
+        generation: z.string().optional(),
+        gender: z.string().optional(),
+        politicalOrientation: z.string().optional(),
+        urbanization: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // 1. Crea una campagna temporanea con i dati del brief
+        const campaignId = await db.createCampaign({
+          name: input.simulationName,
+          copyText: input.campaignBrief ?? null,
+          mediaUrls: [],
+          mediaType: "none",
+          topics: ["general"],
+          tone: "informational",
+          format: "post",
+          channel: "social",
+          emotionalCharge: 0.5,
+          statusSignal: 0.3,
+          priceSignal: 0.5,
+          noveltySignal: 0.5,
+          tribalIdentitySignal: 0.3,
+        });
+        if (!campaignId) throw new Error("Failed to create campaign");
+
+        // 2. Carica agenti disponibili e filtra per i criteri selezionati
+        const allAgents = await agentsDb.getAllAgents();
+
+        // Filtra agenti esistenti per generazione/cluster se specificati
+        let targetAgents = allAgents;
+        if (input.generation) {
+          const genMap: Record<string, string> = {
+            silent: "Silent", boomer: "Boomer", genx: "GenX",
+            millennial: "Millennial", genz: "GenZ",
+          };
+          const genValue = genMap[input.generation.toLowerCase()] ?? input.generation;
+          targetAgents = targetAgents.filter(a => a.generation === genValue);
+        }
+        // cluster culturale: campo non presente direttamente su agents, skip filtro per ora
+
+        // Usa tutti gli agenti disponibili (max panelSize)
+        const finalAgents = targetAgents.slice(0, input.panelSize);
+        const agentIds = finalAgents.length > 0 ? finalAgents.map(a => a.id) : undefined;
+
+        // 3. Crea il record del test con status pending
+        const testId = await agentsDb.createCampaignTest({
+          campaignId,
+          name: input.simulationName,
+          status: "pending",
+          agentIds: agentIds ?? null,
+          totalAgents: agentIds ? agentIds.length : allAgents.length,
+          completedAgents: 0,
+          startedAt: new Date(),
+        });
+
+        // 4. Avvia il test in background (non await)
+        runCampaignTest(campaignId, input.simulationName, agentIds).catch(err => {
+          console.error(`[Launch] Background test ${testId} failed:`, err);
+        });
+
+        return { campaignTestId: testId, campaignId };
+      }),
   }),
 
   // --- Dashboard Stats ---

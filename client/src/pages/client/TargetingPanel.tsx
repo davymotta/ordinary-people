@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { ClientLayout } from "@/components/ClientLayout";
@@ -143,9 +144,27 @@ export default function TargetingPanel() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const launchMutation = trpc.campaignTesting.launch.useMutation({
+    onSuccess: (data) => {
+      navigate(`/app/simulate/${data.campaignTestId}`);
+    },
+    onError: (err) => {
+      toast.error(`Errore lancio: ${err.message}`);
+    },
+  });
+
   const handleLaunch = () => {
-    // TODO: creare simulazione e navigare a /app/simulate/:id
-    navigate("/app/simulations");
+    if (!campaignName.trim()) return;
+    launchMutation.mutate({
+      simulationName: campaignName.trim(),
+      campaignBrief: campaignBrief.trim() || undefined,
+      panelSize: filters.panelSize,
+      culturalCluster: filters.culturalCluster || undefined,
+      generation: filters.generation || undefined,
+      gender: filters.gender || undefined,
+      politicalOrientation: filters.politicalOrientation || undefined,
+      urbanization: filters.urbanization || undefined,
+    });
   };
 
   const archetypeData = batchStats?.archetype_distribution

@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Users,
+  Upload,
   FlaskConical,
   FileText,
   Settings,
@@ -27,6 +27,11 @@ const navItems: NavItem[] = [
     icon: <LayoutDashboard className="w-4 h-4" />,
   },
   {
+    label: "Carica Campagna",
+    href: "/app/ingest",
+    icon: <Upload className="w-4 h-4" />,
+  },
+  {
     label: "Nuovo Test",
     href: "/app/simulate/new",
     icon: <Sparkles className="w-4 h-4" />,
@@ -36,16 +41,6 @@ const navItems: NavItem[] = [
     label: "Le mie Simulazioni",
     href: "/app/simulations",
     icon: <FlaskConical className="w-4 h-4" />,
-  },
-  {
-    label: "Report",
-    href: "/app/reports",
-    icon: <FileText className="w-4 h-4" />,
-  },
-  {
-    label: "Il mio Panel",
-    href: "/app/panel",
-    icon: <Users className="w-4 h-4" />,
   },
 ];
 
