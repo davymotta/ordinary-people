@@ -292,7 +292,7 @@ export function simulateReaction(
   // Positive when status signal matches persona's status orientation
   // But: if persona's income is much lower than implied price, aspiration becomes rejection
   const comfortMid = persona.comfortablePriceMid ?? 50;
-  const priceRatio = campaign.pricePoint / Math.max(comfortMid, 1);
+  const priceRatio = (campaign.pricePoint ?? 50) / Math.max(comfortMid, 1);
   let statusAlignment = effectiveStatus * psy.statusOrientation;
   // Veblen inversion: for high-status personas, high price IS the product
   if (psy.statusOrientation > 0.7 && priceRatio > 1.0 && priceRatio < 3.0) {
@@ -348,7 +348,7 @@ export function simulateReaction(
 
   // 2c. Price Acceptability (Kahneman: loss aversion; Thaler: mental accounting)
   const comfortRange = persona.comfortablePriceRange ?? 30;
-  const priceDiff = campaign.pricePoint - comfortMid;
+  const priceDiff = (campaign.pricePoint ?? 50) - comfortMid;
   let priceAcceptability: number;
   if (priceDiff <= 0) {
     // Below comfort: slight positive (bargain)
@@ -442,9 +442,8 @@ export function runSimulation(
   const results: SimulationResult[] = [];
 
   for (const campaign of campaigns) {
-    // Use campaign-specific regime state if available, otherwise use global
-    const campaignRegimeState = (campaign.regimeState as RegimeState) ?? regimeState;
-    const campaignMods = blendRegimeModifiers(campaignRegimeState, regimes);
+    // Use global regime state for all campaigns
+    const campaignMods = mods;
 
     for (const persona of personas) {
       const breakdown = simulateReaction(persona, campaign, campaignMods, weights);

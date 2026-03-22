@@ -4,6 +4,10 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import * as agentsDb from "./agents-db";
+import { PROTOTYPE_AGENTS, getInitialState } from "./agents-seed";
+import { processWorldEvent } from "./world-engine";
+import { runCampaignTest, processAgentCampaignReaction } from "./campaign-engine";
 import {
   runSimulation,
   computeWeightedMarketInterest,
@@ -562,6 +566,108 @@ export const appRouter = router({
           await db.updateCalibrationRun(calId!, { status: "failed" });
           throw error;
         }
+      }),
+  }),
+
+  // ─── Agents (Ordinary People) ──────────────────────────────────
+  agents: router({
+    list: publicProcedure.query(async () => {
+      return agentsDb.getAllAgents();
+    }),
+    get: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+      return agentsDb.getAgentById(input.id);
+    }),
+    getState: publicProcedure.input(z.object({ agentId: z.number() })).query(async ({ input }) => {
+      return agentsDb.getAgentState(input.agentId);
+    }),
+    getMemories: publicProcedure.input(z.object({ agentId: z.number(), limit: z.number().optional() })).query(async ({ input }) => {
+      return agentsDb.getAgentMemories(input.agentId, input.limit ?? 20);
+    }),
+    allStates: publicProcedure.query(async () => {
+      return agentsDb.getAllAgentStates();
+    }),
+    seed: protectedProcedure.mutation(async () => {
+      let created = 0;
+      let updated = 0;
+      for (const agentData of PROTOTYPE_AGENTS) {
+        const existing = await agentsDb.getAgentBySlug(agentData.slug);
+        const agentId = await agentsDb.upsertAgent(agentData);
+        if (existing) { updated++; } else { created++; }
+        const initialState = getInitialState(agentId, agentData.slug);
+        await agentsDb.upsertAgentState(agentId, initialState);
+      }
+      return { success: true, created, updated };
+    }),
+  }),
+
+  // ─── World Events ─────────────────────────────────────────────────
+  worldEvents: router({
+    list: publicProcedure.query(async () => {
+      return agentsDb.getAllWorldEvents();
+    }),
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        description: z.string(),
+        eventType: z.enum(['macro_economic','personal_life','social','media','cultural','natural']),
+        intensity: z.number().min(0).max(1).default(0.5),
+        scope: z.enum(['global','national','regional','personal','segment']).default('national'),
+        targetAgentIds: z.array(z.number()).optional(),
+        mediaUrls: z.array(z.string()).optional(),
+        mediaType: z.enum(['none','image','video','mixed']).optional(),
+        economicImpact: z.number().min(-1).max(1).default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const eventId = await agentsDb.createWorldEvent({
+          title: input.title,
+          description: input.description,
+          eventType: input.eventType,
+          intensity: input.intensity,
+          scope: input.scope,
+          targetAgentIds: input.targetAgentIds ?? null,
+          targetSegment: null,
+          mediaUrls: input.mediaUrls ?? null,
+          mediaType: input.mediaType ?? 'none',
+          economicImpact: input.economicImpact,
+          occurredAt: new Date(),
+        });
+        return { id: eventId };
+      }),
+    process: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .mutation(async ({ input }) => {
+        const results = await processWorldEvent(input.eventId);
+        return { success: true, processed: results.length, results };
+      }),
+  }),
+
+  // ─── Campaign Testing (Ordinary People) ──────────────────────────
+  campaignTesting: router({
+    list: publicProcedure.query(async () => {
+      return agentsDb.getAllCampaignTests();
+    }),
+    get: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+      return agentsDb.getCampaignTestById(input.id);
+    }),
+    getReactions: publicProcedure.input(z.object({ campaignTestId: z.number() })).query(async ({ input }) => {
+      return agentsDb.getCampaignReactions(input.campaignTestId);
+    }),
+    getReport: publicProcedure.input(z.object({ campaignTestId: z.number() })).query(async ({ input }) => {
+      return agentsDb.getCampaignReport(input.campaignTestId);
+    }),
+    run: protectedProcedure
+      .input(z.object({
+        campaignId: z.number(),
+        testName: z.string().optional(),
+        agentIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await runCampaignTest(
+          input.campaignId,
+          input.testName,
+          input.agentIds
+        );
+        return result;
       }),
   }),
 

@@ -31,6 +31,10 @@ import {
   BarChart3,
   Target,
   Settings2,
+  Brain,
+  Globe,
+  FlaskConical,
+  Layers,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -38,13 +42,18 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Users, label: "Personas", path: "/personas" },
-  { icon: Megaphone, label: "Campaigns", path: "/campaigns" },
-  { icon: Play, label: "Simulation", path: "/simulation" },
-  { icon: BarChart3, label: "Results", path: "/results" },
-  { icon: Target, label: "Ground Truth", path: "/ground-truth" },
-  { icon: Settings2, label: "Calibration", path: "/calibration" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/", group: "main" },
+  // Ordinary People — Agenti Vivi
+  { icon: Brain, label: "Agenti", path: "/agents", group: "agents" },
+  { icon: Globe, label: "World Events", path: "/world", group: "agents" },
+  { icon: FlaskConical, label: "Campaign Testing", path: "/campaign-testing", group: "agents" },
+  // Legacy — Simulation Engine
+  { icon: Users, label: "Personas", path: "/personas", group: "legacy" },
+  { icon: Megaphone, label: "Campaigns", path: "/campaigns", group: "legacy" },
+  { icon: Play, label: "Simulation", path: "/simulation", group: "legacy" },
+  { icon: BarChart3, label: "Results", path: "/results", group: "legacy" },
+  { icon: Target, label: "Ground Truth", path: "/ground-truth", group: "legacy" },
+  { icon: Settings2, label: "Calibration", path: "/calibration", group: "legacy" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -190,19 +199,43 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map((item) => {
+              {/* Main */}
+              {menuItems.filter(i => i.group === "main").map((item) => {
                 const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className="h-9 transition-all font-normal text-[13px]"
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
+                    <SidebarMenuButton isActive={isActive} onClick={() => setLocation(item.path)} tooltip={item.label} className="h-9 transition-all font-normal text-[13px]">
+                      <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+              {/* Ordinary People */}
+              <div className="px-2 pt-3 pb-1 group-data-[collapsible=icon]:hidden">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Ordinary People</span>
+              </div>
+              {menuItems.filter(i => i.group === "agents").map((item) => {
+                const isActive = location === item.path;
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton isActive={isActive} onClick={() => setLocation(item.path)} tooltip={item.label} className="h-9 transition-all font-normal text-[13px]">
+                      <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+              {/* Legacy Engine */}
+              <div className="px-2 pt-3 pb-1 group-data-[collapsible=icon]:hidden">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Simulation Engine</span>
+              </div>
+              {menuItems.filter(i => i.group === "legacy").map((item) => {
+                const isActive = location === item.path;
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton isActive={isActive} onClick={() => setLocation(item.path)} tooltip={item.label} className="h-9 transition-all font-normal text-[13px]">
+                      <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

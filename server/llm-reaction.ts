@@ -39,7 +39,7 @@ export interface CampaignForLLM {
   tone: string;
   format: string;
   channel: string;
-  pricePoint: number;
+  pricePoint: number | null;
   emotionalCharge: number;
   statusSignal: number;
   priceSignal: number;

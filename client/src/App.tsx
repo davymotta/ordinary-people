@@ -15,6 +15,9 @@ import Results from "./pages/Results";
 import SimulationDetail from "./pages/SimulationDetail";
 import GroundTruth from "./pages/GroundTruth";
 import Calibration from "./pages/Calibration";
+import Agents from "./pages/Agents";
+import WorldEvents from "./pages/WorldEvents";
+import CampaignTesting from "./pages/CampaignTesting";
 
 function Router() {
   return (
@@ -30,6 +33,9 @@ function Router() {
         <Route path="/results/:id" component={SimulationDetail} />
         <Route path="/ground-truth" component={GroundTruth} />
         <Route path="/calibration" component={Calibration} />
+        <Route path="/agents" component={Agents} />
+        <Route path="/world" component={WorldEvents} />
+        <Route path="/campaign-testing" component={CampaignTesting} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

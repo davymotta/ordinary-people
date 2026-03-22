@@ -1,63 +1,64 @@
 # Ordinary People — TODO
 
-## Database & Backend
-- [x] Database schema (personas, campaigns, regimes, simulations, ground_truth, calibration_runs)
-- [x] Aggiornare schema DB: regimi continui (vettore stato), 11 variabili psychographiche, 20 personas
-- [x] Seed 20 personas italiane con dati ISTAT + 11 psychographics + bibliografia
-- [x] Seed 6 regimi con modifier matrix bibliograficamente fondata
-- [x] tRPC routers: personas CRUD, campaigns CRUD, simulations, ground_truth, calibration
-- [x] Simulation engine v0.1: formula S1/S2 a due fasi (gut_reaction → modulazione cognitiva)
-- [x] Regimi continui con isteresi asimmetrica (vettore normalizzato, non enum discreto)
-- [x] Matrice di trasformazione canale × segnale (sostituisce channel_mismatch binario)
-- [x] Calibration engine (Karpathy loop, Spearman ρ, cross-validation obbligatoria)
+## Prototipo v1.0 — Umani Sintetici
 
-## Frontend — Design System 53X
-- [x] Global theming: Inter typeface, accent lime #CCFF00, off-white #FAFAFA, bordi sottili
-- [x] Dashboard overview: summary cards, calibration progress chart, quick actions
-- [x] Personas management page: lista, dettaglio con psychographics radar, bibliografia insights
-- [x] Campaign encoder form: topics, tone, format, signals, regime state vector
-- [x] Results view: heatmap reaction matrix, segment ranking, weighted market interest, risk flags
-- [x] Score breakdown dettagliato per persona (S1 gut_reaction + S2 modulazione)
-- [x] Ground truth input: form per inserire performance data reali
-- [x] Calibration view: run history, Spearman ρ progress, weight deltas
+### Strato 1: Schema DB
+- [x] Tabella `agents` — identità completa, profilo psicologico, system prompt
+- [x] Tabella `agent_states` — stato mutabile (mood, stress, maslow_level, social_trust)
+- [x] Tabella `agent_memories` — memoria episodica e semantica con timestamp
+- [x] Tabella `agent_contacts` — rete sociale tra agenti
+- [x] Tabella `world_events` — eventi macro/personali/media con tipo, intensità, media_urls
+- [x] Tabella `event_exposures` — quale agente è stato esposto a quale evento + impatto
+- [x] Tabella `campaign_tests` — sessioni di test campagna
+- [x] Tabella `campaign_reactions` — reazione strutturata di ogni agente (score + testo)
+- [x] Tabella `campaign_reports` — report aggregato finale da agente reporter
 
-## Testing
-- [x] Vitest: simulation engine v0.1 unit tests (S1/S2, regimi continui, matrice canale)
-- [x] Vitest: spearmanRho, blendRegimeModifiers, computeWeightedMarketInterest
-- [x] Vitest: auth.logout test (template)
+### Strato 2: Seed 10 Agenti
+- [x] Maria Esposito (52, Avellino, casalinga, Boomer)
+- [x] Luca Ferretti (34, Milano, developer, Millennial)
+- [x] Rosa Conti (67, Palermo, pensionata, Boomer)
+- [x] Marco Bianchi (28, Roma, rider, Gen Z)
+- [x] Giulia Moretti (41, Bologna, insegnante, Gen X)
+- [x] Antonio Russo (55, Napoli, artigiano, Gen X)
+- [x] Sofia Ricci (23, Torino, studentessa, Gen Z)
+- [x] Franco Mancini (48, Bari, commerciante, Gen X)
+- [x] Elena Gatti (38, Firenze, architetta, Millennial)
+- [x] Vincenzo Serra (61, Cagliari, ex-operaio, Boomer)
+- [x] System prompt narrativo per ogni agente (storia, valori, paure, abitudini)
+- [x] Profilo psicologico (loss_aversion, maslow_level, habitus, mental_accounting...)
 
-## Correzioni strutturali dalla bibliografia (v0.1)
-- [x] Formula a due fasi: gut_reaction (emotional_charge + identity_match + status_signal) → modulazione cognitiva (topic_match + format_match + price_gap) solo in zona ambigua
-- [x] Regimi continui: vettore {stable, growth, crisis, trauma, transition, stagnation} con transizioni asimmetriche
-- [x] Matrice canale × segnale: TikTok amplifica emozione/novità, Facebook tribalità, LinkedIn status/professionale
-- [x] 5 nuove variabili psychographiche: conformism_index, authority_trust, delayed_gratification, cultural_capital, locus_of_control
-- [x] 5 nuove personas: Immigrato prima generazione, Influencer/creator, Boomer benestante, NEET, Piccolo imprenditore Sud
-- [x] media_diet, reference_group, generational_cohort per ogni persona
+### Strato 3: World Engine
+- [x] Procedura `worldEvents.create` — crea evento con tipo, intensità, target, media_urls
+- [x] Procedura `worldEvents.process` — espone agenti all'evento, aggiorna stato e memoria
+- [x] LLM: ogni agente "vive" l'evento e aggiorna il suo stato interno
+- [x] Memoria episodica: salva l'evento nella memoria dell'agente con impatto emotivo
+- [x] Maslow regression: stress finanziario alto → regressione livello bisogno
 
-## Backlog (Phase B+) — NON implementare in v0.1
-- [ ] Grafo di influenza 20×20 tra personas
-- [ ] Drift identitario post-simulazione
-- [ ] Dimensioni separate attraction/repulsion
-- [ ] Ensemble bayesiano sofisticato
-- [ ] Filtro di decodifica culturale (integrato in topic_match per ora)
+### Strato 4: Campaign Testing Engine
+- [x] Procedura `campaignTesting.run` — espone tutti gli agenti alla campagna
+- [x] LLM multimodale: agente vede immagini (image_url) + legge testo
+- [x] Reazione con contesto: stato corrente + memoria episodica + profilo psicologico
+- [x] Output strutturato: overallScore, buyProbability, shareProbability, attractionScore, repulsionScore, adequacyScore
+- [x] Output qualitativo: gutReaction, reflection, quote, attractions, repulsions, tensions, motivations
+- [ ] Influenza sociale: agente vede reazioni dei contatti prima di finalizzare (v2)
 
-## v0.2 Hybrid — Formula per il vincolo, LLM per l'incarnazione
-- [x] System prompt ricco per ogni persona (20 prompt narrativi con storia, abitudini, valori, paure)
-- [x] LLM reaction engine: persona prompt + campagna + regime + benchmark score → output doppio (testo + JSON)
-- [x] Prompt template strutturato: gut_reaction testuale, reflection testuale, score JSON, quote in prima persona
-- [x] Confronto triplo: formula score vs LLM score vs ground truth
-- [x] UI: quote in prima persona per ogni persona nella results view
-- [x] UI: pannello narrativo con motivazioni, tensioni, ambivalenze
-- [x] UI: tab confronto formula vs LLM nella SimulationDetail
-- [x] Vitest: LLM reaction engine unit tests (9 test, mock invokeLLM)
+### Strato 5: Report Aggregator
+- [x] Agente reporter LLM che analizza tutti i feedback individuali
+- [x] Report quantitativo: distribuzione score, buy_prob media, segmentazione per generazione e geo
+- [x] Report qualitativo: executive summary, pattern comuni, divergenze chiave, segment insights
+- [x] Raccomandazioni: cosa funziona, cosa non funziona, per quale segmento
+- [x] Risk flags: segnali di rischio per segmenti specifici
 
-## v0.2b Persona Generator (nuova direttiva)
+### Frontend
+- [x] Agent Cards: avatar, nome, stato corrente (mood, stress, Maslow), preoccupazioni
+- [x] Agent Detail: tab stato / profilo / memorie con timeline
+- [x] World Events: crea eventi con media, processa, vedi reazioni in tempo reale
+- [x] Campaign Testing: seleziona campagna, lancia test, vedi agenti reagire
+- [x] Report View: KPI, distribuzione score, attrazioni/repulsioni, report LLM narrativo
+- [x] Navigation sidebar con sezioni "Ordinary People" e "Simulation Engine"
+- [x] Seed button per inizializzare 10 agenti con un click
 
-- [ ] Persona Generator: 3 livelli (struttura reale + regime + coloritura archetipica)
-- [ ] 12-15 assi di variazione (strutturali, culturali, economico-psicologici, mediali, simbolici)
-- [ ] 8 coloriture archetipiche (assertivo, relazionale, prudente, edonico, controllante, visionario, difensivo, imitativo)
-- [ ] Sottovarianti: ogni archetipo genera 3-5 varianti plausibili via assi + coloritura
-- [x] System prompts narrativi per ogni persona (storia minima, household, rete, pressione sociale)
-- [ ] UI Persona Generator: form per generare sottovarianti da archetipi base
-- [x] UI voci personas: quote in prima persona accanto agli score
-- [x] Fix: pagina Calibration (errore Vite import risolto con restart server)
+### Testing
+- [ ] Vitest: World Engine (event exposure + memory update)
+- [ ] Vitest: Campaign reaction engine (multimodale)
+- [ ] Vitest: Report aggregator
