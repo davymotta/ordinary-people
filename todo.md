@@ -199,3 +199,27 @@
 - [ ] 2.5 — Filtro di decodifica per cultural_capital (Bourdieu)
 - [ ] 2.8 — Regimi continui con isteresi (Polanyi, Kahneman)
 - [ ] Separazione architetturale Admin / Client (The Lab vs The Studio)
+
+### Sprint 3 — "Brand Agent Onboarding" (settimane 5-6) ✔ COMPLETATO
+*Obiettivo: il brand manager parla con un'AI che capisce il suo brand in 60 secondi.*
+
+- [x] S3.1 — Schema DB: tabella `brandAgents` con brand_identity, market_presence, digital_presence, target_audience, competitors, default_agent_pool, campaign_history, learnings
+- [x] S3.2 — server/onboarding/brand-researcher.ts: dato un nome brand, fa web search + fetch homepage + analisi social → raw data strutturati
+- [x] S3.3 — server/onboarding/brand-profiler.ts: dato raw data, LLM call → Brand Agent JSON strutturato (schema completo come da spec)
+- [x] S3.4 — server/onboarding/pool-matcher.ts: dato target_audience del brand, query al DB agenti → composizione pool con percentuali
+- [x] S3.5 — tRPC router onboarding: researchBrand, buildProfile, matchPool, saveBrandAgent, getBrandAgent, updateBrandAgent
+- [x] S3.6 — UI /app/onboarding: chat conversazionale a 3 momenti (identità → ricerca live → validazione profilo)
+- [x] S3.7 — Brand Profile card editabile: ogni parametro cliccabile, modifica aggiorna pool in real-time
+- [ ] S3.8 — Integrazione con TargetingPanel: se esiste un Brand Agent, pre-carica il pool di default (Sprint 4)
+- [ ] S3.9 — Integrazione con SimulateReport: Brand Agent inietta contesto nel reporter LLM (Sprint 4)
+- [ ] S3.10 — Vitest: brand-researcher mock, brand-profiler output schema validation, pool-matcher query (Sprint 4)
+
+### Sprint 3 — Auto-Calibration Loop (aggiornato con input consulente) ✔ COMPLETATO
+*Obiettivo: alla fine dell'onboarding il cliente vede ρ di Spearman calcolato sui propri contenuti reali.*
+
+- [x] S3.11 — server/onboarding/auto-calibration.ts: content harvesting (YouTube/Twitter pubblici), normalizzazione percentile, simulazione su ogni post, Spearman ρ, tuning pesi per brand
+- [x] S3.12 — Schema DB: tabella `calibrationResults` con harvested_content, real_engagement_stats, calibration_results (pre/post), per_dimension, outliers
+- [x] S3.13 — tRPC router `brandCalibration`: runAutoCalibration, getCalibrationResult, listCalibrationHistory
+- [x] S3.14 — UI Calibration Report integrata in /app/onboarding: ρ prominente, per-dimension breakdown, outlier analysis
+- [x] S3.15 — Integrazione nella pagina /app/onboarding: pulsante Calibra + CalibrationReport dopo Brand Profile
+- [x] S3.16 — Vitest 25/25: normalizzazione percentile, Spearman ρ, tuneWeights, computeEngagementScore, computeEngagementStats

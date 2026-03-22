@@ -9,6 +9,7 @@ import {
   LogOut,
   ChevronRight,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
@@ -25,6 +26,12 @@ const navItems: NavItem[] = [
     label: "Dashboard",
     href: "/app",
     icon: <LayoutDashboard className="w-4 h-4" />,
+  },
+  {
+    label: "Brand Agent",
+    href: "/app/onboarding",
+    icon: <Building2 className="w-4 h-4" />,
+    badge: "NEW",
   },
   {
     label: "Carica Campagna",

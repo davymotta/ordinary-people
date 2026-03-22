@@ -44,6 +44,12 @@ import {
 import { ingestCampaign, ingestTextCampaign, ingestImageCampaign } from "./ingestion/digest-builder";
 import { buildPerceptualPrompt, buildPerceptualFrames } from "./ingestion/perceptual-filter";
 import { detectContentType, estimateIngestionCost } from "./ingestion/detect";
+import { researchBrand } from "./onboarding/brand-researcher";
+import { buildBrandProfile, formatProfilePresentation } from "./onboarding/brand-profiler";
+import { matchPool, formatPoolSummary } from "./onboarding/pool-matcher";
+import { brandAgents, calibrationResults } from "../drizzle/schema";
+import { eq as eqDrizzle } from "drizzle-orm";
+import { runAutoCalibration } from "./onboarding/auto-calibration";
 export const appRouter = router({
   system: systemRouter,
 
@@ -1059,6 +1065,224 @@ export const appRouter = router({
       }))
       .query(({ input }) => {
         return buildPerceptualPrompt(input.agent, input.digest);
+      }),
+  }),
+  onboarding: router({
+
+    // Ricerca autonoma del brand: fetch homepage + social
+    researchBrand: publicProcedure
+      .input(z.object({
+        brandName: z.string().min(2).max(200),
+        websiteUrl: z.string().optional(),
+        socialHandles: z.object({
+          instagram: z.string().optional(),
+          twitter: z.string().optional(),
+          tiktok: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const rawData = await researchBrand(
+          input.brandName,
+          input.websiteUrl,
+          input.socialHandles
+        );
+        return rawData;
+      }),
+
+    // Genera il Brand Profile strutturato dai raw data
+    buildProfile: publicProcedure
+      .input(z.object({ rawData: z.any() }))
+      .mutation(async ({ input }) => {
+        const profile = await buildBrandProfile(input.rawData);
+        const presentation = formatProfilePresentation(profile);
+        return { profile, presentation };
+      }),
+
+    // Trova gli agenti nel DB che corrispondono al target audience
+    matchPool: publicProcedure
+      .input(z.object({
+        targetAudience: z.any(),
+        defaultAgentPool: z.any(),
+        maxAgents: z.number().default(100),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await matchPool(
+          input.targetAudience,
+          input.defaultAgentPool,
+          input.maxAgents
+        );
+        const summary = formatPoolSummary(result);
+        return { ...result, summary };
+      }),
+
+    // Salva il Brand Agent nel DB
+    saveBrandAgent: publicProcedure
+      .input(z.object({
+        brandName: z.string(),
+        sector: z.string().optional(),
+        positioning: z.enum(["luxury", "premium", "mid-market", "mass-market", "value"]).optional(),
+        brandIdentity: z.any().optional(),
+        marketPresence: z.any().optional(),
+        digitalPresence: z.any().optional(),
+        targetAudience: z.any().optional(),
+        competitors: z.any().optional(),
+        defaultAgentPool: z.any().optional(),
+        researchRaw: z.any().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) throw new Error("DB non disponibile");
+        const [result] = await dbConn.insert(brandAgents).values({
+          brandName: input.brandName,
+          sector: input.sector ?? undefined,
+          positioning: input.positioning ?? undefined,
+          brandIdentity: input.brandIdentity ?? null,
+          marketPresence: input.marketPresence ?? null,
+          digitalPresence: input.digitalPresence ?? null,
+          targetAudience: input.targetAudience ?? null,
+          competitors: input.competitors ?? null,
+          defaultAgentPool: input.defaultAgentPool ?? null,
+          researchRaw: input.researchRaw ?? null,
+          onboardingStatus: "complete",
+          onboardingCompletedAt: new Date(),
+        });
+        const insertId = (result as any).insertId;
+        const [saved] = await dbConn.select().from(brandAgents).where(eqDrizzle(brandAgents.id, insertId));
+        return saved;
+      }),
+
+    // Lista tutti i Brand Agent
+    listBrandAgents: publicProcedure
+      .query(async () => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return [];
+        return dbConn.select().from(brandAgents).orderBy(brandAgents.createdAt);
+      }),
+
+    // Recupera un Brand Agent per ID
+    getBrandAgent: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return null;
+        const [agent] = await dbConn.select().from(brandAgents).where(eqDrizzle(brandAgents.id, input.id));
+        return agent ?? null;
+      }),
+
+    // Aggiorna un Brand Agent esistente
+    updateBrandAgent: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        brandIdentity: z.any().optional(),
+        targetAudience: z.any().optional(),
+        defaultAgentPool: z.any().optional(),
+        competitors: z.any().optional(),
+        learnings: z.any().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) throw new Error("DB non disponibile");
+        const { id, ...updates } = input;
+        await dbConn.update(brandAgents).set(updates).where(eqDrizzle(brandAgents.id, id));
+        const [updated] = await dbConn.select().from(brandAgents).where(eqDrizzle(brandAgents.id, id));
+        return updated;
+      }),
+  }),
+
+  // ─── Brand Calibration (Auto-Calibration Loop per Brand Agent) ───────────────
+  brandCalibration: router({
+    // Avvia una sessione di calibrazione per un Brand Agent
+    // Esegue l'intero Auto-Calibration Loop in background e persiste il risultato
+    run: publicProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) throw new Error("DB non disponibile");
+
+        // Recupera il Brand Agent
+        const [brandAgent] = await dbConn
+          .select()
+          .from(brandAgents)
+          .where(eqDrizzle(brandAgents.id, input.brandAgentId));
+        if (!brandAgent) throw new Error("Brand Agent non trovato");
+
+        const brandName = (brandAgent.brandIdentity as any)?.name ?? "Brand";
+
+        // Crea un record pending
+        const [inserted] = await dbConn.insert(calibrationResults).values({
+          brandAgentId: input.brandAgentId,
+          status: "harvesting",
+        });
+        const calibrationId = (inserted as any).insertId ?? 0;
+
+        // Esegui la calibrazione in background (non blocca la risposta)
+        setImmediate(async () => {
+          try {
+            // Recupera un campione di agenti dal DB per la simulazione
+            const allAgents = await agentsDb.getAllAgents().catch(() => []);
+
+            const report = await runAutoCalibration(
+              input.brandAgentId,
+              brandName,
+              brandAgent,
+              allAgents
+            );
+
+            // Persisti il risultato
+            await dbConn.update(calibrationResults)
+              .set({
+                harvestedContent: report.harvestedContent as any,
+                realEngagementStats: report.realEngagementStats as any,
+                simulationResults: report.simulationResults as any,
+                calibrationResults: report.calibrationStats as any,
+                perDimension: report.perDimension as any,
+                outliers: report.outliers as any,
+                weightsBefore: report.weightsBefore as any,
+                weightsAfter: report.weightsAfter as any,
+                status: "complete",
+                completedAt: new Date(),
+              })
+              .where(eqDrizzle(calibrationResults.id, calibrationId));
+          } catch (err) {
+            await dbConn.update(calibrationResults)
+              .set({
+                status: "failed",
+                errorMessage: String(err).slice(0, 500),
+              })
+              .where(eqDrizzle(calibrationResults.id, calibrationId))
+              .catch(() => {});
+          }
+        });
+
+        return { calibrationId, status: "started" };
+      }),
+
+    // Recupera lo stato/risultato di una calibrazione
+    get: publicProcedure
+      .input(z.object({ calibrationId: z.number() }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return null;
+        const [result] = await dbConn
+          .select()
+          .from(calibrationResults)
+          .where(eqDrizzle(calibrationResults.id, input.calibrationId));
+        return result ?? null;
+      }),
+
+    // Lista le calibrazioni di un Brand Agent
+    listByBrandAgent: publicProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return [];
+        return dbConn
+          .select()
+          .from(calibrationResults)
+          .where(eqDrizzle(calibrationResults.brandAgentId, input.brandAgentId))
+          .orderBy(calibrationResults.createdAt);
       }),
   }),
 });

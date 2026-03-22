@@ -666,3 +666,91 @@ export const archetypeProfiles = mysqlTable("archetypeProfiles", {
 });
 export type ArchetypeProfile = typeof archetypeProfiles.$inferSelect;
 export type InsertArchetypeProfile = typeof archetypeProfiles.$inferInsert;
+
+// ─── Brand Agents ─────────────────────────────────────────────────────
+// Profilo persistente del brand creato durante l'onboarding conversazionale.
+// Ogni brand manager ha un Brand Agent che pre-configura simulazioni e
+// contestualizza i report. Cresce nel tempo con ogni campagna testata.
+
+export const brandAgents = mysqlTable("brandAgents", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: varchar("userId", { length: 100 }), // FK a utente (opzionale)
+  // Core identity
+  brandName: varchar("brandName", { length: 200 }).notNull(),
+  sector: varchar("sector", { length: 100 }),
+  positioning: mysqlEnum("positioning", [
+    "luxury", "premium", "mid-market", "mass-market", "value",
+  ]),
+  // Brand identity (JSON ricco)
+  brandIdentity: json("brandIdentity"), // { tone_of_voice, brand_values, aesthetic, price_range }
+  // Market presence
+  marketPresence: json("marketPresence"), // { countries, regions_strong, regions_moderate, store_count, channels }
+  // Digital presence (scraped)
+  digitalPresence: json("digitalPresence"), // { website, instagram, facebook, tiktok, ... }
+  // Target audience
+  targetAudience: json("targetAudience"), // { primary: { gender, age_range, generation, ... }, secondary: {...} }
+  // Competitors
+  competitors: json("competitors"), // [{ name, positioning }]
+  // Default agent pool configuration
+  defaultAgentPool: json("defaultAgentPool"), // { total_agents, composition: { by_cluster, by_generation, ... } }
+  // Research data (raw, from brand-researcher)
+  researchRaw: json("researchRaw"), // dati grezzi raccolti durante la ricerca
+  // Learning history
+  campaignHistory: json("campaignHistory"), // [{ campaignId, testId, date, summary }]
+  learnings: json("learnings"), // [{ date, insight, source }]
+  // Onboarding status
+  onboardingStatus: mysqlEnum("onboardingStatus", [
+    "pending", "researching", "profiling", "validating", "complete",
+  ]).default("pending"),
+  onboardingCompletedAt: timestamp("onboardingCompletedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BrandAgent = typeof brandAgents.$inferSelect;
+export type InsertBrandAgent = typeof brandAgents.$inferInsert;
+
+// ─── Calibration Results ─────────────────────────────────────────────────────
+// Risultati dell'Auto-Calibration Loop per ogni Brand Agent.
+// Ogni riga rappresenta una sessione di calibrazione su un set di contenuti reali.
+export const calibrationResults = mysqlTable("calibrationResults", {
+  id: int("id").primaryKey().autoincrement(),
+
+  // Brand Agent associato
+  brandAgentId: int("brandAgentId").notNull(),
+
+  // Contenuti raccolti per la calibrazione (array di post/video con engagement reale)
+  harvestedContent: json("harvestedContent"), // [{ url, platform, title, realEngagement: { likes, comments, shares, views } }]
+
+  // Statistiche di engagement reale normalizzate (percentile rank 0-1)
+  realEngagementStats: json("realEngagementStats"), // { mean, std, percentiles: [p25, p50, p75, p90] }
+
+  // Risultati della simulazione su ogni contenuto (score predetto 0-1)
+  simulationResults: json("simulationResults"), // [{ contentUrl, predictedScore, agentCount }]
+
+  // Risultati della calibrazione aggregati
+  calibrationResults: json("calibrationResults"), // { spearmanRho, pValue, sampleSize, convergenceStatus }
+
+  // Breakdown per dimensione (quale dimensione del modello è più/meno accurata)
+  perDimension: json("perDimension"), // { visual: rho, messaging: rho, emotional: rho, rational: rho }
+
+  // Outlier analysis
+  outliers: json("outliers"), // [{ contentUrl, realRank, predictedRank, delta, diagnosis }]
+
+  // Pesi del modello prima e dopo il tuning
+  weightsBefore: json("weightsBefore"), // { visual: w, messaging: w, emotional: w, rational: w }
+  weightsAfter: json("weightsAfter"),   // { visual: w, messaging: w, emotional: w, rational: w }
+
+  // Stato della calibrazione
+  status: mysqlEnum("calibrationStatus", [
+    "pending", "harvesting", "simulating", "computing", "complete", "failed",
+  ]).default("pending"),
+
+  errorMessage: varchar("errorMessage", { length: 500 }),
+
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type CalibrationResult = typeof calibrationResults.$inferSelect;
+export type InsertCalibrationResult = typeof calibrationResults.$inferInsert;

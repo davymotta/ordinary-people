@@ -11,6 +11,7 @@ import TargetingPanel from "./pages/client/TargetingPanel";
 import CampaignIngestion from "./pages/client/CampaignIngestion";
 import SimulateLive from "./pages/client/SimulateLive";
 import SimulateReport from "./pages/client/SimulateReport";
+import BrandOnboarding from "./pages/client/BrandOnboarding";
 
 // ── Admin Console (/admin) ────────────────────────────────────────────────────
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -60,6 +61,9 @@ function Router() {
       </Route>
       <Route path="/app/ingest">
         <CampaignIngestion />
+      </Route>
+      <Route path="/app/onboarding">
+        <BrandOnboarding />
       </Route>
       <Route path="/app/simulate/:id/report">
         <SimulateReport />
