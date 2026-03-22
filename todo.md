@@ -184,11 +184,16 @@
 ### Sprint 4 — "È superiore" (settimane 7-8)
 *Obiettivo: motore qualitativamente superiore a qualsiasi competitor.*
 
-- [ ] 2.1 — Formula a due fasi Sistema 1 → Sistema 2 (Kahneman)
-- [ ] 2.3 — Separare attraction e repulsion come dimensioni indipendenti
-- [ ] 2.4 — Effetto Veblen: inversione price_gap per segmenti status-oriented
-- [ ] 3.1 — Grafo di influenza tra agenti (reference_group / rejection_group)
-- [ ] 3.2 — Two-pass simulation: reazione individuale → influenza → reazione finale
+- [x] 2.1 — Formula a due fasi Sistema 1 → Sistema 2 (Kahneman) — integrato in buildFallbackSystemPrompt
+- [x] 2.3 — Separare attraction e repulsion come dimensioni indipendenti
+- [x] 2.4 — Effetto Veblen: inversione price_gap per segmenti status-oriented
+- [x] 3.1 — Grafo di influenza tra agenti (reference_group / rejection_group) — social-influence.ts
+- [x] 3.2 — Two-pass simulation: reazione individuale → influenza → reazione finale — campaign-engine.ts
+- [x] Sprint 4 EXTRA: Haidt Moral Foundations in system prompt (haidtProfile JSON in agents table, 200 agenti aggiornati)
+- [x] Sprint 4 EXTRA: Life History notes in system prompt (lifeHistoryNotes in agents table)
+- [x] Sprint 4 EXTRA: Export PDF professionale server-side (pdfkit, route /api/report/:id/pdf)
+- [x] Sprint 4 EXTRA: Bourdieu capital framework in prompts (ccDesc, veblenDesc)
+- [x] Sprint 4 EXTRA: 117 test Vitest passati (inclusi 15 nuovi test Haidt + PDF)
 
 ### Sprint 5+ — "È un ecosistema"
 - [ ] 4.1 — Drift identitario post-simulazione

@@ -22,6 +22,7 @@
 
 import { invokeLLM } from "./_core/llm";
 import type { Message } from "./_core/llm";
+import { routedLLM } from "./llm-router";
 import {
   getAllAgents,
   getAgentState,
@@ -35,7 +36,15 @@ import {
   createCampaignReport,
   updateCampaignReport,
 } from "./agents-db";
-import type { Agent, AgentState, Campaign } from "../drizzle/schema";
+import type { Agent, AgentState, Campaign, CampaignReport } from "../drizzle/schema";
+import {
+  buildSocialInfluenceContexts,
+  applysocialInfluence,
+  computeSocialInfluenceStats,
+  type Pass1Reaction,
+} from "./social-influence";
+import { buildPerceptualPrompt } from "./ingestion/perceptual-filter";
+import type { CampaignDigest } from "./ingestion/schema";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -76,7 +85,8 @@ export async function runCampaignTest(
   campaignId: number,
   testName?: string,
   agentIds?: number[],
-  onProgress?: (progress: CampaignTestProgress) => void
+  onProgress?: (progress: CampaignTestProgress) => void,
+  digest?: CampaignDigest | null
 ): Promise<CampaignTestProgress> {
   const campaign = await getCampaignById(campaignId);
   if (!campaign) throw new Error(`Campaign ${campaignId} not found`);
@@ -116,7 +126,7 @@ export async function runCampaignTest(
         5
       );
 
-      const result = await processAgentCampaignReaction(agent, state, campaign, memories);
+      const result = await processAgentCampaignReaction(agent, state, campaign, memories, digest);
 
       // Save reaction to DB
       await updateCampaignReaction(reactionId, {
@@ -163,6 +173,61 @@ export async function runCampaignTest(
     onProgress?.(progress);
   }
 
+  // ─── Pass 2: Social Influence ─────────────────────────────────────────
+  // Dopo che tutti gli agenti hanno reagito individualmente (Pass 1),
+  // calcola l'influenza sociale e aggiorna i punteggi finali.
+  // Questo implementa il loop sociale: ogni agente "vede" le reazioni
+  // dei propri contatti sociali e può aggiornare la propria posizione.
+  if (reactions.length > 1) {
+    try {
+      // Costruisci i dati Pass1 per il grafo di influenza
+      const pass1Data: Pass1Reaction[] = reactions.map(r => ({
+        agentId: r.agentId,
+        agentSlug: r.agentSlug,
+        score: (r.overallScore + 1) * 5, // normalizza da [-1,1] a [0,10]
+        gutReaction: r.gutReaction,
+        attractionScore: r.attractionScore * 10,
+        repulsionScore: r.repulsionScore * 10,
+        purchaseProbability: r.buyProbability,
+      }));
+
+      // Costruisci i contesti di influenza sociale
+      const socialContexts = buildSocialInfluenceContexts(targetAgents, pass1Data);
+
+      // Applica l'influenza e aggiorna le reazioni
+      const finalScores = new Map<number, number>();
+      for (const reaction of reactions) {
+        const context = socialContexts.get(reaction.agentId);
+        if (!context || context.contactReactions.length === 0) {
+          finalScores.set(reaction.agentId, (reaction.overallScore + 1) * 5);
+          continue;
+        }
+
+        const pass1Score = (reaction.overallScore + 1) * 5;
+        const { finalScore, socialDelta, socialNarrative } = applysocialInfluence(pass1Score, context);
+        finalScores.set(reaction.agentId, finalScore);
+
+        // Aggiorna la reazione con il punteggio finale e la narrativa sociale
+        if (Math.abs(socialDelta) >= 0.3) {
+          const finalOverallScore = (finalScore / 5) - 1; // riconverti a [-1,1]
+          reaction.overallScore = Math.max(-1, Math.min(1, finalOverallScore));
+          if (socialNarrative) {
+            reaction.tensions = reaction.tensions
+              ? `${reaction.tensions}\n\n[Influenza sociale]: ${socialNarrative}`
+              : `[Influenza sociale]: ${socialNarrative}`;
+          }
+        }
+      }
+
+      // Calcola statistiche di influenza sociale (per il report)
+      const socialStats = computeSocialInfluenceStats(pass1Data, finalScores);
+      console.log(`[CampaignEngine] Social influence Pass 2: ${socialStats.totalAgentsInfluenced} agents influenced, avg delta: ${socialStats.averageDelta.toFixed(2)}`);
+    } catch (err) {
+      // Il loop sociale è opzionale — se fallisce, usa i risultati del Pass 1
+      console.warn(`[CampaignEngine] Social influence Pass 2 failed:`, err);
+    }
+  }
+
   // Mark test as complete
   await updateCampaignTest(testId, {
     status: "complete",
@@ -187,9 +252,60 @@ export async function processAgentCampaignReaction(
   agent: Agent,
   state: AgentState | null,
   campaign: Campaign,
-  memories: any[]
+  memories: any[],
+  digest?: CampaignDigest | null
 ): Promise<AgentReactionResult> {
-  const systemPrompt = agent.systemPrompt ?? buildFallbackSystemPrompt(agent);
+  // Build base system prompt
+  // IMPORTANTE: usa sempre buildFallbackSystemPrompt (che include Kahneman, Bourdieu, Veblen, Maslow, Thaler)
+  // come base psicologica ricca. Il systemPrompt del DB è un prompt narrativo basico generato dal seed
+  // e viene aggiunto come contesto aggiuntivo ("voce" dell'agente) se disponibile.
+  let systemPrompt = buildFallbackSystemPrompt(agent);
+  if (agent.systemPrompt && agent.systemPrompt.length > 50) {
+    // Aggiungi solo la parte narrativa del systemPrompt del DB (non ripetere i dati demografici)
+    // Il systemPrompt del DB contiene la "voce" dell'agente e il suo archetipo
+    systemPrompt = systemPrompt + `\n\n[Nota narrativa: ${agent.systemPrompt}]`;
+  }
+
+  // Perceptual Filter: if a digest is available, enrich the system prompt with
+  // the agent's perceptual frame — which traits of the campaign are salient for
+  // THIS specific agent, filtered through their psychological profile.
+  if (digest) {
+    try {
+      const psychProfile = agent.habitusProfile as Record<string, number> | null;
+      const agentProfile = {
+        id: String(agent.id),
+        name: `${agent.firstName} ${agent.lastName}`,
+        age: agent.age,
+        generation: agent.generation,
+        geo: agent.geo,
+        // Big Five from habitusProfile if available
+        openness: psychProfile?.openness,
+        conscientiousness: psychProfile?.conscientiousness,
+        extraversion: psychProfile?.extraversion,
+        agreeableness: psychProfile?.agreeableness,
+        neuroticism: psychProfile?.neuroticism,
+        // Bourdieu
+        bourdieu_class: psychProfile?.bourdieu_class ? String(psychProfile.bourdieu_class) : undefined,
+        // Psychographics
+        status_orientation: agent.statusOrientation,
+        novelty_seeking: agent.noveltySeeking,
+        price_sensitivity: agent.priceSensitivity,
+        risk_aversion: agent.riskAversion,
+        emotional_susceptibility: agent.emotionalSusceptibility,
+        advertising_cynicism: psychProfile?.advertising_cynicism,
+        attention_span: psychProfile?.attention_span,
+        media_diet: agent.mediaDiet as Record<string, number> | undefined,
+      };
+      const perceptualFrame = buildPerceptualPrompt(agentProfile, digest);
+      if (perceptualFrame.perceptual_prompt) {
+        systemPrompt = systemPrompt + "\n\n" + perceptualFrame.perceptual_prompt;
+      }
+    } catch (err) {
+      // Perceptual filter is optional — if it fails, proceed without it
+      console.warn(`[CampaignEngine] Perceptual filter failed for agent ${agent.slug}:`, err);
+    }
+  }
+
   const userPrompt = buildCampaignPrompt(agent, state, campaign, memories);
 
   // Build messages with optional image
@@ -220,7 +336,7 @@ export async function processAgentCampaignReaction(
 
   let llmResponse: string;
   try {
-    const response = await invokeLLM({
+    const response = await routedLLM("agent_reaction", {
       messages,
       response_format: {
         type: "json_schema",
@@ -414,7 +530,7 @@ export async function generateCampaignReport(
       avgOverall, avgBuy, avgShare, dist, byGeneration, byGeo,
     });
 
-    const reportResponse = await invokeLLM({
+    const reportResponse = await routedLLM("report_generation", {
       messages: [
         {
           role: "system",
@@ -520,9 +636,107 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function buildFallbackSystemPrompt(agent: Agent): string {
-  return `Sei ${agent.firstName} ${agent.lastName}, ${agent.age} anni, ${agent.profession} di ${agent.city}.
-Generazione: ${agent.generation}. Reddito: ${agent.incomeEstimate.toLocaleString("it-IT")}€/anno.
-Rispondi sempre in prima persona, in italiano, come questa persona reale.`;
+  // ─── Sistema 1 / Sistema 2 (Kahneman) ───────────────────────────────
+  const s1 = agent.system1Dominance ?? 0.7;
+  const s1Desc = s1 > 0.75
+    ? "Sei una persona molto istintiva: le tue decisioni nascono prima di tutto da sensazioni viscerali, emozioni immediate, intuizioni rapide. Razionalizzi dopo, non prima."
+    : s1 < 0.45
+    ? "Sei una persona molto razionale: prima di decidere analizzi, confronti, pesi i pro e i contro. Le emozioni ti influenzano, ma non ti guidano."
+    : "Sei una persona equilibrata: le emozioni ti danno il primo impulso, ma poi ti fermi a riflettere prima di decidere.";
+
+  // ─── Avversione alla perdita (Kahneman) ─────────────────────────────
+  const la = agent.lossAversionCoeff ?? 2.0;
+  const laDesc = la > 2.5
+    ? "Hai una forte avversione alla perdita: la paura di perdere qualcosa ti pesa molto più del piacere di guadagnare qualcosa di equivalente."
+    : la < 1.6
+    ? "Sei relativamente tollerante al rischio: non ti spaventa la possibilità di perdere se c'è una buona opportunità."
+    : "";
+
+  // ─── Bourdieu: capitale culturale e habitus ──────────────────────────
+  const cc = agent.culturalCapital ?? 0.5;
+  const habitus = agent.habitusProfile as Record<string, number> | null;
+  const ccDesc = cc > 0.7
+    ? "Hai un alto capitale culturale: sei abituato a distinguere il buon gusto dall'ostentazione, il valore autentico dal marketing superficiale. Sei critico verso i brand che sembrano 'troppo commerciali'."
+    : cc < 0.35
+    ? "Il tuo capitale culturale è basso: preferisci la praticità al simbolismo, il prezzo conveniente alla marca, e diffidi di chi ti vende sogni invece di prodotti concreti."
+    : "Hai un capitale culturale medio: apprezzi la qualità quando è evidente, ma non sei snob.";
+
+  // ─── Veblen: consumo vistoso ─────────────────────────────────────────
+  const vci = agent.conspicuousConsumptionIndex ?? 0.3;
+  const veblenDesc = vci > 0.65
+    ? "Per te i brand e i prodotti sono anche segnali di status: acquistare qualcosa di costoso o di marca nota ti dà soddisfazione perché comunica chi sei agli altri. Un prezzo alto può essere un segnale di qualità e distinzione."
+    : vci < 0.25
+    ? "Non ti interessa mostrare cosa compri: l'idea di pagare di più solo per la marca ti sembra uno spreco. Preferisci il valore reale all'immagine."
+    : "";
+
+  // ─── Maslow: livello di bisogno attivo ───────────────────────────────
+  const maslow = agent.maslowBaseline ?? 3;
+  const maslowDesc = maslow <= 2
+    ? "Le tue preoccupazioni principali sono pratiche: sicurezza economica, stabilità, necessità quotidiane. Non hai spazio mentale per i consumi aspirazionali."
+    : maslow === 3
+    ? "Sei orientato all'appartenenza: ti importa fare parte di un gruppo, essere accettato, condividere esperienze con gli altri."
+    : maslow === 4
+    ? "Sei orientato alla stima: ti importa essere riconosciuto, rispettato, percepito come competente o di successo."
+    : "Sei orientato all'autorealizzazione: cerchi prodotti e esperienze che rispecchino i tuoi valori profondi e il tuo percorso personale.";
+
+  // ─── Thaler: mental accounting ───────────────────────────────────────
+  const ma = agent.mentalAccountingProfile as Record<string, number> | null;
+  const maDesc = ma
+    ? `Nel tuo modo di gestire i soldi: necessità (${Math.round((ma.necessità ?? 0.5) * 100)}% disponibilità), piaceri (${Math.round((ma.piacere ?? 0.3) * 100)}%), lusso (${Math.round((ma.lusso ?? 0.1) * 100)}%).`
+    : "";
+
+  // ─── Psychographics ──────────────────────────────────────────────────
+  const ns = agent.noveltySeeking ?? 0.5;
+  const ps = agent.priceSensitivity ?? 0.5;
+  const so = agent.statusOrientation ?? 0.5;
+  const ra = agent.riskAversion ?? 0.5;
+  const es = agent.emotionalSusceptibility ?? 0.5;
+
+  const psychDesc = [
+    ns > 0.7 ? "Ami la novità e l'innovazione: ti annoiano le cose già viste." : ns < 0.3 ? "Preferisci il familiare e il collaudato: la novità ti mette a disagio." : "",
+    ps > 0.7 ? "Sei molto sensibile al prezzo: confronti sempre, cerchi offerte, e un prezzo alto ti blocca." : ps < 0.3 ? "Il prezzo non è il tuo criterio principale: paghi di più se la qualità lo giustifica." : "",
+    so > 0.7 ? "Ti importa molto l'opinione degli altri e il tuo posizionamento sociale." : so < 0.3 ? "Non ti importa di quello che pensano gli altri delle tue scelte di consumo." : "",
+    ra > 0.7 ? "Sei cauto e prudente: preferisci il certo all'incerto." : ra < 0.3 ? "Sei disposto a rischiare per qualcosa che ti convince." : "",
+    es > 0.7 ? "Sei emotivamente reattivo: la pubblicità che tocca le emozioni ti colpisce molto." : es < 0.3 ? "Sei emotivamente distaccato: la pubblicità emotiva ti lascia freddo." : "",
+  ].filter(Boolean).join(" ");
+
+  // ─── Haidt: Moral Foundations Theory ────────────────────────────────
+  // Haidt (2012): The Righteous Mind — le fondazioni morali filtrano la percezione dei messaggi
+  const haidt = agent.haidtProfile as Record<string, string> | null;
+  let haidtDesc = "";
+  if (haidt) {
+    const foundations: string[] = [];
+    if (haidt.care === "H") foundations.push("Cura/Danno (ti commuovono le storie di vulnerabilità e sofferenza)");
+    if (haidt.fairness === "H") foundations.push("Equità/Inganno (sei sensibile all'ingiustizia e alle promesse non mantenute)");
+    if (haidt.loyalty === "H") foundations.push("Lealtà/Tradimento (valorizzi la fedeltà al gruppo, alla famiglia, alla tradizione)");
+    if (haidt.authority === "H") foundations.push("Autorità/Sovversione (rispetti la gerarchia, l'esperienza, le istituzioni consolidate)");
+    if (haidt.sanctity === "H") foundations.push("Purezza/Degradazione (hai un senso estetico e morale di ciò che è 'pulito' e autentico)");
+    if (haidt.liberty === "H") foundations.push("Libertà/Oppressione (reagisci negativamente a chi ti dice cosa fare o chi sei)");
+    if (foundations.length > 0) {
+      haidtDesc = `Le tue fondazioni morali dominanti (Haidt): ${foundations.join("; ")}.`;
+    }
+  }
+
+  // ─── Life History: eventi formativi ─────────────────────────────────
+  const lifeHistory = agent.lifeHistoryNotes ?? "";
+  const lifeHistoryDesc = lifeHistory
+    ? `Esperienza di vita che ti ha formato: ${lifeHistory}`
+    : "";
+
+  return `Sei ${agent.firstName} ${agent.lastName}, ${agent.age} anni, ${agent.profession} di ${agent.city} (${agent.geo}).
+Generazione: ${agent.generation}. Reddito: ${agent.incomeEstimate.toLocaleString("it-IT")}€/anno. Istruzione: ${agent.education}.
+Nucleo familiare: ${agent.householdType} (${agent.familyMembers} persone).
+
+${s1Desc}
+${laDesc ? laDesc + "\n" : ""}
+${ccDesc}
+${veblenDesc ? veblenDesc + "\n" : ""}
+${maslowDesc}
+${maDesc ? maDesc + "\n" : ""}
+${psychDesc ? psychDesc + "\n" : ""}
+${haidtDesc ? haidtDesc + "\n" : ""}
+${lifeHistoryDesc ? lifeHistoryDesc + "\n" : ""}
+Rispondi SEMPRE in prima persona, in italiano, come questa persona reale. Non descrivere te stesso — reagisci direttamente.`;
 }
 
 function buildCampaignPrompt(agent: Agent, state: AgentState | null, campaign: Campaign, memories: any[]): string {
@@ -534,9 +748,35 @@ function buildCampaignPrompt(agent: Agent, state: AgentState | null, campaign: C
     ? `\nRicordi rilevanti che influenzano la tua percezione:\n${memories.map(m => `- ${m.title}: ${m.content.substring(0, 100)}...`).join("\n")}`
     : "";
 
-  const priceText = campaign.pricePoint
-    ? `\nPrezzo indicativo del prodotto: ${campaign.pricePoint.toLocaleString("it-IT")}€`
-    : "";
+  // ─── Veblen price effect ─────────────────────────────────────────────────
+  // Per agenti con alto conspicuousConsumptionIndex, un prezzo alto è un segnale positivo
+  // (effetto Veblen: il prezzo elevato aumenta il desiderio, non lo riduce)
+  let priceText = "";
+  if (campaign.pricePoint) {
+    const vci = agent.conspicuousConsumptionIndex ?? 0.3;
+    const ps = agent.priceSensitivity ?? 0.5;
+    const incomeRatio = campaign.pricePoint / (agent.incomeEstimate / 12); // prezzo vs reddito mensile
+    if (vci > 0.65 && incomeRatio < 0.5) {
+      // Status-oriented e il prezzo è accessibile: il prezzo alto è attraente
+      priceText = `\nPrezzo del prodotto: ${campaign.pricePoint.toLocaleString("it-IT")}€. [Per te, questo prezzo è un segnale di qualità e distinzione — non ti spaventa, ti attrae.]`;
+    } else if (ps > 0.65 && incomeRatio > 0.3) {
+      // Sensibile al prezzo e il prezzo è alto rispetto al reddito: freno all'acquisto
+      priceText = `\nPrezzo del prodotto: ${campaign.pricePoint.toLocaleString("it-IT")}€. [Per te, questo prezzo è significativo rispetto al tuo reddito — è un freno reale all'acquisto.]`;
+    } else {
+      priceText = `\nPrezzo indicativo del prodotto: ${campaign.pricePoint.toLocaleString("it-IT")}€`;
+    }
+  }
+
+  // ─── Bourdieu: il tono della campagna filtrato dal capitale culturale ─────────────
+  const cc = agent.culturalCapital ?? 0.5;
+  let bourdieuNote = "";
+  if (campaign.tone === "aspirational" && cc < 0.35) {
+    bourdieuNote = "\n[NOTA: Il tono aspirazionale di questa campagna potrebbe sembrarti distante o condiscendente — come se ti stesse dicendo che non sei abbastanza.]";
+  } else if (campaign.tone === "emotional" && cc > 0.7) {
+    bourdieuNote = "\n[NOTA: Hai gli strumenti culturali per valutare se l'emozione di questa campagna è autentica o costruita. Sei critico verso il pathos artificiale.]";
+  } else if (campaign.tone === "practical" && cc > 0.7) {
+    bourdieuNote = "\n[NOTA: Il tono pratico di questa campagna potrebbe sembrarti riduttivo rispetto alla complessità del prodotto.]";
+  }
 
   return `Sei ${moodDesc} e ${stressDesc}.
 ${concerns.length > 0 ? `Preoccupazioni attuali: ${concerns.join(", ")}.` : ""}
@@ -546,6 +786,7 @@ Hai appena visto questa campagna pubblicitaria:
 **${campaign.name}**
 ${campaign.copyText ? `\nTesto: "${campaign.copyText}"` : ""}
 ${priceText}
+${bourdieuNote}
 Canale: ${campaign.channel}
 Formato: ${campaign.format}
 Tono: ${campaign.tone}
@@ -553,7 +794,12 @@ Argomenti: ${(campaign.topics as string[])?.join(", ") ?? ""}
 ${campaign.notes ? `\nNote aggiuntive: ${campaign.notes}` : ""}
 ${mediaUrls(campaign) ? "\n[Vedi l'immagine sopra]" : ""}
 
-Reagisci a questa campagna come saresti tu nella vita reale. Considera il tuo carattere, la tua situazione economica, i tuoi valori, i tuoi ricordi.
+Reagisci a questa campagna come saresti tu nella vita reale.
+Ricorda:
+- La tua reazione GUT (Sistema 1) deve essere immediata, viscerale, istintiva.
+- La tua REFLECTION (Sistema 2) deve mostrare il tuo ragionamento dopo aver pensato.
+- Le due possono essere in contraddizione — questo è normale e realistico.
+- Considera il tuo capitale culturale, il tuo livello Maslow, la tua sensibilità al prezzo.
 Rispondi nel formato JSON richiesto.`;
 }
 

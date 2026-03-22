@@ -26,7 +26,27 @@ import {
   MessageSquareQuote,
   BarChart3,
   Lightbulb,
+  Download,
 } from "lucide-react";
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  ResponsiveContainer,
+} from "recharts";
+
+// ─── PDF Export ───────────────────────────────────────────────────────
+// Usa la route server-side /api/report/:id/pdf per un PDF professionale
+function exportToPdf(testId: number, testName: string) {
+  const url = `/api/report/${testId}/pdf`;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${testName.replace(/[^a-zA-Z0-9_\-]/g, "_")}_report.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
@@ -168,9 +188,29 @@ export default function SimulateReport() {
     .sort((a: any, b: any) => Math.abs(b.overallScore ?? 0) - Math.abs(a.overallScore ?? 0))
     .slice(0, 6);
 
+  // Big Five radar data from reactions
+  const bigFiveKeys = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"] as const;
+  const bigFiveLabels: Record<string, string> = {
+    openness: "Apertura",
+    conscientiousness: "Coscienziosità",
+    extraversion: "Estroversione",
+    agreeableness: "Gradevolezza",
+    neuroticism: "Nevroticismo",
+  };
+
+  const radarData = bigFiveKeys.map((key) => {
+    const vals = completed
+      .map((r: any) => r.agentBigFive?.[key] ?? null)
+      .filter((v: any) => v != null) as number[];
+    const mean = vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
+    return { trait: bigFiveLabels[key], value: Math.round(mean * 100) };
+  });
+
+  const hasRadarData = radarData.some((d) => d.value > 0);
+
   return (
     <ClientLayout>
-      <div className="p-8 max-w-5xl mx-auto">
+      <div id="report-content" className="p-8 max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
@@ -191,13 +231,23 @@ export default function SimulateReport() {
                 : "—"}
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/app/simulate/new")}
-            className="gap-2"
-          >
-            Nuova simulazione
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => exportToPdf(testId!, test.name ?? "report")}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Esporta PDF
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/app/simulate/new")}
+              className="gap-2"
+            >
+              Nuova simulazione
+            </Button>
+          </div>
         </div>
 
         {/* Executive Summary */}
@@ -385,6 +435,42 @@ export default function SimulateReport() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Big Five Radar Chart */}
+        {hasRadarData && (
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                Profilo Big Five del panel
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radarData}>
+                    <PolarGrid stroke="hsl(var(--border))" />
+                    <PolarAngleAxis
+                      dataKey="trait"
+                      tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    />
+                    <Radar
+                      name="Panel"
+                      dataKey="value"
+                      stroke="hsl(var(--primary))"
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.15}
+                      strokeWidth={2}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Valori medi Big Five degli agenti che hanno risposto (0–100)
+              </p>
             </CardContent>
           </Card>
         )}

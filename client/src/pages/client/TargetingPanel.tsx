@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -18,6 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
   Info,
+  Building2,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 
 type FilterState = {
@@ -131,6 +134,15 @@ export default function TargetingPanel() {
   const [campaignName, setCampaignName] = useState("");
   const [campaignBrief, setCampaignBrief] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedBrandAgentId, setSelectedBrandAgentId] = useState<number | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load brand agents list
+  const brandAgentsQuery = trpc.onboarding.listBrandAgents.useQuery();
+  const brandAgents = brandAgentsQuery.data ?? [];
 
   const batchStatsMutation = trpc.calibratedSampler.batchStats.useMutation();
   const batchStats = batchStatsMutation.data;
@@ -143,6 +155,47 @@ export default function TargetingPanel() {
   const updateFilter = (key: keyof FilterState, value: string | number) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
+
+  // When a brand agent is selected, auto-fill the panel size from its default pool
+  const handleBrandAgentSelect = (id: number) => {
+    setSelectedBrandAgentId(id);
+    const agent = brandAgents.find((a: any) => a.id === id);
+    if (agent?.defaultAgentPool) {
+      const pool = agent.defaultAgentPool as any;
+      if (pool.totalSize) updateFilter("panelSize", Math.min(pool.totalSize, 50));
+    }
+  };
+
+  // File upload handlers
+  const handleFileSelect = (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File troppo grande (max 10MB)");
+      return;
+    }
+    setUploadedFile(file);
+    // Create preview URL for images
+    if (file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      setUploadedImageUrl(url);
+    } else {
+      setUploadedImageUrl(null);
+    }
+    toast.success(`File caricato: ${file.name}`);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => setIsDragging(false);
 
   const launchMutation = trpc.campaignTesting.launch.useMutation({
     onSuccess: (data) => {
@@ -211,12 +264,86 @@ export default function TargetingPanel() {
                     className="resize-none text-sm"
                   />
                 </div>
-                {/* Upload placeholder */}
-                <div className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-primary/40 hover:bg-muted/30 transition-colors">
-                  <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">Trascina immagine, video o PDF</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">oppure <span className="text-primary underline">sfoglia</span></p>
+                {/* File upload drag&drop */}
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*,.pdf,.txt"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileSelect(file);
+                    }}
+                  />
+                  {uploadedFile ? (
+                    <div className="border border-border rounded-lg p-3 flex items-center gap-3">
+                      {uploadedImageUrl ? (
+                        <img src={uploadedImageUrl} alt="preview" className="w-12 h-12 rounded object-cover shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
+                          <Upload className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{uploadedFile.name}</p>
+                        <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024).toFixed(0)} KB</p>
+                      </div>
+                      <button
+                        onClick={() => { setUploadedFile(null); setUploadedImageUrl(null); }}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                        isDragging
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40 hover:bg-muted/30"
+                      }`}
+                    >
+                      <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground">Trascina immagine, video o PDF</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">oppure <span className="text-primary underline">sfoglia</span></p>
+                    </div>
+                  )}
                 </div>
+
+                {/* Brand Agent selector */}
+                {brandAgents.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5" />
+                      Brand Agent
+                    </Label>
+                    <select
+                      value={selectedBrandAgentId ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "") setSelectedBrandAgentId(null);
+                        else handleBrandAgentSelect(Number(val));
+                      }}
+                      className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">Nessun brand agent</option>
+                      {brandAgents.map((a: any) => (
+                        <option key={a.id} value={a.id}>{a.brandName} — {a.sector}</option>
+                      ))}
+                    </select>
+                    {selectedBrandAgentId && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        Pool di default pre-caricato
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

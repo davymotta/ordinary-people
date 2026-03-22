@@ -79,6 +79,11 @@ export const agents = mysqlTable("agents", {
   socialContacts: json("socialContacts"), // ["luca_ferretti","giulia_moretti"]
   // LLM system prompt (narrative identity)
   systemPrompt: text("systemPrompt"),
+  // Haidt Moral Foundations (H=High, L=Low per ogni fondazione)
+  // {care:"H", fairness:"H", loyalty:"L", authority:"L", sanctity:"L", liberty:"H"}
+  haidtProfile: json("haidtProfile"),
+  // Life History notes: 2-3 eventi formativi chiave che spiegano la visione del mondo dell'agente
+  lifeHistoryNotes: text("lifeHistoryNotes"),
   // Avatar image URL
   avatarUrl: varchar("avatarUrl", { length: 500 }),
   // Bibliography notes
@@ -228,6 +233,8 @@ export const campaigns = mysqlTable("campaigns", {
   noveltySignal: float("noveltySignal").notNull().default(0.5),
   tribalIdentitySignal: float("tribalIdentitySignal").notNull().default(0.3),
   notes: text("notes"),
+  // Campaign Digest (from Ingestion Pipeline)
+  digestJson: json("digestJson"), // CampaignDigest JSON blob
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
