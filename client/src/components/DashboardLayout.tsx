@@ -49,6 +49,7 @@ const menuItems = [
   { icon: Globe, label: "World Events", path: "/world", group: "agents" },
   { icon: FlaskConical, label: "Campaign Testing", path: "/campaign-testing", group: "agents" },
   { icon: BookOpen, label: "Life History", path: "/life-history", group: "agents" },
+  { icon: Layers, label: "Archetype Matrix", path: "/archetype-matrix", group: "agents" },
   // Legacy — Simulation Engine
   { icon: Users, label: "Personas", path: "/personas", group: "legacy" },
   { icon: Megaphone, label: "Campaigns", path: "/campaigns", group: "legacy" },

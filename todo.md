@@ -77,3 +77,21 @@
 - [ ] Integrazione GDELT per aggiornamento automatico archivio con notizie recenti
 - [ ] Arricchimento archivio anni 70 e 90 TV (dati parziali da completare)
 - [ ] Matrice Mirofish: integrazione della meccanica di scoring nella pipeline di reazione
+
+### Motore Combinatorio Archetipi — Fase 2
+- [x] Dataset Hofstede country scores (111 paesi scaricati e processati, assegnati a 12 cluster)
+- [x] Schema DB: tabelle archetypeProfiles, culturalClusters, pearsonArchetypes, haidtFoundations, hofstedeCountries
+- [x] Matrice Big Five: 243 combinazioni (5 dimensioni × 3 livelli) con tratti comportamentali
+- [x] Matrice Archetipi Pearson: 12 archetipi con motivazioni, paure, trigger, brand examples
+- [x] Matrice Haidt: 6 fondamenti morali × 2 livelli con implicazioni per reazione a campagne
+- [x] Regole di coerenza: 6 regole (hard/soft) per eliminare combinazioni implausibili
+- [x] Motore generativo: dato un set di valori sugli assi, genera system prompt LLM completo
+- [x] Integrazione parametri Mirofish: activityLevel, sentimentBias, stance, influenceWeight, echoChamberStrength
+- [x] tRPC router archetypeMatrix: seed, stats, generateProfile, listProfiles, getProfile
+- [x] UI Archetype Matrix: selettore 5 assi + visualizzatore profili generati
+
+### Prossimi Passi
+- [ ] Loop sociale Campaign Testing: agente vede reazioni contatti prima di finalizzare
+- [ ] Seed batch 200 profili con distribuzione realistica (parallelo)
+- [ ] Selettore UI stile Meta Ads Manager per targeting parametrico
+- [ ] Integrazione GDELT per presente dinamico (Scout)

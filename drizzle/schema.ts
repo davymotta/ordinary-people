@@ -549,3 +549,120 @@ export const agentHistoricalExposures = mysqlTable("agentHistoricalExposures", {
 
 export type AgentHistoricalExposure = typeof agentHistoricalExposures.$inferSelect;
 export type InsertAgentHistoricalExposure = typeof agentHistoricalExposures.$inferInsert;
+
+// ─── Archetype Combinatory Engine ─────────────────────────────────────────────
+// Tables for the 5-axis generative archetype system
+// Based on: Big Five (McCrae & John 1992), Pearson/Jung 12 Archetypes (Mark & Pearson 2001),
+// Haidt 6 Moral Foundations (Haidt 2012), Hofstede 6 Cultural Dimensions
+
+// Cultural clusters based on Hofstede dimensions
+export const culturalClusters = mysqlTable("culturalClusters", {
+  id: int("id").autoincrement().primaryKey(),
+  clusterId: varchar("clusterId", { length: 50 }).notNull().unique(), // e.g. "southern_europe"
+  label: varchar("label", { length: 100 }).notNull(),
+  countries: json("countries"), // string[]
+  // Hofstede 6 dimensions (0-100)
+  pdi: int("pdi"), // Power Distance Index
+  idv: int("idv"), // Individualism
+  mas: int("mas"), // Masculinity
+  uai: int("uai"), // Uncertainty Avoidance Index
+  lto: int("lto"), // Long-Term Orientation
+  ivr: int("ivr"), // Indulgence vs Restraint
+  description: text("description").notNull(),
+  culturalTraits: json("culturalTraits"), // string[]
+  consumerCulture: text("consumerCulture").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CulturalCluster = typeof culturalClusters.$inferSelect;
+export type InsertCulturalCluster = typeof culturalClusters.$inferInsert;
+
+// Pearson/Jung 12 Archetypes
+export const pearsonArchetypes = mysqlTable("pearsonArchetypes", {
+  id: int("id").autoincrement().primaryKey(),
+  archetypeId: varchar("archetypeId", { length: 50 }).notNull().unique(), // e.g. "hero"
+  label: varchar("label", { length: 100 }).notNull(),
+  coreDesire: text("coreDesire").notNull(),
+  coreFear: text("coreFear").notNull(),
+  strategy: text("strategy").notNull(),
+  gift: varchar("gift", { length: 200 }).notNull(),
+  shadow: varchar("shadow", { length: 200 }).notNull(),
+  brandExamples: json("brandExamples"), // string[]
+  consumerTriggers: json("consumerTriggers"), // string[]
+  adResponse: text("adResponse").notNull(),
+  bigFiveAffinity: json("bigFiveAffinity"), // {openness: "H", ...}
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PearsonArchetype = typeof pearsonArchetypes.$inferSelect;
+export type InsertPearsonArchetype = typeof pearsonArchetypes.$inferInsert;
+
+// Haidt Moral Foundations
+export const haidtFoundations = mysqlTable("haidtFoundations", {
+  id: int("id").autoincrement().primaryKey(),
+  foundationId: varchar("foundationId", { length: 50 }).notNull().unique(), // e.g. "care_harm"
+  label: varchar("label", { length: 100 }).notNull(),
+  highDescription: text("highDescription").notNull(),
+  highTriggers: json("highTriggers"), // string[]
+  highAdResponse: text("highAdResponse").notNull(),
+  lowDescription: text("lowDescription").notNull(),
+  lowTriggers: json("lowTriggers"), // string[]
+  lowAdResponse: text("lowAdResponse").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type HaidtFoundation = typeof haidtFoundations.$inferSelect;
+export type InsertHaidtFoundation = typeof haidtFoundations.$inferInsert;
+
+// Hofstede Country Scores
+export const hofstedeCountries = mysqlTable("hofstedeCountries", {
+  id: int("id").autoincrement().primaryKey(),
+  ctr: varchar("ctr", { length: 10 }).notNull(), // country code
+  country: varchar("country", { length: 100 }).notNull().unique(),
+  pdi: int("pdi"), // Power Distance
+  idv: int("idv"), // Individualism
+  mas: int("mas"), // Masculinity
+  uai: int("uai"), // Uncertainty Avoidance
+  lto: int("lto"), // Long-Term Orientation
+  ivr: int("ivr"), // Indulgence
+  assignedCluster: varchar("assignedCluster", { length: 50 }), // FK to culturalClusters.clusterId
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type HofstedeCountry = typeof hofstedeCountries.$inferSelect;
+export type InsertHofstedeCountry = typeof hofstedeCountries.$inferInsert;
+
+// Generated Archetype Profiles (the combinatory output)
+export const archetypeProfiles = mysqlTable("archetypeProfiles", {
+  id: int("id").autoincrement().primaryKey(),
+  archetypeProfileId: varchar("archetypeProfileId", { length: 100 }).notNull().unique(), // e.g. "HER_HHLMH_HHLHLH_SOU"
+  // Axis 1: Big Five
+  openness: mysqlEnum("openness", ["L", "M", "H"]).notNull(),
+  conscientiousness: mysqlEnum("conscientiousness", ["L", "M", "H"]).notNull(),
+  extraversion: mysqlEnum("extraversion", ["L", "M", "H"]).notNull(),
+  agreeableness: mysqlEnum("agreeableness", ["L", "M", "H"]).notNull(),
+  neuroticism: mysqlEnum("neuroticism", ["L", "M", "H"]).notNull(),
+  // Axis 1b: Pearson Archetype
+  archetypeId: varchar("archetypeId", { length: 50 }).notNull(), // FK to pearsonArchetypes
+  // Axis 2: Haidt Moral Foundations (H/L for each)
+  haidtCareHarm: mysqlEnum("haidtCareHarm", ["H", "L"]).notNull(),
+  haidtFairnessCheating: mysqlEnum("haidtFairnessCheating", ["H", "L"]).notNull(),
+  haidtLoyaltyBetrayal: mysqlEnum("haidtLoyaltyBetrayal", ["H", "L"]).notNull(),
+  haidtAuthoritySubversion: mysqlEnum("haidtAuthoritySubversion", ["H", "L"]).notNull(),
+  haidtSanctityDegradation: mysqlEnum("haidtSanctityDegradation", ["H", "L"]).notNull(),
+  haidtLibertyOppression: mysqlEnum("haidtLibertyOppression", ["H", "L"]).notNull(),
+  // Axis 3: Cultural Cluster (Hofstede)
+  culturalClusterId: varchar("culturalClusterId", { length: 50 }).notNull(),
+  // Coherence
+  hasCoherenceViolations: boolean("hasCoherenceViolations").notNull().default(false),
+  coherenceViolations: json("coherenceViolations"), // array of violation objects
+  // Generated system prompt
+  systemPrompt: text("systemPrompt"),
+  // Mirofish behavioral parameters
+  activityLevel: float("activityLevel").notNull().default(0.5), // 0-1
+  sentimentBias: float("sentimentBias").notNull().default(0.0), // -1 to +1
+  stance: mysqlEnum("stance", ["supportive", "opposing", "neutral", "observer"]).notNull().default("neutral"),
+  influenceWeight: float("influenceWeight").notNull().default(0.5), // 0-1
+  echoChamberStrength: float("echoChamberStrength").notNull().default(0.3), // 0-1
+  responseDelayMin: int("responseDelayMin").notNull().default(1), // minutes
+  responseDelayMax: int("responseDelayMax").notNull().default(60), // minutes
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ArchetypeProfile = typeof archetypeProfiles.$inferSelect;
+export type InsertArchetypeProfile = typeof archetypeProfiles.$inferInsert;

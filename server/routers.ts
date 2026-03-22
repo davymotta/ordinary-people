@@ -22,6 +22,13 @@ import {
   getArchiveStats,
 } from "./life-history-engine";
 import {
+  seedArchetypeMatrix,
+  generateArchetypeProfile,
+  getArchetypeMatrixStats,
+  listArchetypeProfiles,
+  getArchetypeProfileById,
+} from "./archetype-engine";
+import {
   generateAllReactions,
   generateSystemPrompt,
   type PersonaForLLM,
@@ -42,7 +49,7 @@ export const appRouter = router({
     }),
   }),
 
-  // ─── Personas ────────────────────────────────────────────────────
+  // --- Personas ---
   personas: router({
     list: publicProcedure.query(async () => {
       return db.listPersonas();
@@ -143,7 +150,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Regimes ─────────────────────────────────────────────────────
+  // --- Regimes ---
   regimes: router({
     list: publicProcedure.query(async () => {
       return db.listRegimes();
@@ -162,7 +169,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Campaigns ───────────────────────────────────────────────────
+  // --- Campaigns ---
   campaigns: router({
     list: publicProcedure.query(async () => {
       return db.listCampaigns();
@@ -207,7 +214,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Simulations ─────────────────────────────────────────────────
+  // --- Simulations ---
   simulations: router({
     list: publicProcedure.query(async () => {
       return db.listSimulations();
@@ -301,7 +308,7 @@ export const appRouter = router({
           const formulaResults = runSimulation(allPersonas, selectedCampaigns, allRegimes, input.regimeState as unknown as RegimeState, input.weights);
           const wmi = computeWeightedMarketInterest(formulaResults, allPersonas);
 
-          // Build benchmark scores map: personaId → avgScore across campaigns
+          // Build benchmark scores map: personaId -> avgScore across campaigns
           const benchmarkScores: Record<string, number> = {};
           for (const r of formulaResults) {
             benchmarkScores[r.personaId] = r.breakdown.finalScore;
@@ -367,7 +374,7 @@ export const appRouter = router({
             );
           }
 
-          // Step 3: Merge results — formula + LLM side by side
+          // Step 3: Merge results -- formula + LLM side by side
           const hybridResults = formulaResults.map(fr => {
             const llmReaction = llmReactionsByCampaign[fr.campaignId]?.[fr.personaId];
             return {
@@ -442,7 +449,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Ground Truth ──────────────────────────────────────────────────
+  // --- Ground Truth ---
   groundTruth: router({
     list: publicProcedure.query(async () => {
       return db.listGroundTruth();
@@ -466,7 +473,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Calibration ──────────────────────────────────────────────────
+  // --- Calibration ---
   calibration: router({
     list: publicProcedure.query(async () => {
       return db.listCalibrationRuns();
@@ -575,7 +582,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Agents (Ordinary People) ──────────────────────────────────
+  // --- Agents (Ordinary People) ---
   agents: router({
     list: publicProcedure.query(async () => {
       return agentsDb.getAllAgents();
@@ -606,7 +613,7 @@ export const appRouter = router({
     }),
   }),
 
-  // ─── World Events ─────────────────────────────────────────────────
+  // --- World Events ---
   worldEvents: router({
     list: publicProcedure.query(async () => {
       return agentsDb.getAllWorldEvents();
@@ -647,7 +654,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Campaign Testing (Ordinary People) ──────────────────────────
+  // --- Campaign Testing (Ordinary People) ---
   campaignTesting: router({
     list: publicProcedure.query(async () => {
       return agentsDb.getAllCampaignTests();
@@ -677,7 +684,7 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Dashboard Stats ──────────────────────────────────────────────
+  // --- Dashboard Stats ---
   dashboard: router({
     stats: publicProcedure.query(async () => {
       const allPersonas = await db.listPersonas();
@@ -713,7 +720,7 @@ export const appRouter = router({
     }),
   }),
 
-  // ─── Life History Engine ─────────────────────────────────────────
+  // --- Life History Engine ---
   lifeHistory: router({
     // Load the historical archive into the database
     loadArchive: protectedProcedure.mutation(async () => {
@@ -752,6 +759,60 @@ export const appRouter = router({
       .input(z.object({ agentId: z.number() }))
       .query(async ({ input }) => {
         return await getAgentLifeTimeline(input.agentId);
+      }),
+   }),
+
+  // --- Archetype Combinatory Engine ---
+  archetypeMatrix: router({
+    // Seed the matrix data (clusters, archetypes, foundations)
+    seed: protectedProcedure.mutation(async () => {
+      return await seedArchetypeMatrix();
+    }),
+    // Get matrix statistics
+    stats: publicProcedure.query(async () => {
+      return await getArchetypeMatrixStats();
+    }),
+    // Generate a single archetype profile
+    generateProfile: protectedProcedure
+      .input(z.object({
+        bigFive: z.object({
+          openness: z.enum(["L", "M", "H"]),
+          conscientiousness: z.enum(["L", "M", "H"]),
+          extraversion: z.enum(["L", "M", "H"]),
+          agreeableness: z.enum(["L", "M", "H"]),
+          neuroticism: z.enum(["L", "M", "H"]),
+        }),
+        archetypeId: z.string(),
+        haidt: z.object({
+          care_harm: z.enum(["H", "L"]),
+          fairness_cheating: z.enum(["H", "L"]),
+          loyalty_betrayal: z.enum(["H", "L"]),
+          authority_subversion: z.enum(["H", "L"]),
+          sanctity_degradation: z.enum(["H", "L"]),
+          liberty_oppression: z.enum(["H", "L"]),
+        }),
+        culturalClusterId: z.string(),
+        generateLLMPrompt: z.boolean().optional().default(false),
+        activityLevel: z.number().min(0).max(1).optional(),
+        sentimentBias: z.number().min(-1).max(1).optional(),
+        stance: z.enum(["supportive", "opposing", "neutral", "observer"]).optional(),
+        influenceWeight: z.number().min(0).max(1).optional(),
+        echoChamberStrength: z.number().min(0).max(1).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await generateArchetypeProfile(input, input.generateLLMPrompt);
+      }),
+    // List generated profiles
+    listProfiles: publicProcedure
+      .input(z.object({ limit: z.number().optional().default(50), offset: z.number().optional().default(0) }))
+      .query(async ({ input }) => {
+        return await listArchetypeProfiles(input.limit, input.offset);
+      }),
+    // Get profile by ID
+    getProfile: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await getArchetypeProfileById(input.id);
       }),
   }),
 });
