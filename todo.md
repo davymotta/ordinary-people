@@ -62,3 +62,18 @@
 - [ ] Vitest: World Engine (event exposure + memory update)
 - [ ] Vitest: Campaign reaction engine (multimodale)
 - [ ] Vitest: Report aggregator
+
+### Life History Engine — Fase A
+- [x] Archivio eventi storici italiani/globali 1950-2025 (245 eventi, strutturati per decennio, tipo, portata, impatto emotivo)
+- [x] Archivio TV italiana 1954-2025 (RAI + Mediaset): 52 programmi iconici, 46 pubblicità, 17 fenomeni culturali
+- [x] Schema DB: tabelle historicalEvents, tvPrograms, iconicAds, culturalPhenomena, agentHistoricalExposures
+- [x] Algoritmo filtro biografico per agente (formative years 3x, geo match, habitus match, Schuman & Scott 1989)
+- [x] Life History Engine server-side: loadArchiveIntoDB, generateAgentLifeHistory, getAgentLifeTimeline
+- [x] tRPC router lifeHistory: loadArchive, archiveStats, generateForAgent, generateForAll, getTimeline
+- [x] UI Life History: pagina con timeline visiva, filtri per tipo/anni formativi, generazione memorie LLM
+
+### Life History Engine — Fase B (prossima)
+- [ ] Influenza sociale tra agenti: ogni agente vede le reazioni dei contatti prima di finalizzare il giudizio
+- [ ] Integrazione GDELT per aggiornamento automatico archivio con notizie recenti
+- [ ] Arricchimento archivio anni 70 e 90 TV (dati parziali da completare)
+- [ ] Matrice Mirofish: integrazione della meccanica di scoring nella pipeline di reazione

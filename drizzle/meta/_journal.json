@@ -36,6 +36,13 @@
       "when": 1774144185865,
       "tag": "0004_pale_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1774147924789,
+      "tag": "0005_left_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }

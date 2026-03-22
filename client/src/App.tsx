@@ -18,6 +18,7 @@ import Calibration from "./pages/Calibration";
 import Agents from "./pages/Agents";
 import WorldEvents from "./pages/WorldEvents";
 import CampaignTesting from "./pages/CampaignTesting";
+import LifeHistory from "./pages/LifeHistory";
 
 function Router() {
   return (
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/agents" component={Agents} />
         <Route path="/world" component={WorldEvents} />
         <Route path="/campaign-testing" component={CampaignTesting} />
+        <Route path="/life-history" component={LifeHistory} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

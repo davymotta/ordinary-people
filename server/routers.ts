@@ -16,6 +16,12 @@ import {
   type RegimeState,
 } from "./simulation";
 import {
+  loadArchiveIntoDB,
+  generateAgentLifeHistory,
+  getAgentLifeTimeline,
+  getArchiveStats,
+} from "./life-history-engine";
+import {
   generateAllReactions,
   generateSystemPrompt,
   type PersonaForLLM,
@@ -706,6 +712,47 @@ export const appRouter = router({
       };
     }),
   }),
-});
 
+  // ─── Life History Engine ─────────────────────────────────────────
+  lifeHistory: router({
+    // Load the historical archive into the database
+    loadArchive: protectedProcedure.mutation(async () => {
+      return await loadArchiveIntoDB();
+    }),
+
+    // Get archive statistics
+    archiveStats: publicProcedure.query(async () => {
+      return await getArchiveStats();
+    }),
+
+    // Generate life history for a single agent
+    generateForAgent: protectedProcedure
+      .input(z.object({ agentId: z.number() }))
+      .mutation(async ({ input }) => {
+        return await generateAgentLifeHistory(input.agentId);
+      }),
+
+    // Generate life history for all agents
+    generateForAll: protectedProcedure.mutation(async () => {
+      const allAgents = await agentsDb.getAllAgents();
+      const results: Array<{ agentId: number; name: string; exposuresCreated: number; memoriesGenerated: number }> = [];
+      for (const agent of allAgents) {
+        try {
+          const result = await generateAgentLifeHistory(agent.id);
+          results.push({ agentId: agent.id, name: `${agent.firstName} ${agent.lastName}`, ...result });
+        } catch (err) {
+          results.push({ agentId: agent.id, name: `${agent.firstName} ${agent.lastName}`, exposuresCreated: 0, memoriesGenerated: 0 });
+        }
+      }
+      return results;
+    }),
+
+    // Get life timeline for an agent
+    getTimeline: publicProcedure
+      .input(z.object({ agentId: z.number() }))
+      .query(async ({ input }) => {
+        return await getAgentLifeTimeline(input.agentId);
+      }),
+  }),
+});
 export type AppRouter = typeof appRouter;

@@ -444,3 +444,108 @@ export const calibrationRuns = mysqlTable("calibrationRuns", {
 
 export type CalibrationRun = typeof calibrationRuns.$inferSelect;
 export type InsertCalibrationRun = typeof calibrationRuns.$inferInsert;
+
+// ─── Life History Engine ──────────────────────────────────────────────
+// Archivio storico-culturale italiano 1950-2025
+// Fonte: curation LLM + Wikipedia + GDELT
+
+export const historicalEvents = mysqlTable("historicalEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  anno: int("anno").notNull(),
+  annoFine: int("annoFine"),
+  titolo: varchar("titolo", { length: 200 }).notNull(),
+  descrizione: text("descrizione").notNull(),
+  tipo: mysqlEnum("tipo", [
+    "politico", "economico", "culturale", "tecnologico", "naturale",
+    "criminalità", "sport", "internazionale", "sociale"
+  ]).notNull(),
+  portata: mysqlEnum("portata", ["globale", "nazionale", "regionale"]).notNull(),
+  impatto_emotivo: mysqlEnum("impatto_emotivo", [
+    "paura", "speranza", "rabbia", "orgoglio", "lutto", "shock",
+    "gioia", "indignazione", "nostalgia", "curiosità", "meraviglia", "tristezza"
+  ]).notNull(),
+  intensita: float("intensita").notNull().default(0.5), // 0.0-1.0
+  segmentiPiuColpiti: json("segmentiPiuColpiti"), // string[]
+  vettoreMediale: mysqlEnum("vettoreMediale", [
+    "radio", "tv_generalista", "stampa", "internet", "social_media"
+  ]).notNull(),
+  decennio: varchar("decennio", { length: 20 }).notNull(), // "1970-1979"
+  geolocalizzazione: varchar("geolocalizzazione", { length: 100 }).notNull().default("Italia"),
+  tags: json("tags"), // string[]
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type HistoricalEvent = typeof historicalEvents.$inferSelect;
+export type InsertHistoricalEvent = typeof historicalEvents.$inferInsert;
+
+export const tvPrograms = mysqlTable("tvPrograms", {
+  id: int("id").autoincrement().primaryKey(),
+  titolo: varchar("titolo", { length: 200 }).notNull(),
+  rete: varchar("rete", { length: 100 }).notNull(),
+  anni: varchar("anni", { length: 100 }).notNull(), // "1970-1980"
+  annoInizio: int("annoInizio").notNull().default(0),
+  descrizione: text("descrizione").notNull(),
+  impattoculturale: text("impattoculturale").notNull(),
+  audienceTipo: varchar("audienceTipo", { length: 200 }),
+  intensitaCulturale: float("intensitaCulturale").notNull().default(0.5),
+  periodo: varchar("periodo", { length: 50 }).notNull(), // "1970-1979"
+  tipo: varchar("tipo", { length: 100 }).notNull().default("varietà"),
+  tags: json("tags"), // string[]
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TvProgram = typeof tvPrograms.$inferSelect;
+export type InsertTvProgram = typeof tvPrograms.$inferInsert;
+
+export const iconicAds = mysqlTable("iconicAds", {
+  id: int("id").autoincrement().primaryKey(),
+  brand: varchar("brand", { length: 200 }).notNull(),
+  prodotto: varchar("prodotto", { length: 200 }).notNull(),
+  slogan: varchar("slogan", { length: 300 }),
+  anno: int("anno").notNull().default(0),
+  rete: varchar("rete", { length: 100 }),
+  descrizione: text("descrizione").notNull(),
+  impattoculturale: text("impattoculturale").notNull(),
+  segmentoTarget: varchar("segmentoTarget", { length: 200 }),
+  periodo: varchar("periodo", { length: 50 }).notNull(),
+  intensitaCulturale: float("intensitaCulturale").notNull().default(0.5),
+  tags: json("tags"), // string[]
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type IconicAd = typeof iconicAds.$inferSelect;
+export type InsertIconicAd = typeof iconicAds.$inferInsert;
+
+export const culturalPhenomena = mysqlTable("culturalPhenomena", {
+  id: int("id").autoincrement().primaryKey(),
+  titolo: varchar("titolo", { length: 200 }).notNull(),
+  descrizione: text("descrizione").notNull(),
+  periodo: varchar("periodo", { length: 50 }).notNull(),
+  impatto: text("impatto").notNull(),
+  segmentiCoinvolti: json("segmentiCoinvolti"), // string[]
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CulturalPhenomenon = typeof culturalPhenomena.$inferSelect;
+export type InsertCulturalPhenomenon = typeof culturalPhenomena.$inferInsert;
+
+// ─── Agent Historical Exposures ───────────────────────────────────────
+// Traccia quali eventi storici hanno "formato" ogni agente
+// Generato dal Life History Engine durante l'inizializzazione dell'agente
+export const agentHistoricalExposures = mysqlTable("agentHistoricalExposures", {
+  id: int("id").autoincrement().primaryKey(),
+  agentId: int("agentId").notNull(),
+  eventId: int("eventId").notNull(), // FK a historicalEvents
+  eventType: mysqlEnum("eventType", ["historical", "tv_program", "iconic_ad", "cultural_phenomenon"]).notNull(),
+  ageAtEvent: int("ageAtEvent").notNull(), // quanti anni aveva l'agente
+  isFormativeYear: boolean("isFormativeYear").notNull().default(false), // 14-24 anni
+  relevanceScore: float("relevanceScore").notNull().default(0.5), // 0-1
+  // Generated memory
+  memoryText: text("memoryText"), // narrazione in prima persona generata da LLM
+  emotionalValence: float("emotionalValence"), // -1 a +1
+  memorySaliency: float("memorySaliency"), // 0-1
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AgentHistoricalExposure = typeof agentHistoricalExposures.$inferSelect;
+export type InsertAgentHistoricalExposure = typeof agentHistoricalExposures.$inferInsert;

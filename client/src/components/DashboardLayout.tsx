@@ -35,6 +35,7 @@ import {
   Globe,
   FlaskConical,
   Layers,
+  BookOpen,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -47,6 +48,7 @@ const menuItems = [
   { icon: Brain, label: "Agenti", path: "/agents", group: "agents" },
   { icon: Globe, label: "World Events", path: "/world", group: "agents" },
   { icon: FlaskConical, label: "Campaign Testing", path: "/campaign-testing", group: "agents" },
+  { icon: BookOpen, label: "Life History", path: "/life-history", group: "agents" },
   // Legacy — Simulation Engine
   { icon: Users, label: "Personas", path: "/personas", group: "legacy" },
   { icon: Megaphone, label: "Campaigns", path: "/campaigns", group: "legacy" },
