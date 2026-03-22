@@ -95,3 +95,18 @@
 - [ ] Seed batch 200 profili con distribuzione realistica (parallelo)
 - [ ] Selettore UI stile Meta Ads Manager per targeting parametrico
 - [ ] Integrazione GDELT per presente dinamico (Scout)
+
+### Sampling Statisticamente Calibrato — Fase 3
+- [x] Gaussiane Big Five con correlazioni inter-tratto (Digman 1997, DeYoung 2006): meta-fattori Stability e Plasticity
+- [x] Shift di genere su Agreeableness e Neuroticism (Costa, Terracciano & McCrae 2001) — dati empirici da 307k soggetti
+- [x] Calibrazione Haidt automatica da cluster Hofstede (Care/Fairness universali, Authority/Sanctity variabili)
+- [x] Pesi demografici archetipi Pearson per cultura (Ruler alto in high-Power-Distance, Rebel in individualiste)
+- [x] Distribuzione generazionale da dati demografici reali (Italia 2026: Boomer 22%, GenX 21%, Millennial 20%, GenZ 16%)
+- [x] Distribuzione capitale Bourdieu da quintili ISTAT (power law per capitale economico)
+- [x] Motore sampleRealisticProfile(targetMarket) -- genera profilo campionato da distribuzioni calibrate
+- [x] Batch generator: fino a 500 profili con distribuzione realistica
+- [x] Parametri Mirofish derivati automaticamente: activityLevel, sentimentBias, stance, influenceWeight, echoChamberStrength
+- [x] UI analytics distribuzione: barre Big Five, distribuzione archetipi, fondamenti Haidt, classi Bourdieu
+- [x] tRPC router calibratedSampler: sampleOne, sampleBatch, batchStats, listClusters
+- [x] Filtri: cluster culturale, generazione, genere, orientamento politico, urbanizzazione
+- [x] Profilo include: Inglehart-Welzel coordinates, dieta mediatica, attention_span, advertising_cynicism, sharing_propensity

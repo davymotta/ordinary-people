@@ -20,6 +20,7 @@ import WorldEvents from "./pages/WorldEvents";
 import CampaignTesting from "./pages/CampaignTesting";
 import LifeHistory from "./pages/LifeHistory";
 import ArchetypeMatrix from "./pages/ArchetypeMatrix";
+import CalibratedSampler from "./pages/CalibratedSampler";
 
 function Router() {
   return (
@@ -40,6 +41,7 @@ function Router() {
         <Route path="/campaign-testing" component={CampaignTesting} />
         <Route path="/life-history" component={LifeHistory} />
         <Route path="/archetype-matrix" component={ArchetypeMatrix} />
+        <Route path="/calibrated-sampler" component={CalibratedSampler} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

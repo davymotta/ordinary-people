@@ -36,7 +36,11 @@ import {
   type RegimeContextForLLM,
   type LLMReactionOutput,
 } from "./llm-reaction";
-
+import {
+  sampleRealisticProfile,
+  generateProfileBatch,
+  computeBatchStats,
+} from "./calibrated-sampler";
 export const appRouter = router({
   system: systemRouter,
 
@@ -813,6 +817,70 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         return await getArchetypeProfileById(input.id);
+      }),
+  }),
+  // --- Calibrated Sampler ---
+  calibratedSampler: router({
+    // Sample a single realistic profile
+    sampleOne: publicProcedure
+      .input(z.object({
+        culturalCluster: z.string().optional(),
+        generation: z.enum(["silent","boomer","genx","millennial","genz","alpha"]).optional(),
+        gender: z.enum(["male","female"]).optional(),
+        politicalOrientation: z.enum(["progressive","moderate","conservative"]).optional(),
+        urbanization: z.enum(["rural","suburban","urban","metro"]).optional(),
+        archetypeFilter: z.array(z.string()).optional(),
+        seed: z.number().optional(),
+      }).optional().default({}))
+      .mutation(async ({ input }) => {
+        return sampleRealisticProfile(input);
+      }),
+    // Generate a batch of profiles
+    sampleBatch: publicProcedure
+      .input(z.object({
+        count: z.number().min(1).max(500).default(50),
+        culturalCluster: z.string().optional(),
+        generation: z.enum(["silent","boomer","genx","millennial","genz","alpha"]).optional(),
+        gender: z.enum(["male","female"]).optional(),
+        politicalOrientation: z.enum(["progressive","moderate","conservative"]).optional(),
+        urbanization: z.enum(["rural","suburban","urban","metro"]).optional(),
+        archetypeFilter: z.array(z.string()).optional(),
+        seed: z.number().optional(),
+      }).optional().default(() => ({ count: 50 })))
+      .mutation(async ({ input }) => {
+        const { count, ...options } = input ?? { count: 50 };
+        const profiles = generateProfileBatch(count ?? 50, options);
+        const stats = computeBatchStats(profiles);
+        return { profiles, stats, count: profiles.length };
+      }),
+    // Get batch stats only (no full profiles)
+    batchStats: publicProcedure
+      .input(z.object({
+        count: z.number().min(1).max(1000).default(200),
+        culturalCluster: z.string().optional(),
+        generation: z.enum(["silent","boomer","genx","millennial","genz","alpha"]).optional(),
+        seed: z.number().optional(),
+      }).optional().default(() => ({ count: 200 })))
+      .mutation(async ({ input }) => {
+        const { count, ...options } = input;
+        const profiles = generateProfileBatch(count, options);
+        return computeBatchStats(profiles);
+      }),
+    // List available cultural clusters
+    listClusters: publicProcedure
+      .query(async () => {
+        return [
+          { id: "protestant_europe", name: "Protestant Europe", countries: "SWE, NOR, DEN, FIN, DEU" },
+          { id: "english_speaking",  name: "English-Speaking",  countries: "USA, GBR, CAN, AUS" },
+          { id: "catholic_europe",   name: "Catholic Europe",   countries: "ITA, FRA, ESP, POR, BEL" },
+          { id: "confucian",         name: "Confucian",         countries: "JPN, KOR, CHN, TWN" },
+          { id: "orthodox_europe",   name: "Orthodox Europe",   countries: "RUS, UKR, SER, BGR" },
+          { id: "latin_america",     name: "Latin America",     countries: "BRA, MEX, ARG, COL" },
+          { id: "south_asia",        name: "South Asia",        countries: "IND, BGD, LKA" },
+          { id: "islamic",           name: "Islamic / MENA",    countries: "SAU, EGY, IRN, TUR" },
+          { id: "sub_saharan_africa",name: "Sub-Saharan Africa",countries: "NGA, GHA, KEN, ZAF" },
+          { id: "southeast_asia",    name: "Southeast Asia",    countries: "THA, PHL, IDN, MYS" },
+        ];
       }),
   }),
 });
