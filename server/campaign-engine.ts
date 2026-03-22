@@ -45,6 +45,12 @@ import {
 } from "./social-influence";
 import { buildPerceptualPrompt } from "./ingestion/perceptual-filter";
 import type { CampaignDigest } from "./ingestion/schema";
+import { computeBiasVector, applyBiases, describeActiveBiases, formatBiasVectorForPrompt } from "./scoring/bias-engine";
+import { generateInnerLife, formatInnerLifeForPrompt } from "./scoring/inner-life-generator";
+import { computeSalience } from "./scoring/salience-calculator";
+import type { CampaignSignals } from "./scoring/salience-calculator";
+import { DEFAULT_SYSTEM_PARAMS } from "./scoring/system-params";
+import type { CampaignTag } from "./scoring/salience-calculator";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -306,7 +312,61 @@ export async function processAgentCampaignReaction(
     }
   }
 
-  const userPrompt = buildCampaignPrompt(agent, state, campaign, memories);
+  // ─── Cascade Level 1-2: Salience + Bias pre-computation ──────────────
+  // Compute the gut reaction score BEFORE the LLM call.
+  // This gives the LLM a deterministic anchor that reflects the agent's
+  // psychological profile and the campaign's semantic tags.
+  let gutReactionScore = 0.0;
+  let biasNarrative: string[] = [];
+  let salienceContext = "";
+  try {
+    // Extract campaign tags from topics + tone
+    const campaignTopics = (campaign.topics as string[]) ?? [];
+    const campaignTags = inferCampaignTags(campaignTopics, campaign.tone ?? "", campaign.format ?? "");
+    const campaignSignals: CampaignSignals = {
+      tags: campaignTags,
+      tone: campaign.tone ?? undefined,
+      emotionalCharge: 0.5,
+      format: campaign.format ?? undefined,
+      channel: campaign.channel ?? undefined,
+    };
+
+    // Compute salience (which variables are dominant for this campaign)
+    const salience = computeSalience(agent, campaignSignals);
+
+    // Compute gut reaction from dominant + modulation variables
+    const DOMINANT_W = DEFAULT_SYSTEM_PARAMS.DOMINANT_WEIGHT;
+    const MODULATION_W = DEFAULT_SYSTEM_PARAMS.MODULATION_WEIGHT;
+    let weightedSum = 0;
+    let totalWeight = 0;
+    for (const v of salience.dominant) {
+      const contribution = (v.value - 0.5) * v.resonance * DOMINANT_W;
+      weightedSum += contribution;
+      totalWeight += DOMINANT_W;
+    }
+    for (const v of salience.modulation) {
+      const contribution = (v.value - 0.5) * v.resonance * MODULATION_W;
+      weightedSum += contribution;
+      totalWeight += MODULATION_W;
+    }
+    gutReactionScore = totalWeight > 0 ? clamp(weightedSum / totalWeight * 2, -1, 1) : 0;
+
+    // Apply bias distortions (Level 2)
+    const biasVector = computeBiasVector(agent);
+    gutReactionScore = applyBiases(gutReactionScore, biasVector, campaignSignals);
+    biasNarrative = describeActiveBiases(biasVector, campaignSignals);
+
+    // Build salience context for the LLM
+    if (salience.dominant.length > 0) {
+      const dominantVarNames = salience.dominant.slice(0, 3).map(v => v.variable.replace(/_/g, " ")).join(", ");
+      salienceContext = `\n[Contesto deterministico: le variabili psicologiche più rilevanti per questa campagna sono: ${dominantVarNames}. Punteggio viscerale pre-razionale: ${gutReactionScore > 0.3 ? "positivo" : gutReactionScore < -0.3 ? "negativo" : "ambivalente"} (${gutReactionScore.toFixed(2)}).${biasNarrative.length > 0 ? " Bias attivi: " + biasNarrative.join("; ") + "." : ""}]`;
+    }
+  } catch (err) {
+    // Salience/bias computation is optional — proceed without it
+    console.warn(`[CampaignEngine] Salience/bias computation failed for agent ${agent.slug}:`, err);
+  }
+
+  const userPrompt = buildCampaignPrompt(agent, state, campaign, memories) + salienceContext;
 
   // Build messages with optional image
   const messages: Message[] = [
@@ -723,6 +783,51 @@ function buildFallbackSystemPrompt(agent: Agent): string {
     ? `Esperienza di vita che ti ha formato: ${lifeHistory}`
     : "";
 
+  // ─── Vita Interiore (se già calcolata e salvata nel DB) ──────────────
+  // I campi innerLife* sono calcolati dal generatore deterministico e salvati
+  // nel DB durante il seed. Se non presenti, vengono generati on-the-fly.
+  let innerLifeDesc = "";
+  try {
+    const agentAny = agent as any;
+    const hasInnerLife = agentAny.innerLifeContradictions || agentAny.innerLifeCoreDesire;
+    if (hasInnerLife) {
+      // Usa i campi salvati nel DB
+      const innerLifeData = {
+        contradictions: agentAny.innerLifeContradictions,
+        circadian_pattern: agentAny.innerLifeCircadianPattern,
+        relational_field: agentAny.innerLifeRelationalField,
+        core_wound: agentAny.innerLifeCoreWound,
+        core_desire: agentAny.innerLifeCoreDesire,
+        inner_voice_tone: agentAny.innerLifeInnerVoiceTone,
+        public_identity: agentAny.innerLifePublicIdentity,
+        private_behavior: agentAny.innerLifePrivateBehavior,
+        time_orientation: agentAny.innerLifeTimeOrientation,
+        money_narrative: agentAny.innerLifeMoneyNarrative,
+        primary_perception_mode: agentAny.innerLifePerceptionMode,
+        humor_style: agentAny.innerLifeHumorStyle,
+      };
+      innerLifeDesc = formatInnerLifeForPrompt(innerLifeData);
+    } else {
+      // Genera on-the-fly dal profilo
+      const generatedInnerLife = generateInnerLife(agent as any);
+      innerLifeDesc = formatInnerLifeForPrompt(generatedInnerLife as unknown as Record<string, unknown>);
+    }
+  } catch (_) {
+    // Inner life è opzionale — se fallisce, procedi senza
+  }
+
+  // ─── Bias Vector ─────────────────────────────────────────────────────
+  let biasDesc = "";
+  try {
+    const biasVector = computeBiasVector(agent);
+    const formatted = formatBiasVectorForPrompt(biasVector);
+    if (formatted && formatted !== "nessun bias cognitivo dominante") {
+      biasDesc = `I tuoi bias cognitivi dominanti: ${formatted}.`;
+    }
+  } catch (_) {
+    // Bias vector è opzionale
+  }
+
   return `Sei ${agent.firstName} ${agent.lastName}, ${agent.age} anni, ${agent.profession} di ${agent.city} (${agent.geo}).
 Generazione: ${agent.generation}. Reddito: ${agent.incomeEstimate.toLocaleString("it-IT")}€/anno. Istruzione: ${agent.education}.
 Nucleo familiare: ${agent.householdType} (${agent.familyMembers} persone).
@@ -736,7 +841,53 @@ ${maDesc ? maDesc + "\n" : ""}
 ${psychDesc ? psychDesc + "\n" : ""}
 ${haidtDesc ? haidtDesc + "\n" : ""}
 ${lifeHistoryDesc ? lifeHistoryDesc + "\n" : ""}
+${innerLifeDesc ? innerLifeDesc + "\n" : ""}
+${biasDesc ? biasDesc + "\n" : ""}
 Rispondi SEMPRE in prima persona, in italiano, come questa persona reale. Non descrivere te stesso — reagisci direttamente.`;
+}
+
+// ─── Campaign Tag Inference ───────────────────────────────────────────────────
+
+/**
+ * Infer semantic CampaignTags from topics, tone, and format.
+ * This is a rule-based mapping — no LLM needed.
+ */
+function inferCampaignTags(topics: string[], tone: string, format: string): CampaignTag[] {
+  const tags = new Set<CampaignTag>();
+  const all = [...topics.map(t => t.toLowerCase()), tone.toLowerCase(), format.toLowerCase()].join(" ");
+
+  if (/lusso|luxury|premium|esclusiv|alta gamma/.test(all)) tags.add("luxury");
+  if (/status|prestig|success|aspiraz/.test(all)) { tags.add("status"); tags.add("aspiration"); }
+  if (/prezzo alto|caro|costoso|high.price/.test(all)) tags.add("high_price");
+  if (/sconto|offerta|risparmio|convenien|value|discount/.test(all)) { tags.add("value"); tags.add("discount"); }
+  if (/famiglia|family|figli|genitori|casa/.test(all)) tags.add("family");
+  if (/comunit|community|insieme|social|appartenenz/.test(all)) tags.add("community");
+  if (/tradizion|heritage|storia|classic|nostalgic/.test(all)) { tags.add("tradition"); tags.add("nostalgia"); }
+  if (/autorit|expert|profess|certif|doctor|medic/.test(all)) tags.add("authority");
+  if (/scarsi|limit|ultim|esaurim|scarcity|urgency|ora|subito/.test(all)) { tags.add("scarcity"); tags.add("urgency"); }
+  if (/humor|ironi|divertent|funny|comico/.test(all)) { tags.add("humor"); tags.add("irony"); }
+  if (/ribellion|freedom|libert|anticonform|rebel/.test(all)) { tags.add("rebellion"); tags.add("freedom"); }
+  if (/sostenib|ecolog|green|ambient|planet|clima/.test(all)) { tags.add("sustainability"); tags.add("ecology"); }
+  if (/salute|health|wellness|benessere|fit|sport/.test(all)) { tags.add("health"); tags.add("wellness"); }
+  if (/bellezza|beauty|estetica|look|stile|moda/.test(all)) tags.add("beauty");
+  if (/novit|innov|technolog|digital|ai|smart|nuovo/.test(all)) { tags.add("novelty"); tags.add("innovation"); tags.add("technology"); }
+  if (/paura|fear|rischio|pericolo|sicurezza/.test(all)) tags.add("fear");
+  if (/colpa|guilt|responsabilit|vergogna/.test(all)) tags.add("guilt");
+  if (/orgoglio|pride|fierezza|success/.test(all)) tags.add("pride");
+  if (/social proof|testimoni|recensi|review|rating/.test(all)) tags.add("social_proof");
+  if (/esclusiv|vip|members|select|privat/.test(all)) tags.add("exclusivity");
+  if (/politica|politic|governo|elezioni|partito/.test(all)) tags.add("political");
+  if (/identit|identity|chi sei|chi sono|valori/.test(all)) tags.add("identity");
+  if (/sessualit|sex|sensual|eros/.test(all)) tags.add("sexuality");
+  if (/religios|fede|dio|chiesa|spiritualit/.test(all)) tags.add("religious");
+
+  // Default: if no tags detected, add generic ones based on tone
+  if (tags.size === 0) {
+    if (/emozion|emotional|sentim/.test(tone)) tags.add("belonging");
+    else tags.add("novelty");
+  }
+
+  return Array.from(tags);
 }
 
 function buildCampaignPrompt(agent: Agent, state: AgentState | null, campaign: Campaign, memories: any[]): string {

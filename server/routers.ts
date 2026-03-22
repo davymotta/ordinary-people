@@ -6,8 +6,12 @@ import { z } from "zod";
 import * as db from "./db";
 import * as agentsDb from "./agents-db";
 import { PROTOTYPE_AGENTS, getInitialState } from "./agents-seed";
+import { generateAgentBatch } from "./agents-batch-seed";
 import { processWorldEvent } from "./world-engine";
 import { runCampaignTest, processAgentCampaignReaction } from "./campaign-engine";
+import { harvestTikTokProfile, harvestYouTubeChannel, ingestPostsFromCsv } from "./gte/harvester";
+import { normalizeBrandPosts, getNormalizedPosts } from "./gte/normalizer";
+import { runCalibration } from "./gte/calibrator";
 import {
   runSimulation,
   computeWeightedMarketInterest,
@@ -484,6 +488,107 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return db.getGroundTruthByCampaign(input.campaignId);
       }),
+
+    // GTE: Harvest TikTok posts for a brand
+    harvestTikTok: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+        keyword: z.string().min(1),
+        maxPosts: z.number().min(1).max(100).default(30),
+        brandFollowers: z.number().default(50000),
+      }))
+      .mutation(async ({ input }) => {
+        return harvestTikTokProfile(
+          input.brandAgentId,
+          input.keyword,
+          input.maxPosts,
+          input.brandFollowers,
+        );
+      }),
+
+    // GTE: Harvest YouTube channel videos for a brand
+    harvestYouTube: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+        channelId: z.string().min(1),
+        maxPosts: z.number().min(1).max(100).default(30),
+        brandFollowers: z.number().default(10000),
+      }))
+      .mutation(async ({ input }) => {
+        return harvestYouTubeChannel(
+          input.brandAgentId,
+          input.channelId,
+          input.maxPosts,
+          input.brandFollowers,
+        );
+      }),
+
+    // GTE: Ingest posts from CSV (for Instagram/manual)
+    ingestCsv: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+        csvContent: z.string().min(1),
+        platform: z.enum(["instagram", "facebook"]).default("instagram"),
+      }))
+      .mutation(async ({ input }) => {
+        return ingestPostsFromCsv(input.brandAgentId, input.csvContent, input.platform);
+      }),
+
+    // GTE: Normalize all posts for a brand (compute percentile scores)
+    normalize: protectedProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .mutation(async ({ input }) => {
+        const normalized = await normalizeBrandPosts(input.brandAgentId);
+        return { count: normalized.length, posts: normalized };
+      }),
+
+    // GTE: Get normalized posts for a brand
+    getNormalizedPosts: publicProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        return getNormalizedPosts(input.brandAgentId);
+      }),
+
+    // GTE: Run full calibration for a brand
+    runGteCalibration: protectedProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .mutation(async ({ input }) => {
+        return runCalibration(input.brandAgentId);
+      }),
+
+    // GTE: Get accuracy timeline for a brand
+    getAccuracyTimeline: publicProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return [];
+        const { accuracyTimeline } = await import("../drizzle/schema");
+        const { eq: eqD } = await import("drizzle-orm");
+        return dbConn
+          .select()
+          .from(accuracyTimeline)
+          .where(eqD(accuracyTimeline.brandAgentId, input.brandAgentId))
+          .orderBy(accuracyTimeline.measuredAt);
+      }),
+
+    // GTE: Get ground truth posts for a brand
+    getPosts: publicProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+        limit: z.number().default(50),
+      }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return [];
+        const { groundTruthPosts } = await import("../drizzle/schema");
+        const { eq: eqD, desc } = await import("drizzle-orm");
+        return dbConn
+          .select()
+          .from(groundTruthPosts)
+          .where(eqD(groundTruthPosts.brandAgentId, input.brandAgentId))
+          .orderBy(desc(groundTruthPosts.publishedAt))
+          .limit(input.limit);
+      }),
   }),
 
   // --- Calibration ---
@@ -624,6 +729,44 @@ export const appRouter = router({
       }
       return { success: true, created, updated };
     }),
+    seedBatch: protectedProcedure
+      .input(z.object({
+        count: z.number().min(1).max(500).default(200),
+        seed: z.number().optional(),
+        culturalClusters: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const agents = generateAgentBatch({
+          count: input.count,
+          seed: input.seed ?? 42,
+          culturalClusters: input.culturalClusters,
+        });
+        let created = 0;
+        let updated = 0;
+        let errors = 0;
+        for (const agentData of agents) {
+          try {
+            const existing = await agentsDb.getAgentBySlug(agentData.slug);
+            const agentId = await agentsDb.upsertAgent(agentData);
+            if (existing) { updated++; } else { created++; }
+            // Create initial state
+            await agentsDb.upsertAgentState(agentId, {
+              moodValence: 0.0,
+              moodArousal: 0.5,
+              financialStress: agentData.priceSensitivity ?? 0.3,
+              socialTrust: 0.5,
+              institutionalTrust: 0.5,
+              maslowCurrent: agentData.maslowBaseline ?? 3,
+              activeConcerns: [],
+              regimePerception: { stable: 0.5, crisis: 0.2, growth: 0.3 },
+            });
+          } catch (err) {
+            errors++;
+            console.warn(`[seedBatch] Failed to upsert agent ${agentData.slug}:`, err);
+          }
+        }
+        return { success: true, total: agents.length, created, updated, errors };
+      }),
   }),
 
   // --- World Events ---
@@ -708,10 +851,12 @@ export const appRouter = router({
         gender: z.string().optional(),
         politicalOrientation: z.string().optional(),
         urbanization: z.string().optional(),
+        brandAgentId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         let campaignId: number;
         let digestJson: any = null;
+        let brandAgentContext: string | null = null;
 
         if (input.existingCampaignId) {
           campaignId = input.existingCampaignId;
@@ -738,6 +883,43 @@ export const appRouter = router({
           campaignId = newId;
         }
 
+        // Load brand agent context if provided
+        let brandAgentPool: number[] | undefined;
+        if (input.brandAgentId) {
+          try {
+            const { getDb } = await import("./db");
+            const { brandAgents: brandAgentsTable } = await import("../drizzle/schema");
+            const { eq: eqBA } = await import("drizzle-orm");
+            const db2 = await getDb();
+            if (db2) {
+              const [ba] = await db2.select().from(brandAgentsTable).where(eqBA(brandAgentsTable.id, input.brandAgentId));
+              if (ba) {
+                const identity = ba.brandIdentity as any;
+                const targetAud = ba.targetAudience as any;
+                const defaultPool = ba.defaultAgentPool as any;
+                brandAgentContext = JSON.stringify({
+                  brandName: ba.brandName,
+                  sector: ba.sector,
+                  positioning: ba.positioning,
+                  tone: identity?.tone_of_voice,
+                  values: identity?.brand_values,
+                  targetAudience: targetAud,
+                });
+                // Use default pool if available
+                if (defaultPool?.composition) {
+                  const { matchPool } = await import("./onboarding/pool-matcher");
+                  const matchResult = await matchPool(targetAud, defaultPool, input.panelSize);
+                  if (matchResult.agentIds.length > 0) {
+                    brandAgentPool = matchResult.agentIds;
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.warn("[Launch] Failed to load brand agent context:", err);
+          }
+        }
+
         const allAgents = await agentsDb.getAllAgents();
         let targetAgents = allAgents;
         if (input.generation) {
@@ -748,7 +930,10 @@ export const appRouter = router({
           const genValue = genMap[input.generation.toLowerCase()] ?? input.generation;
           targetAgents = targetAgents.filter(a => a.generation === genValue);
         }
-        const finalAgents = targetAgents.slice(0, input.panelSize);
+        // Brand agent pool takes priority over demographic filters
+        const finalAgents = brandAgentPool
+          ? allAgents.filter(a => brandAgentPool!.includes(a.id))
+          : targetAgents.slice(0, input.panelSize);
         const agentIds = finalAgents.length > 0 ? finalAgents.map(a => a.id) : undefined;
 
         const testId = await agentsDb.createCampaignTest({
@@ -1287,5 +1472,6 @@ export const appRouter = router({
           .orderBy(calibrationResults.createdAt);
       }),
   }),
+
 });
 export type AppRouter = typeof appRouter;

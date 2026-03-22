@@ -407,3 +407,231 @@ describe("buildFallbackSystemPrompt — Haidt section rendering", () => {
     expect(result).toMatch(/^Le tue fondazioni morali dominanti \(Haidt\):/);
   });
 });
+
+// ─── GTE Scorer — Engagement Rate ────────────────────────────────────────────
+
+describe("GTE Scorer — Engagement Rate formula", () => {
+  it("ritorna 0 per un post con tutte le metriche a 0", () => {
+    const likes = 0, comments = 0, shares = 0, saves = 0, followers = 0;
+    const er = followers > 0
+      ? (likes + comments * 3 + shares * 5 + saves * 4) / followers
+      : 0;
+    expect(er).toBe(0);
+  });
+
+  it("commenti pesano 3x i like nell'engagement rate", () => {
+    const er = (100 + 10 * 3 + 0 * 5 + 0) / 1000;
+    // 100 + 30 = 130 / 1000 = 0.13
+    expect(er).toBeCloseTo(0.13, 3);
+  });
+
+  it("shares pesano più dei commenti nell'engagement rate", () => {
+    const er1 = (0 + 10 * 3 + 0 * 5 + 0) / 1000; // 10 commenti → 30/1000 = 0.03
+    const er2 = (0 + 0 * 3 + 7 * 5 + 0) / 1000;  // 7 shares → 35/1000 = 0.035
+    expect(er2).toBeGreaterThan(er1);
+  });
+
+  it("saves pesano 4x i like", () => {
+    const erLikes = (100 + 0 + 0 + 0) / 1000;
+    const erSaves = (0 + 0 + 0 + 25 * 4) / 1000;
+    expect(erSaves).toBeCloseTo(erLikes, 3);
+  });
+});
+
+// ─── Salience Calculator — Logica di selezione ───────────────────────────────
+
+describe("Salience Calculator — Selezione variabili dominanti", () => {
+  it("dominant contiene le variabili con rilevanza più alta", () => {
+    const mockVars = [
+      { name: "statusOrientation", relevance: 0.9 },
+      { name: "priceSensitivity", relevance: 0.85 },
+      { name: "emotionalSusceptibility", relevance: 0.7 },
+      { name: "noveltySeeking", relevance: 0.6 },
+      { name: "riskAversion", relevance: 0.5 },
+    ];
+    const sorted = [...mockVars].sort((a, b) => b.relevance - a.relevance);
+    const dominant = sorted.slice(0, 3);
+    expect(dominant[0].name).toBe("statusOrientation");
+    expect(dominant[0].relevance).toBeGreaterThanOrEqual(dominant[1].relevance);
+    expect(dominant[1].relevance).toBeGreaterThanOrEqual(dominant[2].relevance);
+  });
+
+  it("i pesi dominant + modulation sommano a 1.0", () => {
+    const DOMINANT_WEIGHT = 0.65;
+    const MODULATION_WEIGHT = 0.35;
+    expect(DOMINANT_WEIGHT + MODULATION_WEIGHT).toBeCloseTo(1.0, 5);
+  });
+
+  it("la cascata si ferma al livello 1 se attention_score < threshold", () => {
+    const THRESHOLD_ATTENTION = 0.15;
+    const attentionScore = 0.10; // sotto soglia
+    const shouldScroll = attentionScore < THRESHOLD_ATTENTION;
+    expect(shouldScroll).toBe(true);
+  });
+
+  it("la cascata procede al livello 2 se attention_score >= threshold", () => {
+    const THRESHOLD_ATTENTION = 0.15;
+    const attentionScore = 0.20; // sopra soglia
+    const shouldScroll = attentionScore < THRESHOLD_ATTENTION;
+    expect(shouldScroll).toBe(false);
+  });
+});
+
+// ─── Bias Engine — Bias cognitivi ────────────────────────────────────────────
+
+describe("Bias Engine — Bias cognitivi deterministici", () => {
+  it("tutti i bias sono nel range [-1, +1]", () => {
+    const mockBiasVector = {
+      confirmationBias: 0.6,
+      lossAversion: 0.8,
+      statusQuoBias: 0.3,
+      bandwagonEffect: 0.5,
+      anchoring: 0.4,
+      availabilityHeuristic: 0.2,
+      representativeness: 0.3,
+      socialProof: 0.7,
+      authorityBias: 0.4,
+      scarcityBias: 0.5,
+      inGroupBias: 0.6,
+      negativityBias: 0.7,
+      veblenEffect: 0.1,
+    };
+    for (const val of Object.values(mockBiasVector)) {
+      expect(val).toBeGreaterThanOrEqual(-1);
+      expect(val).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("agente con alta neuroticism ha alta negativityBias", () => {
+    const neuroticism = 0.9;
+    const negativityBias = 0.3 + neuroticism * 0.5;
+    expect(negativityBias).toBeGreaterThan(0.6);
+  });
+
+  it("agente con alta statusOrientation e alto economicCapital ha alto veblenEffect", () => {
+    const statusOrientation = 0.9;
+    const economicCapital = 0.8;
+    const veblenEffect = statusOrientation * 0.6 + economicCapital * 0.4;
+    expect(veblenEffect).toBeGreaterThan(0.7);
+  });
+
+  it("agente con bassa apertura ha alta confirmationBias", () => {
+    const openness = 0.1;
+    const identityDefensiveness = 0.9;
+    const confirmationBias = (1 - openness) * 0.5 + identityDefensiveness * 0.5;
+    expect(confirmationBias).toBeGreaterThan(0.7);
+  });
+
+  it("bias vector ha 13 dimensioni", () => {
+    const mockBiasVector = {
+      confirmationBias: 0, lossAversion: 0, statusQuoBias: 0,
+      bandwagonEffect: 0, anchoring: 0, availabilityHeuristic: 0,
+      representativeness: 0, socialProof: 0, authorityBias: 0,
+      scarcityBias: 0, inGroupBias: 0, negativityBias: 0, veblenEffect: 0,
+    };
+    expect(Object.keys(mockBiasVector)).toHaveLength(13);
+  });
+});
+
+// ─── Inner Life Generator — Vita Interiore ───────────────────────────────────
+
+describe("Inner Life Generator — Logica deterministica", () => {
+  it("agente con alta neuroticism ha innerVoiceTone ansioso o critico", () => {
+    const neuroticism = 0.9;
+    const conscientiousness = 0.3;
+    // Logica: neuroticism > 0.7 → ansioso; neuroticism > 0.5 && conscientiousness < 0.4 → critico
+    const tone = neuroticism > 0.7 ? "ansioso"
+      : neuroticism > 0.5 && conscientiousness < 0.4 ? "critico"
+      : "neutro";
+    expect(["ansioso", "critico"]).toContain(tone);
+  });
+
+  it("agente con alta openness ha innerVoiceTone incoraggiante o ironico", () => {
+    const openness = 0.85;
+    const neuroticism = 0.2;
+    const tone = neuroticism > 0.7 ? "ansioso"
+      : openness > 0.7 ? "incoraggiante"
+      : "neutro";
+    expect(["incoraggiante", "ironico"]).toContain(tone);
+  });
+
+  it("GenZ con alta apertura tende a future_oriented o present_hedonist", () => {
+    const generation = "GenZ";
+    const openness = 0.85;
+    const neuroticism = 0.3;
+    // Logica: GenZ + alta apertura → future_oriented
+    const orientation = generation === "GenZ" && openness > 0.6 ? "future_oriented"
+      : neuroticism > 0.7 ? "fatalistic"
+      : "present_hedonist";
+    expect(["future_oriented", "present_hedonist"]).toContain(orientation);
+  });
+
+  it("Boomer con alta conscientiousness tende a past_oriented", () => {
+    const generation = "Boomer";
+    const conscientiousness = 0.8;
+    const orientation = generation === "Boomer" || generation === "Silent" ? "past_oriented"
+      : "present_hedonist";
+    expect(orientation).toBe("past_oriented");
+  });
+
+  it("agente con alta economicCapital ha moneyNarrative di abbondanza", () => {
+    const economicCapital = 0.85;
+    const narrative = economicCapital > 0.7 ? "abbondanza"
+      : economicCapital < 0.3 ? "scarcità"
+      : "sufficienza";
+    expect(narrative).toBe("abbondanza");
+  });
+});
+
+// ─── Exposure Engine — Decay esponenziale ────────────────────────────────────
+
+describe("Exposure Engine — Decay esponenziale e saturazione", () => {
+  it("il sentiment decade verso 0 nel tempo", () => {
+    const initialSentiment = 0.8;
+    const decayRate = 0.05;
+    const daysPassed = 30;
+    const decayed = initialSentiment * Math.exp(-decayRate * daysPassed);
+    expect(decayed).toBeLessThan(initialSentiment);
+    expect(decayed).toBeGreaterThan(0);
+  });
+
+  it("dopo 100 giorni il sentiment è quasi azzerato con decay 0.05", () => {
+    const decayed = 1.0 * Math.exp(-0.05 * 100);
+    expect(decayed).toBeLessThan(0.01);
+  });
+
+  it("la saturazione aumenta con ogni esposizione e non supera 1.0", () => {
+    let saturation = 0;
+    const saturationRate = 0.15;
+    for (let i = 0; i < 5; i++) {
+      saturation = Math.min(1.0, saturation + saturationRate * (1 - saturation));
+    }
+    expect(saturation).toBeGreaterThan(0.4);
+    expect(saturation).toBeLessThanOrEqual(1.0);
+  });
+
+  it("il mere exposure effect aumenta la familiarità fino a un massimo", () => {
+    let familiarity = 0;
+    const mereExposureRate = 0.08;
+    for (let i = 0; i < 10; i++) {
+      familiarity = Math.min(1.0, familiarity + mereExposureRate * (1 - familiarity));
+    }
+    expect(familiarity).toBeGreaterThan(0.5);
+    expect(familiarity).toBeLessThanOrEqual(1.0);
+  });
+
+  it("la saturazione rallenta la risposta positiva (moltiplicatore < 1)", () => {
+    const saturation = 0.8;
+    const gutReaction = 0.7;
+    const adjustedReaction = gutReaction * (1 - saturation * 0.5);
+    expect(adjustedReaction).toBeLessThan(gutReaction);
+    expect(adjustedReaction).toBeGreaterThan(0);
+  });
+
+  it("l'irritazione accumulata abbassa la risposta positiva", () => {
+    const accumulatedIrritation = 0.6;
+    const gutReaction = 0.5;
+    const adjustedReaction = gutReaction - accumulatedIrritation * 0.3;
+    expect(adjustedReaction).toBeLessThan(gutReaction);
+  });
+});

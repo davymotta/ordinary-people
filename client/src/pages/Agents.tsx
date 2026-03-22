@@ -428,6 +428,15 @@ export default function Agents() {
     },
   });
 
+  const seedBatchMutation = trpc.agents.seedBatch.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Panel calibrato: ${data.created} creati, ${data.updated} aggiornati${data.errors > 0 ? `, ${data.errors} errori` : ''}`);
+    },
+    onError: (err) => {
+      toast.error(`Errore seed batch: ${err.message}`);
+    },
+  });
+
   const memoriesQuery = trpc.agents.getMemories.useQuery(
     { agentId: selectedAgent?.id ?? 0 },
     { enabled: !!selectedAgent }
@@ -467,19 +476,34 @@ export default function Agents() {
             {agents.length} persone sintetiche con memoria persistente e stati emotivi dinamici
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => seedMutation.mutate()}
-          disabled={seedMutation.isPending}
-        >
-          {seedMutation.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          {agents.length === 0 ? "Inizializza Agenti" : "Re-seed"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => seedMutation.mutate()}
+            disabled={seedMutation.isPending}
+          >
+            {seedMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            {agents.length === 0 ? "Inizializza Agenti" : "Re-seed"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => seedBatchMutation.mutate({ count: 200 })}
+            disabled={seedBatchMutation.isPending}
+            title="Genera 200 agenti calibrati statisticamente (Vita Interiore + Bias Vector)"
+          >
+            {seedBatchMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Users className="h-4 w-4 mr-2" />
+            )}
+            Seed 200 agenti
+          </Button>
+        </div>
       </div>
 
       {/* Stats Row */}

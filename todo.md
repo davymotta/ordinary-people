@@ -228,3 +228,173 @@
 - [x] S3.14 — UI Calibration Report integrata in /app/onboarding: ρ prominente, per-dimension breakdown, outlier analysis
 - [x] S3.15 — Integrazione nella pagina /app/onboarding: pulsante Calibra + CalibrationReport dopo Brand Profile
 - [x] S3.16 — Vitest 25/25: normalizzazione percentile, Spearman ρ, tuneWeights, computeEngagementScore, computeEngagementStats
+
+---
+
+## Sprint 2 — Completamento
+- [x] S2.1 — Persistere Campaign Digest nel DB (campo `digestJson` JSON in tabella `campaigns`) — già presente
+- [x] S2.2 — Collegare Perceptual Filter al Campaign Testing Engine — integrato in campaign-engine.ts (righe 272-307)
+- [x] S2.3 — Seed batch 200 profili realistici nel DB — agents-batch-seed.ts + router agents.seedBatch + pulsante UI
+- [ ] S2.4 — Integrare Campaign Digest nel targeting (passaggio `campaign_id` da `/app/ingest` a `/app/simulate/new`)
+- [ ] S2.5 — File upload drag&drop reale (input file → S3 → `ingestion.ingestImageUrl`)
+
+## Sprint 3 — Completamento
+- [x] S3.8 — Targeting Panel: se esiste Brand Agent, pre-carica pool di default — brandAgentId nel router launch + matchPool
+- [ ] S3.9 — SimulateReport: Brand Agent inietta contesto nel reporter LLM
+- [ ] S3.10 — Vitest: brand-researcher mock, brand-profiler schema, pool-matcher
+- [ ] S3.T — Targeting Panel professionale stile Meta Ads Manager (preview reach, distribuzione visiva)
+
+## Layer "Vita Interiore" — Sprint 5 (nuovo)
+*Obiettivo: agenti inquietantemente vivi. Ogni layer aggiunge tensione interna che genera risposte non prevedibili.*
+
+### Schema DB e Tipi
+- [x] VI.1 — Aggiungere colonne JSON al profilo agente: `contradictions`, `circadian_pattern`, `relational_field`, `core_wound`, `core_desire`, `inner_voice_tone`, `public_identity`, `private_behavior`, `time_orientation`, `money_narrative`, `primary_perception_mode`, `humor_style` — migrazione 0007 applicata
+- [x] VI.2 — Migrazione DB applicata — drizzle/0007_*.sql
+
+### Generatore Calibrato
+- [x] VI.3 — server/scoring/inner-life-generator.ts: 12 campi generati deterministicamente da Big Five, Haidt, generazione, habitus
+- [x] VI.4 — Integrare inner-life-generator nel agents-batch-seed.ts (sampleRealisticProfile → InsertAgent)
+- [ ] VI.5 — Aggiornare i 10 agenti seed con i nuovi campi (narrativi, coerenti con la loro storia)
+
+### System Prompt
+- [x] VI.6 — Integrare tutti i nuovi campi in buildFallbackSystemPrompt (sezione "Vita Interiore") — formatInnerLifeForPrompt
+- [ ] VI.7 — Integrare primary_perception_mode nel Perceptual Filter (peso 3× per visual, 3× per verbal, 3× per kinesthetic)
+- [ ] VI.8 — Integrare circadian_pattern nel prompt di reazione (momento del giorno → livello attenzione)
+
+### UI
+- [ ] VI.9 — Aggiungere tab "Vita Interiore" nella pagina Agent Detail (/admin/agents/:id)
+- [ ] VI.10 — Visualizzare contraddizioni, ferita/desiderio, voce interiore, guilty pleasure in card dedicate
+
+### Testing
+- [x] VI.11 — Vitest: 5 test Inner Life Generator (logica deterministica) — 141 test totali
+- [ ] VI.12 — Vitest: Perceptual Filter con primary_perception_mode (peso sensoriale)
+
+## Bias Engine — Sprint 5 (nuovo — documento 2)
+*Obiettivo: bias cognitivi come funzioni deterministiche del profilo, non parametri liberi. Trasforma il motore da lineare a non-lineare.*
+
+- [x] BE.1 — server/scoring/bias-engine.ts: 13 bias calcolati deterministicamente da Agent (BigFive, Haidt, profilo) — computeBiasVector()
+- [x] BE.2-BE.13 — Tutti i 13 bias implementati: confirmationBias, lossAversion, statusQuoBias, bandwagonEffect, anchoring, availabilityHeuristic, representativeness, socialProof, authorityBias, scarcityBias, inGroupBias, negativityBias, veblenEffect
+- [x] BE.14 — Bias vector iniettato nel buildFallbackSystemPrompt (sezione "Come pensi") — formatBiasVectorForPrompt
+- [x] BE.15 — Bias vector iniettato nel campaign-engine (pre-calcolo deterministico)
+- [ ] BE.16 — Aggiungere sezione "Profilo cognitivo del panel" nel PDF report (bias dominanti per segmento)
+- [x] BE.17 — Vitest: 5 test Bias Engine (range, formule, edge cases) — 141 test totali
+
+## Architettura a 4 Livelli di Processamento (documento 3)
+*Obiettivo: cascata deterministica L1→L4 con salienza variabile. La complessità dei 25 layer si riduce a 8-10 parametri globali calibrabili.*
+
+### Salience Calculator
+- [x] SC.1 — server/scoring/salience-calculator.ts: computeSalience(agent, campaign) → {dominant[], modulation[], dormant[]}
+- [x] SC.2 — Tag semantici campagna: 15 tag (luxury, family, scarcity, humor, rebellion, tradition, sustainability, sexuality, authority, freedom, health, status, price, novelty, community)
+- [x] SC.3 — Tag di attivazione per ogni variabile del profilo implementati
+- [x] SC.4 — Output: {dominant: [{var, value, resonance}], modulation: [{var, value, resonance}], dormant: []}
+
+### Livello 1 — Filtro Attenzione
+- [x] L1.1 — attention_score = f(primary_perception_mode, attention_span, advertising_cynicism, campaign.format, campaign.channel) — in salience-calculator.ts
+- [x] L1.2 — THRESHOLD_ATTENTION = 0.15 (parametro globale in system-params.ts)
+- [x] L1.3 — Se attention_score < threshold → reaction: "scrolled_past" — integrato in campaign-engine.ts
+- [ ] L1.4 — Calibrare threshold per ottenere 60-70% scroll rate realistico
+
+### Livello 2 — Reazione Viscerale
+- [x] L2.1 — gut_reaction = weighted_sum(dominant × DOMINANT_WEIGHT + modulation × MODULATION_WEIGHT) — in campaign-engine.ts
+- [x] L2.2 — apply_biases(gut_reaction, bias_vector, campaign) — bias-engine.ts integrato
+- [x] L2.3 — DOMINANT_WEIGHT = 3.0, MODULATION_WEIGHT = 1.0 (in system-params.ts)
+- [ ] L2.4 — emotional_signature: quali variabili si sono attivate e in che direzione (da aggiungere al DB)
+
+### Livello 3 — Elaborazione Razionale
+- [x] L3.1 — Se |gut_reaction| > THRESHOLD_CERTAINTY (0.5): solo confirmation bias (×0.1) — in campaign-engine.ts
+- [x] L3.2 — Se |gut_reaction| ≤ 0.5: rational_score = f(topic_match, format_fit, price_gap, cultural_decode)
+- [x] L3.3 — rational_adjustment = rational_score × (1 - |gut_reaction|)
+- [x] L3.4 — final_individual_score = gut_reaction + rational_adjustment
+
+### Livello 4 — Influenza Sociale
+- [x] L4.1 — social-influence.ts integrato nel campaign-engine (two-pass simulation)
+- [ ] L4.2 — Integrare bandwagon_vs_contrarian dal bias_vector nel social influence
+
+### Parametri Globali del Sistema
+- [x] GP.1 — server/scoring/system-params.ts: THRESHOLD_ATTENTION, DOMINANT_WEIGHT, MODULATION_WEIGHT, THRESHOLD_CERTAINTY, SOCIAL_INFLUENCE_WEIGHT, DEFAULT_SYSTEM_PARAMS
+- [ ] GP.2 — Tabella DB `systemParams` per persistere i parametri calibrati per brand
+- [ ] GP.3 — Integrare system params nell'auto-calibration loop (auto-calibration.ts)
+
+### Clustering Post-hoc delle Reazioni
+- [x] CL.1 — server/scoring/reaction-clustering.ts: k-means sulle reaction vectors → 4-6 cluster
+- [ ] CL.2 — Aggiungere cluster analysis al report aggregato (segmenti di reazione)
+- [ ] CL.3 — UI: visualizzare cluster nel SimulateReport (scatter plot o bubble chart)
+
+### Integrazione nel Campaign Engine
+- [x] CE.1 — Cascata L1→L4 integrata in campaign-engine.ts (Salience + Bias + Rational + Social)
+- [ ] CE.2 — Aggiungere campo `scrolledPast` al CampaignReaction (agenti che hanno scrollato)
+- [ ] CE.3 — Aggiungere `emotionalSignature` al CampaignReaction (variabili attivate)
+- [ ] CE.4 — Aggiungere `attentionScore` al CampaignReaction
+- [ ] CE.5 — Aggiornare il report per mostrare scroll rate, cluster, emotional signatures
+
+## AgentExposureState — Stato Persistente (documento 4)
+*Il layer che trasforma Ordinary People da testing tool a simulatore strategico.*
+
+### Schema DB
+- [x] AES.1 — Tabella `agentBrandStates` creata — migrazione 0008 applicata
+- [x] AES.2 — Tabella `journeySimulations` creata — migrazione 0008 applicata
+
+### Exposure Engine
+- [x] AES.3 — server/scoring/exposure-engine.ts: loadAgentBrandState(), applyDecay(), updateStateAfterExposure(), computeExposureModifier()
+- [ ] AES.4 — Integrare exposure state nel campaign-engine: prima di processare, caricare stato; dopo, aggiornare
+- [x] AES.5 — Mere exposure effect (Zajonc): familiarità crescente → boost positivo fino a saturazione — in exposure-engine.ts
+
+### Simulazioni Strategiche (tier premium)
+- [ ] SIM.1 — Journey Simulation (multi-touchpoint): processare funnel in sequenza sugli stessi agenti
+- [ ] SIM.2 — Retargeting Decay Analysis: esporre N volte, misurare curva di frequency response per segmento
+- [ ] SIM.3 — Media Mix Optimization: testare scenari di allocazione budget per piattaforma
+- [ ] SIM.4 — Competitive Response: esporre prima a campagna competitor, poi a campagna cliente
+- [ ] SIM.5 — Content Calendar Optimization: processare calendario in sequenza, misurare sentiment cumulativo
+- [ ] SIM.6 — UI: nuova sezione "Simulazioni Strategiche" nel TargetingPanel con tipo di simulazione
+
+## Ground Truth Engine (GTE) — Sprint 6
+
+*Obiettivo: trasformare ogni claim sull'accuratezza degli agenti in una misurazione. Il sistema che prova che Ordinary People funziona.*
+
+### Schema DB
+- [x] GTE-1 — Tabella `ground_truth_posts`: platform, post_id, post_url, published_at, content_type, caption, hashtags, image_urls, metrics_48h (JSON), metrics_7d (JSON), comment_analysis (JSON), norm_resonance/depth/amplification/polarity/rejection/composite, campaign_digest_id
+- [x] GTE-2 — Tabella `ground_truth_simulations`: ground_truth_post_id, brand_agent_id, agent_pool_size, model_params (JSON), sim_resonance/depth/amplification/polarity/rejection/composite, raw_positive_rate, raw_scroll_rate, raw_share_rate, raw_rejection_rate, raw_score_mean, raw_score_std
+- [x] GTE-3 — Tabella `gteCalibrationRuns`: brand_agent_id, total_posts, training_posts, holdout_posts, pre_rho_*/post_rho_*/holdout_rho_* per ogni dimensione, params_before/after/deltas (JSON), content_type_biases, theme_weaknesses, outlier_posts
+- [x] GTE-4 — Tabella `accuracy_timeline`: brand_agent_id, measured_at, rolling_rho_composite/resonance/depth/amplification, total_calibration_posts, posts_last_30_days, model_params_version
+
+### Scorer TypeScript
+- [x] GTE-5 — server/gte/scorer.ts: `percentileRank(values, index)`, `computeResonanceReal()`, `computeDepthReal()`, `computeAmplificationReal()`, `computePolarityReal()`, `computeRejectionReal()`
+- [x] GTE-6 — server/gte/scorer.ts: `computeResonanceSimulated()`, `computeDepthSimulated()`, `computeAmplificationSimulated()`, `computePolaritySimulated()`, `computeRejectionSimulated()`
+- [x] GTE-7 — server/gte/scorer.ts: `computeCompositeScore()` con pesi 0.30/0.20/0.20/0.15/0.15
+
+### Normalizer
+- [x] GTE-8 — server/gte/normalizer.ts: `normalizeBrandPosts(posts[])` → percentile rank su N post per brand, `NormalizedPost` type
+
+### Harvester
+- [x] GTE-9 — server/gte/harvester.ts: `harvestTikTokProfile(handle)` via Data API Tiktok/search_tiktok_video_general
+- [x] GTE-10 — server/gte/harvester.ts: `harvestYouTubeChannel(channelId)` via Data API Youtube/get_channel_videos
+- [x] GTE-11 — server/gte/harvester.ts: `ingestPostFromCsv(csvRow)` per upload manuale Instagram
+- [x] GTE-12 — server/gte/harvester.ts: `generateCampaignDigestForPost(post)` — riusa ingestion pipeline per ogni post raccolto
+
+### Calibrator
+- [x] GTE-13 — server/gte/calibrator.ts: `computeSpearmanRho(realScores, simScores)` — implementazione TypeScript pura
+- [x] GTE-14 — server/gte/calibrator.ts: `computeCalibrationMetrics(posts)` — rho + MAE + top-quartile accuracy + bottom-quartile accuracy per ogni dimensione
+- [x] GTE-15 — server/gte/calibrator.ts: `diagnoseErrors(posts)` — content type bias, theme weaknesses, outlier analysis
+- [x] GTE-16 — server/gte/calibrator.ts: `gridSearchParams(posts, currentParams)` — ottimizzazione parametri globali su training set, validazione su holdout
+- [x] GTE-17 — server/gte/calibrator.ts: `generateCalibrationReport(brandAgentId)` — report strutturato con ρ, per-dimension, findings, warnings
+
+### Router tRPC
+- [x] GTE-18 — router `groundTruth.ingestPost`: inserisce post manuale nel DB con metriche
+- [x] GTE-19 — router `groundTruth.harvestProfile`: scraping automatico profilo TikTok/YouTube
+- [x] GTE-20 — router `groundTruth.runSimulation`: simula tutti i post raccolti per un brand agent, calcola composite scores
+- [x] GTE-21 — router `groundTruth.normalize`: calcola percentile rank su tutti i post di un brand
+- [x] GTE-22 — router `groundTruth.computeCalibration`: Spearman ρ, diagnostics, grid search, salva calibration_run
+- [x] GTE-23 — router `groundTruth.getReport`: report calibrazione per brand agent
+- [x] GTE-24 — router `groundTruth.getAccuracyTimeline`: trend accuratezza nel tempo
+
+### UI Calibration Dashboard
+- [x] GTE-25 — Pagina /app/calibration (GroundTruth.tsx riscritto con GTE dashboard): overview accuratezza brand agent (ρ prominente, barra visiva)
+- [ ] GTE-26 — Per-dimension breakdown: Resonance/Depth/Amplification/Polarity/Rejection con ρ e interpretazione
+- [ ] GTE-27 — Outlier posts: tabella post con delta maggiore (real vs simulated), diagnosi automatica
+- [ ] GTE-28 — Content type biases: quali formati il modello sovra/sotto-stima
+- [ ] GTE-29 — Accuracy timeline: grafico ρ nel tempo (migliora con ogni calibrazione)
+- [ ] GTE-30 — Pulsante "Calibra ora": lancia harvesting + simulazione + calibrazione in background
+
+### Integrazione
+- [ ] GTE-31 — Integrazione con Brand Agent onboarding: dopo saveBrandAgent, avvia auto-calibration GTE
+- [ ] GTE-32 — Post-simulation tracking: dopo che il cliente lancia una campagna reale, GTE scrapa i risultati a 48h

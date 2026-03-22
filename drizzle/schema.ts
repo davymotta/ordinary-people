@@ -84,6 +84,38 @@ export const agents = mysqlTable("agents", {
   haidtProfile: json("haidtProfile"),
   // Life History notes: 2-3 eventi formativi chiave che spiegano la visione del mondo dell'agente
   lifeHistoryNotes: text("lifeHistoryNotes"),
+
+  // ─── Vita Interiore (Layer 5 — Documento 1) ──────────────────────────
+  // Contraddizioni interne: array di {trait_a, trait_b, manifestation}
+  // Es: [{trait_a:"vuole risparmiare", trait_b:"vuole bella figura", manifestation:"compra in saldo ma di marca"}]
+  contradictions: json("contradictions"),
+  // Ritmo circadiano e pattern di consumo: {peak_hours, low_hours, decision_context}
+  circadianPattern: json("circadianPattern"),
+  // Campo relazionale: come le relazioni influenzano le decisioni
+  // {primary_influence:"famiglia", secondary_influence:"colleghi", trust_radius:"narrow|medium|wide"}
+  relationalField: json("relationalField"),
+  // Ferita core e desiderio core (Bradshaw, Maslow)
+  coreWound: varchar("coreWound", { length: 300 }),
+  coreDesire: varchar("coreDesire", { length: 300 }),
+  // Tono della voce interiore: "critico" | "incoraggiante" | "ansioso" | "ironico" | "neutro"
+  innerVoiceTone: varchar("innerVoiceTone", { length: 50 }),
+  // Identità pubblica vs comportamento privato
+  publicIdentity: varchar("publicIdentity", { length: 300 }),
+  privateBehavior: varchar("privateBehavior", { length: 300 }),
+  // Orientamento temporale: "past_oriented" | "present_hedonist" | "future_oriented" | "fatalistic"
+  timeOrientation: varchar("timeOrientation", { length: 50 }),
+  // Narrativa del denaro: come pensa ai soldi emotivamente
+  moneyNarrative: varchar("moneyNarrative", { length: 300 }),
+  // Modalità percettiva primaria: "visual" | "verbal" | "kinesthetic" | "auditory"
+  primaryPerceptionMode: varchar("primaryPerceptionMode", { length: 20 }),
+  // Stile umoristico: "ironia" | "sarcasmo" | "umorismo_assurdo" | "umorismo_caldo" | "nessuno"
+  humorStyle: varchar("humorStyle", { length: 50 }),
+
+  // ─── Bias Vector (Layer 6 — Documento 2) ────────────────────────────
+  // JSON con 13 bias cognitivi calcolati deterministicamente dal profilo
+  // {selective_attention, anchoring_susceptibility, framing_sensitivity, ...}
+  biasVector: json("biasVector"),
+
   // Avatar image URL
   avatarUrl: varchar("avatarUrl", { length: 500 }),
   // Bibliography notes
@@ -761,3 +793,203 @@ export const calibrationResults = mysqlTable("calibrationResults", {
 
 export type CalibrationResult = typeof calibrationResults.$inferSelect;
 export type InsertCalibrationResult = typeof calibrationResults.$inferInsert;
+
+// ─── Agent Brand States ───────────────────────────────────────────────────────
+// Stato persistente di ogni agente rispetto a un brand specifico.
+// Aggiornato dopo ogni esposizione (campagna, evento, contenuto organico).
+// Abilita: Journey Simulation, Retargeting Decay, Competitive Response.
+// Fonte: Documento 4 — AgentExposureState interface
+export const agentBrandStates = mysqlTable("agentBrandStates", {
+  id: int("id").autoincrement().primaryKey(),
+  agentId: int("agentId").notNull(),
+  brandAgentId: int("brandAgentId").notNull(), // FK a brandAgents
+  // Mere Exposure Effect (Zajonc 1968): familiarità cresce con esposizioni
+  brandFamiliarity: float("brandFamiliarity").notNull().default(0.0), // 0-1
+  // Sentiment accumulato verso il brand (-1=ostile, +1=fan)
+  brandSentiment: float("brandSentiment").notNull().default(0.0), // -1 to +1
+  // Contatore esposizioni totali
+  exposureCount: int("exposureCount").notNull().default(0),
+  // Timestamp ultima esposizione (per calcolo decay)
+  lastExposureAt: timestamp("lastExposureAt"),
+  // Saturazione: cresce con alta frequenza, decade velocemente
+  saturationLevel: float("saturationLevel").notNull().default(0.0), // 0-1
+  // Irritazione da retargeting: cresce con esposizioni ravvicinate, decade moderatamente
+  accumulatedIrritation: float("accumulatedIrritation").notNull().default(0.0), // 0-1
+  // Memoria dei contenuti visti (ultimi N, per evitare ripetizioni)
+  contentMemory: json("contentMemory"), // ContentMemoryItem[]
+  // Stato emotivo corrente verso il brand
+  currentEmotionalState: varchar("currentEmotionalState", { length: 100 }), // "curiosità"|"fiducia"|"irritazione"|...
+  // Touchpoint history (per journey simulation)
+  touchpointHistory: json("touchpointHistory"), // [{ campaignId, score, timestamp, channel }]
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AgentBrandState = typeof agentBrandStates.$inferSelect;
+export type InsertAgentBrandState = typeof agentBrandStates.$inferInsert;
+
+// ─── Journey Simulations ──────────────────────────────────────────────────────
+// Simulazione multi-touchpoint: un funnel intero processato in sequenza
+// sugli stessi agenti. Abilita: Journey Simulation, Content Calendar.
+export const journeySimulations = mysqlTable("journeySimulations", {
+  id: int("id").autoincrement().primaryKey(),
+  brandAgentId: int("brandAgentId"),
+  name: varchar("name", { length: 300 }).notNull(),
+  simulationType: mysqlEnum("simulationType", [
+    "journey",        // multi-touchpoint funnel
+    "retargeting",    // frequency decay analysis
+    "media_mix",      // budget allocation optimization
+    "competitive",    // competitor interference
+    "content_calendar", // sequence optimization
+  ]).notNull().default("journey"),
+  // Touchpoints in order (array di campaignId o campaign drafts)
+  touchpoints: json("touchpoints").notNull(), // [{ campaignId, channel, delayDays, label }]
+  // Agent pool
+  agentIds: json("agentIds"), // null = tutti
+  totalAgents: int("totalAgents").notNull().default(0),
+  // Results
+  status: mysqlEnum("journeyStatus", ["pending", "running", "complete", "failed"]).default("pending"),
+  results: json("results"), // JourneyResults JSON
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  error: text("error"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type JourneySimulation = typeof journeySimulations.$inferSelect;
+export type InsertJourneySimulation = typeof journeySimulations.$inferInsert;
+
+// ─── Ground Truth Engine (GTE) ───────────────────────────────────────────────
+// The system that proves Ordinary People works.
+// Harvests real social data, simulates the same content, compares results.
+
+// Real post data scraped from social platforms
+export const groundTruthPosts = mysqlTable("groundTruthPosts", {
+  id: int("id").autoincrement().primaryKey(),
+  brandAgentId: int("brandAgentId").notNull(),
+  platform: mysqlEnum("platform", ["instagram", "tiktok", "facebook", "youtube"]).notNull(),
+  postId: varchar("postId", { length: 200 }).notNull(),
+  postUrl: varchar("postUrl", { length: 500 }),
+  publishedAt: timestamp("publishedAt").notNull(),
+  contentType: mysqlEnum("contentType", ["image", "video", "carousel", "text", "reel", "story", "short"]).notNull().default("image"),
+  caption: text("caption"),
+  hashtags: json("hashtags"), // string[]
+  imageUrls: json("imageUrls"), // string[]
+  videoUrl: varchar("videoUrl", { length: 500 }),
+  // Brand context
+  brandHandle: varchar("brandHandle", { length: 100 }),
+  brandFollowersAtTime: int("brandFollowersAtTime"),
+  // Raw engagement metrics at 48h snapshot
+  metrics48h: json("metrics48h"), // { likes, comments, shares, saves, views, reach }
+  // Raw engagement metrics at 7d snapshot
+  metrics7d: json("metrics7d"),
+  // Comment analysis (sampled top 50 comments)
+  commentAnalysis: json("commentAnalysis"), // { total, sampled, positive_pct, negative_pct, avg_sentiment, sentiment_variance, avg_comment_length, question_rate }
+  // Normalized percentile scores (0-100) within brand distribution
+  normResonance: float("normResonance"),
+  normDepth: float("normDepth"),
+  normAmplification: float("normAmplification"),
+  normPolarity: float("normPolarity"),
+  normRejection: float("normRejection"),
+  normComposite: float("normComposite"),
+  // Campaign digest generated for this post (for re-simulation)
+  campaignDigestId: int("campaignDigestId"),
+  scrapedAt: timestamp("scrapedAt").defaultNow().notNull(),
+  normalizedAt: timestamp("normalizedAt"),
+});
+
+export type GroundTruthPost = typeof groundTruthPosts.$inferSelect;
+export type InsertGroundTruthPost = typeof groundTruthPosts.$inferInsert;
+
+// Simulation results for each ground truth post
+export const groundTruthSimulations = mysqlTable("groundTruthSimulations", {
+  id: int("id").autoincrement().primaryKey(),
+  groundTruthPostId: int("groundTruthPostId").notNull(),
+  brandAgentId: int("brandAgentId").notNull(),
+  // Simulation config
+  agentPoolSize: int("agentPoolSize").notNull(),
+  modelParams: json("modelParams").notNull(), // SystemParams used
+  // Simulated composite scores (0-100 percentile within simulation set)
+  simResonance: float("simResonance"),
+  simDepth: float("simDepth"),
+  simAmplification: float("simAmplification"),
+  simPolarity: float("simPolarity"),
+  simRejection: float("simRejection"),
+  simComposite: float("simComposite"),
+  // Raw aggregates before normalization
+  rawPositiveRate: float("rawPositiveRate"),   // % agents with final_score > 0.2
+  rawScrollRate: float("rawScrollRate"),       // % agents that scrolled past (L1 fail)
+  rawShareRate: float("rawShareRate"),         // weighted share propensity
+  rawRejectionRate: float("rawRejectionRate"), // % agents with final_score < -0.3
+  rawScoreMean: float("rawScoreMean"),
+  rawScoreStd: float("rawScoreStd"),
+  simulatedAt: timestamp("simulatedAt").defaultNow().notNull(),
+});
+
+export type GroundTruthSimulation = typeof groundTruthSimulations.$inferSelect;
+export type InsertGroundTruthSimulation = typeof groundTruthSimulations.$inferInsert;
+
+// Calibration run: one full GTE calibration cycle for a brand
+export const gteCalibrationRuns = mysqlTable("gteCalibrationRuns", {
+  id: int("id").autoincrement().primaryKey(),
+  brandAgentId: int("brandAgentId").notNull(),
+  // Data split
+  totalPosts: int("totalPosts").notNull(),
+  trainingPosts: int("trainingPosts").notNull(),
+  holdoutPosts: int("holdoutPosts").notNull(),
+  // Pre-calibration Spearman ρ per dimension
+  preRhoComposite: float("preRhoComposite"),
+  preRhoResonance: float("preRhoResonance"),
+  preRhoDepth: float("preRhoDepth"),
+  preRhoAmplification: float("preRhoAmplification"),
+  preRhoPolarity: float("preRhoPolarity"),
+  preRhoRejection: float("preRhoRejection"),
+  // Post-calibration ρ (on training set)
+  postRhoComposite: float("postRhoComposite"),
+  postRhoResonance: float("postRhoResonance"),
+  postRhoDepth: float("postRhoDepth"),
+  postRhoAmplification: float("postRhoAmplification"),
+  postRhoPolarity: float("postRhoPolarity"),
+  postRhoRejection: float("postRhoRejection"),
+  // Holdout validation ρ
+  holdoutRhoComposite: float("holdoutRhoComposite"),
+  holdoutRhoResonance: float("holdoutRhoResonance"),
+  // Calibrated parameters
+  paramsBefore: json("paramsBefore").notNull(),
+  paramsAfter: json("paramsAfter").notNull(),
+  paramDeltas: json("paramDeltas").notNull(), // { param: { before, after, delta_pct } }
+  // Diagnostics
+  contentTypeBiases: json("contentTypeBiases"), // { video: +12, image: -3, ... }
+  themeWeaknesses: json("themeWeaknesses"),     // { luxury: 0.38, practical: 0.72, ... }
+  outlierPosts: json("outlierPosts"),           // [{ postId, real, sim, delta, diagnosis }]
+  // MAE per dimension
+  maeComposite: float("maeComposite"),
+  maeResonance: float("maeResonance"),
+  // Top/bottom quartile accuracy
+  topQuartileAccuracy: float("topQuartileAccuracy"),
+  bottomQuartileAccuracy: float("bottomQuartileAccuracy"),
+  calibratedAt: timestamp("calibratedAt").defaultNow().notNull(),
+});
+
+export type GteCalibrationRun = typeof gteCalibrationRuns.$inferSelect;
+export type InsertGteCalibrationRun = typeof gteCalibrationRuns.$inferInsert;
+
+// Rolling accuracy timeline per brand
+export const accuracyTimeline = mysqlTable("accuracyTimeline", {
+  id: int("id").autoincrement().primaryKey(),
+  brandAgentId: int("brandAgentId").notNull(),
+  measuredAt: timestamp("measuredAt").defaultNow().notNull(),
+  // Rolling ρ (last 30 days)
+  rollingRhoComposite: float("rollingRhoComposite"),
+  rollingRhoResonance: float("rollingRhoResonance"),
+  rollingRhoDepth: float("rollingRhoDepth"),
+  rollingRhoAmplification: float("rollingRhoAmplification"),
+  // Data volume
+  totalCalibrationPosts: int("totalCalibrationPosts"),
+  postsLast30Days: int("postsLast30Days"),
+  // Model version reference
+  modelParamsVersion: int("modelParamsVersion"), // gteCalibrationRuns.id
+});
+
+export type AccuracyTimeline = typeof accuracyTimeline.$inferSelect;
+export type InsertAccuracyTimeline = typeof accuracyTimeline.$inferInsert;

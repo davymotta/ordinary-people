@@ -217,6 +217,7 @@ export default function TargetingPanel() {
       gender: filters.gender || undefined,
       politicalOrientation: filters.politicalOrientation || undefined,
       urbanization: filters.urbanization || undefined,
+      brandAgentId: selectedBrandAgentId ?? undefined,
     });
   };
 
