@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, BarChart3 } from "lucide-react";
+import { Loader2, BarChart3, Brain } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Results() {
@@ -9,11 +9,7 @@ export default function Results() {
   const [, setLocation] = useLocation();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
   }
 
   return (
@@ -29,6 +25,9 @@ export default function Results() {
         <div className="space-y-3">
           {simulations.map((s: any) => {
             const metrics = s.metrics as any;
+            const config = s.config as any;
+            const isHybrid = config?.mode === "hybrid";
+            const alignment = metrics?.alignment;
             return (
               <Card
                 key={s.id}
@@ -37,11 +36,13 @@ export default function Results() {
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
-                    <div>
+                    <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold tracking-[-0.02em]">{s.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {s.completedAt ? new Date(s.completedAt).toLocaleString() : "—"}
-                      </p>
+                      {isHybrid && (
+                        <Badge className="bg-[#CCFF00] text-black text-[9px] px-1.5 py-0">
+                          <Brain className="h-2.5 w-2.5 mr-0.5" /> HYBRID
+                        </Badge>
+                      )}
                     </div>
                     <Badge
                       variant={s.status === "complete" ? "default" : s.status === "failed" ? "destructive" : "secondary"}
@@ -50,14 +51,20 @@ export default function Results() {
                       {s.status}
                     </Badge>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {s.completedAt ? new Date(s.completedAt).toLocaleString() : "—"}
+                  </p>
                   {metrics && (
-                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
                       <span>{metrics.totalPersonas} personas</span>
                       <span>{metrics.totalCampaigns} campaigns</span>
                       <span>{metrics.resultCount} results</span>
                       {metrics.weightedMarketInterest != null && (
-                        <span className="font-mono">
-                          WMI: {Number(metrics.weightedMarketInterest).toFixed(3)}
+                        <span className="font-mono">WMI: {Number(metrics.weightedMarketInterest).toFixed(3)}</span>
+                      )}
+                      {isHybrid && alignment && (
+                        <span className="font-mono text-[#CCFF00]">
+                          Alignment: {(alignment.rate * 100).toFixed(0)}%
                         </span>
                       )}
                     </div>

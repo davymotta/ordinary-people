@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Megaphone, Play, Target, ArrowRight, TrendingUp } from "lucide-react";
+import { Users, Megaphone, Play, Target, ArrowRight, TrendingUp, Brain } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           label="Personas"
           value={isLoading ? "—" : String(stats?.personaCount ?? 0)}
@@ -39,6 +39,18 @@ export default function Home() {
           value={isLoading ? "—" : String(stats?.simulationCount ?? 0)}
           icon={<Play className="h-4 w-4" />}
           onClick={() => setLocation("/results")}
+        />
+        <StatCard
+          label="Prompt Coverage"
+          value={
+            isLoading
+              ? "—"
+              : stats?.promptCount != null
+                ? `${stats.promptCount}/${stats.personaCount ?? 0}`
+                : "0/0"
+          }
+          icon={<Brain className="h-4 w-4" />}
+          onClick={() => setLocation("/personas")}
         />
         <StatCard
           label="Best Spearman ρ"
@@ -202,6 +214,15 @@ export default function Home() {
           >
             <Play className="h-3.5 w-3.5 mr-1.5" />
             Run Simulation
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs border-[#CCFF00]/50 text-foreground"
+            onClick={() => setLocation("/simulation")}
+          >
+            <Brain className="h-3.5 w-3.5 mr-1.5" />
+            Run Hybrid (LLM)
           </Button>
         </div>
       </div>

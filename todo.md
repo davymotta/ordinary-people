@@ -40,3 +40,24 @@
 - [ ] Dimensioni separate attraction/repulsion
 - [ ] Ensemble bayesiano sofisticato
 - [ ] Filtro di decodifica culturale (integrato in topic_match per ora)
+
+## v0.2 Hybrid — Formula per il vincolo, LLM per l'incarnazione
+- [x] System prompt ricco per ogni persona (20 prompt narrativi con storia, abitudini, valori, paure)
+- [x] LLM reaction engine: persona prompt + campagna + regime + benchmark score → output doppio (testo + JSON)
+- [x] Prompt template strutturato: gut_reaction testuale, reflection testuale, score JSON, quote in prima persona
+- [x] Confronto triplo: formula score vs LLM score vs ground truth
+- [x] UI: quote in prima persona per ogni persona nella results view
+- [x] UI: pannello narrativo con motivazioni, tensioni, ambivalenze
+- [x] UI: tab confronto formula vs LLM nella SimulationDetail
+- [x] Vitest: LLM reaction engine unit tests (9 test, mock invokeLLM)
+
+## v0.2b Persona Generator (nuova direttiva)
+
+- [ ] Persona Generator: 3 livelli (struttura reale + regime + coloritura archetipica)
+- [ ] 12-15 assi di variazione (strutturali, culturali, economico-psicologici, mediali, simbolici)
+- [ ] 8 coloriture archetipiche (assertivo, relazionale, prudente, edonico, controllante, visionario, difensivo, imitativo)
+- [ ] Sottovarianti: ogni archetipo genera 3-5 varianti plausibili via assi + coloritura
+- [x] System prompts narrativi per ogni persona (storia minima, household, rete, pressione sociale)
+- [ ] UI Persona Generator: form per generare sottovarianti da archetipi base
+- [x] UI voci personas: quote in prima persona accanto agli score
+- [x] Fix: pagina Calibration (errore Vite import risolto con restart server)

@@ -68,6 +68,8 @@ export const personas = mysqlTable("personas", {
   referenceGroup: varchar("referenceGroup", { length: 100 }),
   rejectionGroup: varchar("rejectionGroup", { length: 100 }),
   generationalCohort: varchar("generationalCohort", { length: 50 }),
+  // v0.2 — LLM incarnation
+  systemPrompt: text("systemPrompt"),
   // Bibliography references
   bibliographyNotes: text("bibliographyNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

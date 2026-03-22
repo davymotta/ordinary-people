@@ -11,6 +11,14 @@ import {
   blendRegimeModifiers,
   type RegimeState,
 } from "./simulation";
+import {
+  generateAllReactions,
+  generateSystemPrompt,
+  type PersonaForLLM,
+  type CampaignForLLM,
+  type RegimeContextForLLM,
+  type LLMReactionOutput,
+} from "./llm-reaction";
 
 export const appRouter = router({
   system: systemRouter,
@@ -40,6 +48,88 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.updatePersona(input.id, input.data as any);
         return { success: true };
+      }),
+    generatePrompt: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const persona = await db.getPersona(input.id);
+        if (!persona) throw new Error("Persona not found");
+
+        const prompt = await generateSystemPrompt({
+          label: persona.label,
+          ageMin: persona.ageMin,
+          ageMax: persona.ageMax,
+          incomeBand: persona.incomeBand,
+          geo: persona.geo,
+          education: persona.education,
+          householdType: persona.householdType,
+          generationalCohort: persona.generationalCohort,
+          topicAffinities: persona.topicAffinities as Record<string, number> | null,
+          channelUsage: persona.channelUsage as Record<string, number> | null,
+          identityProfile: persona.identityProfile as Record<string, number> | null,
+          mediaDiet: persona.mediaDiet as Record<string, number> | null,
+          referenceGroup: persona.referenceGroup,
+          rejectionGroup: persona.rejectionGroup,
+          bibliographyNotes: persona.bibliographyNotes,
+          noveltySeeking: persona.noveltySeeking,
+          statusOrientation: persona.statusOrientation,
+          priceSensitivity: persona.priceSensitivity,
+          riskAversion: persona.riskAversion,
+          emotionalSusceptibility: persona.emotionalSusceptibility,
+          identityDefensiveness: persona.identityDefensiveness,
+          conformismIndex: persona.conformismIndex,
+          authorityTrust: persona.authorityTrust,
+          delayedGratification: persona.delayedGratification,
+          culturalCapital: persona.culturalCapital,
+          locusOfControl: persona.locusOfControl,
+        });
+
+        await db.updatePersona(input.id, { systemPrompt: prompt });
+        return { prompt };
+      }),
+    generateAllPrompts: protectedProcedure
+      .mutation(async () => {
+        const allPersonas = await db.listPersonas();
+        const results: { id: number; label: string; success: boolean }[] = [];
+
+        for (const persona of allPersonas) {
+          try {
+            const prompt = await generateSystemPrompt({
+              label: persona.label,
+              ageMin: persona.ageMin,
+              ageMax: persona.ageMax,
+              incomeBand: persona.incomeBand,
+              geo: persona.geo,
+              education: persona.education,
+              householdType: persona.householdType,
+              generationalCohort: persona.generationalCohort,
+              topicAffinities: persona.topicAffinities as Record<string, number> | null,
+              channelUsage: persona.channelUsage as Record<string, number> | null,
+              identityProfile: persona.identityProfile as Record<string, number> | null,
+              mediaDiet: persona.mediaDiet as Record<string, number> | null,
+              referenceGroup: persona.referenceGroup,
+              rejectionGroup: persona.rejectionGroup,
+              bibliographyNotes: persona.bibliographyNotes,
+              noveltySeeking: persona.noveltySeeking,
+              statusOrientation: persona.statusOrientation,
+              priceSensitivity: persona.priceSensitivity,
+              riskAversion: persona.riskAversion,
+              emotionalSusceptibility: persona.emotionalSusceptibility,
+              identityDefensiveness: persona.identityDefensiveness,
+              conformismIndex: persona.conformismIndex,
+              authorityTrust: persona.authorityTrust,
+              delayedGratification: persona.delayedGratification,
+              culturalCapital: persona.culturalCapital,
+              locusOfControl: persona.locusOfControl,
+            });
+            await db.updatePersona(persona.id, { systemPrompt: prompt });
+            results.push({ id: persona.id, label: persona.label, success: true });
+          } catch (err) {
+            console.error(`[Prompt Gen] Failed for ${persona.label}:`, err);
+            results.push({ id: persona.id, label: persona.label, success: false });
+          }
+        }
+        return { results };
       }),
   }),
 
@@ -115,6 +205,8 @@ export const appRouter = router({
     get: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
       return db.getSimulation(input.id);
     }),
+
+    // Formula-only simulation (v0.1)
     run: protectedProcedure
       .input(z.object({
         name: z.string().optional(),
@@ -126,33 +218,19 @@ export const appRouter = router({
         const allPersonas = await db.listPersonas();
         const allRegimes = await db.listRegimes();
         const allCampaigns = await db.listCampaigns();
-
         const selectedCampaigns = allCampaigns.filter(c => input.campaignIds.includes(c.id));
         if (selectedCampaigns.length === 0) throw new Error("No campaigns selected");
 
         const simId = await db.createSimulation({
-          name: input.name || `Simulation ${new Date().toISOString()}`,
+          name: input.name || `Sim ${new Date().toISOString().slice(0, 16)}`,
           status: "running",
-          config: {
-            campaignIds: input.campaignIds,
-            regimeState: input.regimeState,
-            weights: input.weights,
-          },
+          config: { campaignIds: input.campaignIds, regimeState: input.regimeState, weights: input.weights, mode: "formula" },
           startedAt: new Date(),
         });
 
         try {
-          const results = runSimulation(
-            allPersonas,
-            selectedCampaigns,
-            allRegimes,
-            input.regimeState as unknown as RegimeState,
-            input.weights
-          );
-
+          const results = runSimulation(allPersonas, selectedCampaigns, allRegimes, input.regimeState as unknown as RegimeState, input.weights);
           const wmi = computeWeightedMarketInterest(results, allPersonas);
-
-          // Group results by campaign
           const byCampaign: Record<number, typeof results> = {};
           for (const r of results) {
             if (!byCampaign[r.campaignId]) byCampaign[r.campaignId] = [];
@@ -167,27 +245,188 @@ export const appRouter = router({
               totalPersonas: allPersonas.length,
               totalCampaigns: selectedCampaigns.length,
               resultCount: results.length,
+              mode: "formula",
               byCampaign: Object.fromEntries(
-                Object.entries(byCampaign).map(([cId, rs]) => [
-                  cId,
-                  {
-                    avgScore: rs.reduce((s, r) => s + r.breakdown.finalScore, 0) / rs.length,
-                    minScore: Math.min(...rs.map(r => r.breakdown.finalScore)),
-                    maxScore: Math.max(...rs.map(r => r.breakdown.finalScore)),
-                    riskCount: rs.filter(r => r.breakdown.riskFlags.length > 0).length,
-                  },
-                ])
+                Object.entries(byCampaign).map(([cId, rs]) => [cId, {
+                  avgScore: rs.reduce((s, r) => s + r.breakdown.finalScore, 0) / rs.length,
+                  minScore: Math.min(...rs.map(r => r.breakdown.finalScore)),
+                  maxScore: Math.max(...rs.map(r => r.breakdown.finalScore)),
+                  riskCount: rs.filter(r => r.breakdown.riskFlags.length > 0).length,
+                }])
+              ),
+            },
+            completedAt: new Date(),
+          });
+          return { id: simId, results, weightedMarketInterest: wmi };
+        } catch (error: any) {
+          await db.updateSimulation(simId!, { status: "failed", error: error.message });
+          throw error;
+        }
+      }),
+
+    // Hybrid simulation (v0.2): Formula + LLM reactions
+    runHybrid: protectedProcedure
+      .input(z.object({
+        name: z.string().optional(),
+        campaignIds: z.array(z.number()),
+        regimeState: z.record(z.string(), z.number()),
+        weights: z.record(z.string(), z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const allPersonas = await db.listPersonas();
+        const allRegimes = await db.listRegimes();
+        const allCampaigns = await db.listCampaigns();
+        const selectedCampaigns = allCampaigns.filter(c => input.campaignIds.includes(c.id));
+        if (selectedCampaigns.length === 0) throw new Error("No campaigns selected");
+
+        const simId = await db.createSimulation({
+          name: input.name || `Hybrid ${new Date().toISOString().slice(0, 16)}`,
+          status: "running",
+          config: { campaignIds: input.campaignIds, regimeState: input.regimeState, weights: input.weights, mode: "hybrid" },
+          startedAt: new Date(),
+        });
+
+        try {
+          // Step 1: Run formula engine
+          const formulaResults = runSimulation(allPersonas, selectedCampaigns, allRegimes, input.regimeState as unknown as RegimeState, input.weights);
+          const wmi = computeWeightedMarketInterest(formulaResults, allPersonas);
+
+          // Build benchmark scores map: personaId → avgScore across campaigns
+          const benchmarkScores: Record<string, number> = {};
+          for (const r of formulaResults) {
+            benchmarkScores[r.personaId] = r.breakdown.finalScore;
+          }
+
+          // Step 2: Run LLM reactions for each campaign
+          const llmReactionsByCampaign: Record<number, Record<string, LLMReactionOutput>> = {};
+
+          // Determine dominant regime for LLM context
+          const regimeEntries = Object.entries(input.regimeState).sort((a, b) => b[1] - a[1]);
+          const dominantRegimeName = regimeEntries[0]?.[0] || "STABLE";
+          const dominantRegime = allRegimes.find(r => r.name === dominantRegimeName) || allRegimes[0];
+          const regimeContext: RegimeContextForLLM = {
+            label: dominantRegime?.label || dominantRegimeName,
+            description: dominantRegime?.description || null,
+          };
+
+          // Map personas to LLM format
+          const personasForLLM: PersonaForLLM[] = allPersonas.map(p => ({
+            archetypeId: p.archetypeId,
+            label: p.label,
+            systemPrompt: p.systemPrompt,
+            ageMin: p.ageMin,
+            ageMax: p.ageMax,
+            incomeBand: p.incomeBand,
+            geo: p.geo,
+            education: p.education,
+            householdType: p.householdType,
+            generationalCohort: p.generationalCohort,
+            topicAffinities: p.topicAffinities as Record<string, number> | null,
+            channelUsage: p.channelUsage as Record<string, number> | null,
+            identityProfile: p.identityProfile as Record<string, number> | null,
+            bibliographyNotes: p.bibliographyNotes,
+          }));
+
+          for (const campaign of selectedCampaigns) {
+            const campaignForLLM: CampaignForLLM = {
+              name: campaign.name,
+              topics: (campaign.topics as string[]) || [],
+              tone: campaign.tone,
+              format: campaign.format,
+              channel: campaign.channel,
+              pricePoint: campaign.pricePoint,
+              emotionalCharge: campaign.emotionalCharge,
+              statusSignal: campaign.statusSignal,
+              priceSignal: campaign.priceSignal,
+              noveltySignal: campaign.noveltySignal,
+              tribalIdentitySignal: campaign.tribalIdentitySignal,
+              notes: campaign.notes,
+            };
+
+            // Build per-campaign benchmark scores
+            const campaignBenchmarks: Record<string, number> = {};
+            for (const r of formulaResults.filter(fr => fr.campaignId === campaign.id)) {
+              campaignBenchmarks[r.personaId] = r.breakdown.finalScore;
+            }
+
+            llmReactionsByCampaign[campaign.id] = await generateAllReactions(
+              personasForLLM,
+              campaignForLLM,
+              regimeContext,
+              campaignBenchmarks
+            );
+          }
+
+          // Step 3: Merge results — formula + LLM side by side
+          const hybridResults = formulaResults.map(fr => {
+            const llmReaction = llmReactionsByCampaign[fr.campaignId]?.[fr.personaId];
+            return {
+              ...fr,
+              llm: llmReaction || null,
+              comparison: llmReaction ? {
+                formulaScore: fr.breakdown.finalScore,
+                llmScore: llmReaction.score,
+                delta: Math.abs(fr.breakdown.finalScore - llmReaction.score),
+                agreement: Math.abs(fr.breakdown.finalScore - llmReaction.score) < 0.25 ? "aligned" as const : "divergent" as const,
+              } : null,
+            };
+          });
+
+          // Step 4: Compute aggregate metrics
+          const alignedCount = hybridResults.filter(r => r.comparison?.agreement === "aligned").length;
+          const totalWithLLM = hybridResults.filter(r => r.comparison).length;
+          const avgDelta = totalWithLLM > 0
+            ? hybridResults.filter(r => r.comparison).reduce((s, r) => s + (r.comparison?.delta || 0), 0) / totalWithLLM
+            : 0;
+
+          // LLM-weighted market interest
+          const llmWmi = totalWithLLM > 0
+            ? hybridResults.filter(r => r.llm).reduce((s, r) => {
+                const persona = allPersonas.find(p => p.archetypeId === r.personaId);
+                return s + (r.llm?.score || 0) * (persona?.marketSpendShare || 0);
+              }, 0)
+            : 0;
+
+          const byCampaign: Record<number, typeof hybridResults> = {};
+          for (const r of hybridResults) {
+            if (!byCampaign[r.campaignId]) byCampaign[r.campaignId] = [];
+            byCampaign[r.campaignId].push(r);
+          }
+
+          await db.updateSimulation(simId!, {
+            status: "complete",
+            results: hybridResults as any,
+            metrics: {
+              weightedMarketInterest: wmi,
+              llmWeightedMarketInterest: llmWmi,
+              totalPersonas: allPersonas.length,
+              totalCampaigns: selectedCampaigns.length,
+              resultCount: hybridResults.length,
+              mode: "hybrid",
+              alignment: {
+                aligned: alignedCount,
+                divergent: totalWithLLM - alignedCount,
+                total: totalWithLLM,
+                rate: totalWithLLM > 0 ? alignedCount / totalWithLLM : 0,
+                avgDelta,
+              },
+              byCampaign: Object.fromEntries(
+                Object.entries(byCampaign).map(([cId, rs]) => [cId, {
+                  avgFormulaScore: rs.reduce((s, r) => s + r.breakdown.finalScore, 0) / rs.length,
+                  avgLlmScore: rs.filter(r => r.llm).reduce((s, r) => s + (r.llm?.score || 0), 0) / Math.max(rs.filter(r => r.llm).length, 1),
+                  minScore: Math.min(...rs.map(r => r.breakdown.finalScore)),
+                  maxScore: Math.max(...rs.map(r => r.breakdown.finalScore)),
+                  riskCount: rs.filter(r => r.breakdown.riskFlags.length > 0).length,
+                  alignmentRate: rs.filter(r => r.comparison?.agreement === "aligned").length / Math.max(rs.filter(r => r.comparison).length, 1),
+                }])
               ),
             },
             completedAt: new Date(),
           });
 
-          return { id: simId, results, weightedMarketInterest: wmi };
+          return { id: simId, results: hybridResults, weightedMarketInterest: wmi, llmWeightedMarketInterest: llmWmi };
         } catch (error: any) {
-          await db.updateSimulation(simId!, {
-            status: "failed",
-            error: error.message,
-          });
+          await db.updateSimulation(simId!, { status: "failed", error: error.message });
           throw error;
         }
       }),
@@ -235,12 +474,9 @@ export const appRouter = router({
         const allRegimes = await db.listRegimes();
         const allCampaigns = await db.listCampaigns();
         const allGT = await db.listGroundTruth();
-
         if (allGT.length === 0) throw new Error("No ground truth data available for calibration");
 
         const lr = input.learningRate ?? 0.05;
-
-        // Get current weights from latest calibration or defaults
         const latestCal = await db.getLatestCalibrationRun();
         const currentWeights: Record<string, number> = (latestCal?.weightsAfter as Record<string, number>) ?? {
           w_emotion: 0.35, w_identity: 0.35, w_status: 0.30,
@@ -266,7 +502,6 @@ export const appRouter = router({
         }
 
         const iteration = latestCal ? latestCal.iteration + 1 : 1;
-
         const calId = await db.createCalibrationRun({
           iteration,
           status: "running",
@@ -275,13 +510,7 @@ export const appRouter = router({
         });
 
         try {
-          // Run simulation with current weights
-          const results = runSimulation(
-            allPersonas, allCampaigns, allRegimes,
-            input.regimeState as unknown as RegimeState, currentWeights
-          );
-
-          // Compare with ground truth
+          const results = runSimulation(allPersonas, allCampaigns, allRegimes, input.regimeState as unknown as RegimeState, currentWeights);
           const predicted: number[] = [];
           const actual: number[] = [];
           const errors: Record<string, number> = {};
@@ -289,7 +518,6 @@ export const appRouter = router({
           for (const gt of allGT) {
             const segResults = gt.segmentResults as Record<string, number>;
             const campaignResults = results.filter(r => r.campaignId === gt.campaignId);
-
             for (const [personaId, actualScore] of Object.entries(segResults)) {
               const simResult = campaignResults.find(r => r.personaId === personaId);
               if (simResult) {
@@ -305,56 +533,33 @@ export const appRouter = router({
             ? predicted.reduce((s, p, i) => s + Math.abs(p - actual[i]), 0) / predicted.length
             : 1;
 
-          // Gradient-free weight adjustment (nudge toward better alignment)
           const newWeights = { ...currentWeights };
           const weightKeys = ["w_emotion", "w_identity", "w_status", "w_topic", "w_format", "w_price", "w_channel"];
-
-          // Simple heuristic: if average error is positive, model underestimates → increase weights
           const avgError = Object.values(errors).reduce((s, e) => s + e, 0) / Math.max(Object.values(errors).length, 1);
           for (const key of weightKeys) {
             const current = newWeights[key] ?? 0.25;
             newWeights[key] = Math.max(0.05, Math.min(0.95, current + avgError * lr));
           }
 
-          // Adjust loss_aversion based on negative score errors
           const negErrors = Object.values(errors).filter(e => e < 0);
           if (negErrors.length > 0) {
             const avgNegError = negErrors.reduce((s, e) => s + e, 0) / negErrors.length;
-            newWeights.loss_aversion = Math.max(1.0, Math.min(4.0,
-              (currentWeights.loss_aversion ?? 2.0) - avgNegError * lr * 2
-            ));
+            newWeights.loss_aversion = Math.max(1.0, Math.min(4.0, (currentWeights.loss_aversion ?? 2.0) - avgNegError * lr * 2));
           }
 
           await db.updateCalibrationRun(calId!, {
             status: "complete",
             weightsAfter: newWeights,
             regimeModifiersAfter: currentRegimeMods,
-            metrics: {
-              spearmanRho: rho,
-              mae,
-              sampleSize: predicted.length,
-              avgError,
-              errorsByPersona: errors,
-            },
+            metrics: { spearmanRho: rho, mae, sampleSize: predicted.length, avgError, errorsByPersona: errors },
             adjustments: {
-              weightChanges: Object.fromEntries(
-                Object.entries(newWeights).map(([k, v]) => [k, v - (currentWeights[k] ?? 0)])
-              ),
+              weightChanges: Object.fromEntries(Object.entries(newWeights).map(([k, v]) => [k, v - (currentWeights[k] ?? 0)])),
             },
           });
 
-          return {
-            id: calId,
-            iteration,
-            spearmanRho: rho,
-            mae,
-            sampleSize: predicted.length,
-            weightsAfter: newWeights,
-          };
+          return { id: calId, iteration, spearmanRho: rho, mae, sampleSize: predicted.length, weightsAfter: newWeights };
         } catch (error: any) {
-          await db.updateCalibrationRun(calId!, {
-            status: "failed",
-          });
+          await db.updateCalibrationRun(calId!, { status: "failed" });
           throw error;
         }
       }),
@@ -368,12 +573,13 @@ export const appRouter = router({
       const allSims = await db.listSimulations();
       const latestCal = await db.getLatestCalibrationRun();
       const allCalRuns = await db.listCalibrationRuns();
-
       const completeSims = allSims.filter(s => s.status === "complete");
       const lastSim = completeSims[0];
+      const promptCount = allPersonas.filter(p => p.systemPrompt).length;
 
       return {
         personaCount: allPersonas.length,
+        promptCount,
         campaignCount: allCampaigns.length,
         simulationCount: completeSims.length,
         lastSimulation: lastSim ? {

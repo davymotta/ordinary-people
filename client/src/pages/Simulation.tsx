@@ -5,7 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Play } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Play, Brain, Zap, AlertTriangle } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -14,29 +15,40 @@ const REGIMES = ["stable", "growth", "crisis", "trauma", "post_crisis_recovery",
 
 export default function Simulation() {
   const { data: campaigns, isLoading: loadingCampaigns } = trpc.campaigns.list.useQuery();
+  const { data: personas } = trpc.personas.list.useQuery();
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [simName, setSimName] = useState("");
+  const [mode, setMode] = useState<"formula" | "hybrid">("hybrid");
   const [regimeState, setRegimeState] = useState<Record<string, number>>({
-    stable: 0.6,
-    growth: 0.2,
-    crisis: 0.1,
-    trauma: 0.05,
-    post_crisis_recovery: 0.05,
-    stagnation: 0.0,
+    stable: 0.6, growth: 0.2, crisis: 0.1, trauma: 0.05, post_crisis_recovery: 0.05, stagnation: 0.0,
   });
 
-  const runMutation = trpc.simulations.run.useMutation({
+  const runFormula = trpc.simulations.run.useMutation({
     onSuccess: (data) => {
       utils.simulations.list.invalidate();
       utils.dashboard.stats.invalidate();
-      toast.success(`Simulation complete — ${data.results.length} results`);
+      toast.success(`Formula simulation complete — ${data.results.length} results`);
       setLocation(`/results/${data.id}`);
     },
     onError: (err) => toast.error(err.message),
   });
+
+  const runHybrid = trpc.simulations.runHybrid.useMutation({
+    onSuccess: (data) => {
+      utils.simulations.list.invalidate();
+      utils.dashboard.stats.invalidate();
+      toast.success("Hybrid simulation complete — personas have spoken");
+      setLocation(`/results/${data.id}`);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const isRunning = runFormula.isPending || runHybrid.isPending;
+  const promptCount = personas?.filter((p: any) => p.systemPrompt).length || 0;
+  const totalPersonas = personas?.length || 0;
 
   const totalWeight = useMemo(
     () => Object.values(regimeState).reduce((s, v) => s + v, 0),
@@ -44,21 +56,21 @@ export default function Simulation() {
   );
 
   const toggleCampaign = (id: number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const handleRun = () => {
-    if (selectedIds.length === 0) {
-      toast.error("Select at least one campaign");
-      return;
-    }
-    runMutation.mutate({
-      name: simName || `Sim ${new Date().toLocaleString()}`,
+    if (selectedIds.length === 0) { toast.error("Select at least one campaign"); return; }
+    const input = {
+      name: simName || `${mode === "hybrid" ? "Hybrid" : "Sim"} ${new Date().toLocaleString()}`,
       campaignIds: selectedIds,
       regimeState,
-    });
+    };
+    if (mode === "hybrid") {
+      runHybrid.mutate(input);
+    } else {
+      runFormula.mutate(input);
+    }
   };
 
   if (loadingCampaigns) {
@@ -74,9 +86,52 @@ export default function Simulation() {
       <div>
         <h1 className="text-3xl font-extrabold tracking-[-0.04em]">Run Simulation</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Select campaigns, set regime state, and run the S1/S2 simulation engine
+          Select campaigns, set regime state, choose mode, and launch
         </p>
       </div>
+
+      {/* Mode Selector */}
+      <Card className="border border-border/50 shadow-none">
+        <CardContent className="p-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Simulation Mode
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setMode("formula")}
+              className={`p-4 rounded-lg border-2 text-left transition-all ${mode === "formula" ? "border-foreground bg-foreground/5" : "border-border/40 hover:border-border"}`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="h-4 w-4" />
+                <span className="font-semibold text-sm">Formula Only</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Fast. Deterministic. S1/S2 engine with regime modifiers.
+              </p>
+            </button>
+            <button
+              onClick={() => setMode("hybrid")}
+              className={`p-4 rounded-lg border-2 text-left transition-all ${mode === "hybrid" ? "border-[#CCFF00] bg-[#CCFF00]/5" : "border-border/40 hover:border-border"}`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Brain className="h-4 w-4" />
+                <span className="font-semibold text-sm">Hybrid</span>
+                <Badge variant="outline" className="text-[10px] border-[#CCFF00] text-[#CCFF00]">v0.2</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Formula + LLM. Personas react in character with gut reaction, reflection, and quote.
+              </p>
+              {mode === "hybrid" && promptCount < totalPersonas && (
+                <div className="flex items-center gap-1 mt-2 text-xs text-amber-600">
+                  <AlertTriangle className="h-3 w-3" />
+                  {promptCount}/{totalPersonas} personas have prompts.
+                  <button className="underline ml-1" onClick={() => setLocation("/personas")}>Generate</button>
+                </div>
+              )}
+            </button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Simulation Name */}
       <div className="space-y-2">
@@ -92,15 +147,25 @@ export default function Simulation() {
       {/* Campaign Selection */}
       <Card className="border border-border/50 shadow-none">
         <CardContent className="p-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Select Campaigns
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Select Campaigns
+            </h3>
+            {campaigns && campaigns.length > 0 && (
+              <button
+                onClick={() => setSelectedIds(selectedIds.length === campaigns.length ? [] : campaigns.map((c: any) => c.id))}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {selectedIds.length === campaigns.length ? "Deselect All" : "Select All"}
+              </button>
+            )}
+          </div>
           {campaigns && campaigns.length > 0 ? (
             <div className="space-y-2">
               {campaigns.map((c: any) => (
                 <label
                   key={c.id}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-secondary/50 cursor-pointer transition-colors"
+                  className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors ${selectedIds.includes(c.id) ? "bg-[#CCFF00]/5" : "hover:bg-secondary/50"}`}
                 >
                   <Checkbox
                     checked={selectedIds.includes(c.id)}
@@ -145,9 +210,7 @@ export default function Simulation() {
               <Slider
                 value={[regimeState[regime] ?? 0]}
                 onValueChange={v => setRegimeState(prev => ({ ...prev, [regime]: v[0] }))}
-                min={0}
-                max={1}
-                step={0.05}
+                min={0} max={1} step={0.05}
                 className="flex-1"
               />
               <span className="text-xs font-mono w-8 text-right">
@@ -158,18 +221,21 @@ export default function Simulation() {
         </CardContent>
       </Card>
 
+      {/* Launch Button */}
       <Button
         onClick={handleRun}
-        disabled={runMutation.isPending || selectedIds.length === 0}
-        className="bg-primary text-primary-foreground hover:opacity-90 font-semibold"
+        disabled={isRunning || selectedIds.length === 0}
+        className={`font-semibold ${mode === "hybrid" ? "bg-[#CCFF00] text-black hover:bg-[#CCFF00]/90" : "bg-primary text-primary-foreground hover:opacity-90"}`}
       >
-        {runMutation.isPending ? (
+        {isRunning ? (
           <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Running...
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            {mode === "hybrid" ? "Personas are reacting..." : "Computing..."}
           </>
         ) : (
           <>
-            <Play className="h-4 w-4 mr-2" /> Run Simulation
+            {mode === "hybrid" ? <Brain className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+            Run {mode === "hybrid" ? "Hybrid" : "Formula"} Simulation
           </>
         )}
       </Button>
