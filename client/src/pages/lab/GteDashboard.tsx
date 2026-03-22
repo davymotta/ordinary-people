@@ -146,6 +146,10 @@ export default function GteDashboard() {
     { brandAgentId: selectedBrandId },
     { enabled: selectedBrandId > 0 }
   );
+  const { data: simStats, refetch: refetchSimStats } = trpc.groundTruth.getSimulationStats.useQuery(
+    { brandAgentId: selectedBrandId },
+    { enabled: selectedBrandId > 0 }
+  );
 
   // Mutations
   const harvestYouTube = trpc.groundTruth.harvestYouTube.useMutation({
@@ -165,6 +169,19 @@ export default function GteDashboard() {
       refetchStats();
     },
     onError: (err) => toast.error(err.message),
+  });
+
+  const simulateMutation = trpc.groundTruth.runGteSimulation.useMutation({
+    onSuccess: (data) => {
+      const d = data as { processed: number; skipped: number; total: number };
+      if (d.processed > 0) {
+        toast.success(`Simulazione completata — ${d.processed} post processati, ${d.skipped} già simulati`);
+      } else {
+        toast.info(`Tutti i ${d.skipped} post erano già simulati`);
+      }
+      refetchSimStats();
+    },
+    onError: (err) => toast.error(`Simulazione fallita: ${err.message}`),
   });
 
   const calibrateMutation = trpc.groundTruth.runGteCalibration.useMutation({
@@ -204,7 +221,9 @@ export default function GteDashboard() {
   // Workflow status
   const step1Status = (gteStats?.total ?? 0) > 0 ? "done" : "active";
   const step2Status = (gteStats?.normalized ?? 0) > 0 ? "done" : step1Status === "done" ? "active" : "pending";
-  const step3Status = calibrationReport ? "done" : step2Status === "done" ? "active" : "pending";
+  const simulated = simStats?.simulated ?? 0;
+  const step3Status: "done" | "active" | "pending" = simulated > 0 ? "done" : step2Status === "done" ? "active" : "pending";
+  const step4Status: "done" | "active" | "pending" = (accuracyTimeline && accuracyTimeline.length > 0) ? "done" : step3Status === "done" ? "active" : "pending";
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -346,16 +365,17 @@ export default function GteDashboard() {
                 <WorkflowStep
                   step={3}
                   title="Simulazione Agenti"
-                  desc="Simula i post raccolti con il panel di 200 agenti per generare reazioni sintetiche comparabili"
+                  desc={`Genera reazioni sintetiche per ogni post con il panel di agenti — ${simStats?.simulated ?? 0}/${simStats?.total ?? 0} simulati`}
                   status={step3Status}
                   action={
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant={step3Status === "active" ? "default" : "outline"}
                       className="text-xs h-7"
-                      disabled
+                      disabled={simulateMutation.isPending || (gteStats?.normalized ?? 0) === 0}
+                      onClick={() => simulateMutation.mutate({ brandAgentId: selectedBrandId })}
                     >
-                      <Play className="h-3 w-3 mr-1" />
+                      {simulateMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3 mr-1" />}
                       Simula
                     </Button>
                   }
@@ -364,14 +384,14 @@ export default function GteDashboard() {
                 <WorkflowStep
                   step={4}
                   title="Calibrazione (Spearman ρ)"
-                  desc={`Calcola la correlazione tra reazioni sintetiche e metriche reali. Esegui grid search per ottimizzare i parametri del sistema.`}
-                  status={calibrationReport ? "done" : "pending"}
+                  desc={`Confronta score simulati vs metriche reali. Grid search per ottimizzare i parametri del sistema.${latestTimeline?.rollingRhoComposite != null ? ` Ultimo ρ: ${latestTimeline.rollingRhoComposite.toFixed(3)}` : ""}`}
+                  status={step4Status}
                   action={
                     <Button
                       size="sm"
-                      variant={step3Status === "done" ? "default" : "outline"}
+                      variant={step4Status === "active" ? "default" : "outline"}
                       className="text-xs h-7"
-                      disabled={calibrateMutation.isPending || (gteStats?.normalized ?? 0) < 5}
+                      disabled={calibrateMutation.isPending || (simStats?.simulated ?? 0) < 5}
                       onClick={() => calibrateMutation.mutate({ brandAgentId: selectedBrandId })}
                     >
                       {calibrateMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Target className="h-3 w-3 mr-1" />}

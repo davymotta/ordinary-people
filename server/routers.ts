@@ -549,6 +549,34 @@ export const appRouter = router({
         return getNormalizedPosts(input.brandAgentId);
       }),
 
+    // GTE: Run simulation for all normalized posts of a brand
+    runGteSimulation: protectedProcedure
+      .input(z.object({ brandAgentId: z.number(), agentPoolSize: z.number().default(10) }))
+      .mutation(async ({ input }) => {
+        const { runGteSimulation } = await import("./gte/simulator");
+        return runGteSimulation(input.brandAgentId, input.agentPoolSize);
+      }),
+    // GTE: Get simulation stats for a brand
+    getSimulationStats: publicProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) return { total: 0, simulated: 0 };
+        const { groundTruthPosts, groundTruthSimulations } = await import("../drizzle/schema");
+        const { eq: eqD, isNotNull: isNotNullD, count } = await import("drizzle-orm");
+        const [postsResult] = await dbConn
+          .select({ total: count() })
+          .from(groundTruthPosts)
+          .where(eqD(groundTruthPosts.brandAgentId, input.brandAgentId));
+        const [simsResult] = await dbConn
+          .select({ total: count() })
+          .from(groundTruthSimulations)
+          .where(eqD(groundTruthSimulations.brandAgentId, input.brandAgentId));
+        return {
+          total: postsResult?.total ?? 0,
+          simulated: simsResult?.total ?? 0,
+        };
+      }),
     // GTE: Run full calibration for a brand
     runGteCalibration: protectedProcedure
       .input(z.object({ brandAgentId: z.number() }))

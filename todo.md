@@ -417,6 +417,15 @@
 - [x] SP8.3 — Aggiunta procedura tRPC `groundTruth.getStats` per statistiche aggregate
 - [x] SP8.4 — Nuova pagina `/lab/gte` (GteDashboard.tsx): KPI cards, workflow step-by-step, top post per views, calibration report
 - [x] SP8.5 — Aggiunta voce "Ground Truth Engine" nella sidebar Lab
-- [ ] SP8.6 — Normalizzare i 159 post Loewe (calcolare percentile rank)
-- [ ] SP8.7 — Eseguire prima simulazione GTE su post Loewe
-- [ ] SP8.8 — Calcolare primo Spearman ρ per Loewe
+- [x] SP8.6 — Normalizzare i 159 post Loewe (calcolare percentile rank)
+- [x] SP8.7 — Eseguire prima simulazione GTE su post Loewe
+- [x] SP8.8 — Calcolare primo Spearman ρ per Loewe
+
+## Sprint 9 — GTE Pipeline End-to-End Loewe
+
+- [x] Normalizzazione percentile 159 post Loewe (5 dimensioni: Resonance, Depth, Amplification, Polarity, Rejection)
+- [x] Simulazione GTE deterministica per 159 post (panel 10 agenti, score sintetici)
+- [x] Calibrazione Spearman ρ e salvataggio accuracy timeline nel DB
+- [x] Creazione modulo server/gte/simulator.ts con runGteSimulation()
+- [x] Aggiunta procedura tRPC runGteSimulation e getSimulationStats
+- [x] Aggiornamento GTE Dashboard: pulsante Simula funzionante, step4Status, stato reale del ciclo
