@@ -2053,6 +2053,291 @@ export const appRouter = router({
         return sub[0] ?? null;
       }),
   }),
+
+  // --- Strategic Simulations (multi-touchpoint) ---
+  strategicSimulations: router({
+    // Crea e avvia una Journey Simulation (multi-touchpoint funnel)
+    runJourney: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number().optional(),
+        name: z.string(),
+        touchpoints: z.array(z.object({
+          campaignId: z.number(),
+          channel: z.string(),
+          delayDays: z.number().default(0),
+          label: z.string(),
+          objective: z.enum(["awareness", "consideration", "conversion", "recovery"]),
+        })),
+        agentIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const {
+          runJourneySimulation,
+          createJourneySimulationRecord,
+          updateJourneySimulationRecord,
+        } = await import("./strategic-simulation-engine");
+
+        const simId = await createJourneySimulationRecord(
+          input.brandAgentId,
+          input.name,
+          "journey",
+          input.touchpoints,
+          input.agentIds,
+          0,
+        );
+
+        // Avvia in background
+        (async () => {
+          try {
+            await updateJourneySimulationRecord(simId, { status: "running", startedAt: new Date() });
+            const results = await runJourneySimulation(
+              input.brandAgentId ?? 0,
+              input.touchpoints,
+              input.agentIds,
+            );
+            await updateJourneySimulationRecord(simId, {
+              status: "complete",
+              results,
+              totalAgents: results.totalAgents,
+              completedAt: new Date(),
+            });
+          } catch (err: any) {
+            await updateJourneySimulationRecord(simId, {
+              status: "failed",
+              error: err?.message ?? "Unknown error",
+            });
+          }
+        })();
+
+        return { simulationId: simId };
+      }),
+
+    // Avvia una Retargeting Decay Analysis
+    runRetargetingDecay: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number().optional(),
+        name: z.string(),
+        campaignId: z.number(),
+        maxExposures: z.number().default(10),
+        intervalDays: z.number().default(2),
+        agentIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const {
+          runRetargetingDecaySimulation,
+          createJourneySimulationRecord,
+          updateJourneySimulationRecord,
+        } = await import("./strategic-simulation-engine");
+
+        const simId = await createJourneySimulationRecord(
+          input.brandAgentId,
+          input.name,
+          "retargeting",
+          [{ campaignId: input.campaignId, maxExposures: input.maxExposures, intervalDays: input.intervalDays }],
+          input.agentIds,
+          0,
+        );
+
+        (async () => {
+          try {
+            await updateJourneySimulationRecord(simId, { status: "running", startedAt: new Date() });
+            const results = await runRetargetingDecaySimulation(
+              input.brandAgentId ?? 0,
+              input.campaignId,
+              input.maxExposures,
+              input.intervalDays,
+              input.agentIds,
+            );
+            await updateJourneySimulationRecord(simId, {
+              status: "complete",
+              results,
+              totalAgents: results.totalAgents,
+              completedAt: new Date(),
+            });
+          } catch (err: any) {
+            await updateJourneySimulationRecord(simId, {
+              status: "failed",
+              error: err?.message ?? "Unknown error",
+            });
+          }
+        })();
+
+        return { simulationId: simId };
+      }),
+
+    // Avvia una Media Mix Optimization
+    runMediaMix: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number().optional(),
+        name: z.string(),
+        campaignId: z.number(),
+        scenarios: z.array(z.object({
+          name: z.string(),
+          allocation: z.record(z.string(), z.number()),
+        })),
+        agentIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const {
+          runMediaMixSimulation,
+          createJourneySimulationRecord,
+          updateJourneySimulationRecord,
+        } = await import("./strategic-simulation-engine");
+
+        const simId = await createJourneySimulationRecord(
+          input.brandAgentId,
+          input.name,
+          "media_mix",
+          input.scenarios,
+          input.agentIds,
+          0,
+        );
+
+        (async () => {
+          try {
+            await updateJourneySimulationRecord(simId, { status: "running", startedAt: new Date() });
+            const results = await runMediaMixSimulation(
+              input.brandAgentId ?? 0,
+              input.campaignId,
+              input.scenarios,
+              input.agentIds,
+            );
+            await updateJourneySimulationRecord(simId, {
+              status: "complete",
+              results,
+              totalAgents: results.totalAgents,
+              completedAt: new Date(),
+            });
+          } catch (err: any) {
+            await updateJourneySimulationRecord(simId, {
+              status: "failed",
+              error: err?.message ?? "Unknown error",
+            });
+          }
+        })();
+
+        return { simulationId: simId };
+      }),
+
+    // Avvia una Competitive Response Simulation
+    runCompetitiveResponse: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number().optional(),
+        name: z.string(),
+        clientCampaignId: z.number(),
+        competitorCampaignId: z.number(),
+        agentIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const {
+          runCompetitiveResponseSimulation,
+          createJourneySimulationRecord,
+          updateJourneySimulationRecord,
+        } = await import("./strategic-simulation-engine");
+
+        const simId = await createJourneySimulationRecord(
+          input.brandAgentId,
+          input.name,
+          "competitive",
+          [{ clientCampaignId: input.clientCampaignId, competitorCampaignId: input.competitorCampaignId }],
+          input.agentIds,
+          0,
+        );
+
+        (async () => {
+          try {
+            await updateJourneySimulationRecord(simId, { status: "running", startedAt: new Date() });
+            const results = await runCompetitiveResponseSimulation(
+              input.brandAgentId ?? 0,
+              input.clientCampaignId,
+              input.competitorCampaignId,
+              input.agentIds,
+            );
+            await updateJourneySimulationRecord(simId, {
+              status: "complete",
+              results,
+              totalAgents: results.totalAgents,
+              completedAt: new Date(),
+            });
+          } catch (err: any) {
+            await updateJourneySimulationRecord(simId, {
+              status: "failed",
+              error: err?.message ?? "Unknown error",
+            });
+          }
+        })();
+
+        return { simulationId: simId };
+      }),
+
+    // Avvia una Content Calendar Optimization
+    runContentCalendar: protectedProcedure
+      .input(z.object({
+        brandAgentId: z.number().optional(),
+        name: z.string(),
+        contentItems: z.array(z.object({
+          campaignId: z.number(),
+          label: z.string(),
+        })),
+        agentIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const {
+          runContentCalendarSimulation,
+          createJourneySimulationRecord,
+          updateJourneySimulationRecord,
+        } = await import("./strategic-simulation-engine");
+
+        const simId = await createJourneySimulationRecord(
+          input.brandAgentId,
+          input.name,
+          "content_calendar",
+          input.contentItems,
+          input.agentIds,
+          0,
+        );
+
+        (async () => {
+          try {
+            await updateJourneySimulationRecord(simId, { status: "running", startedAt: new Date() });
+            const results = await runContentCalendarSimulation(
+              input.brandAgentId ?? 0,
+              input.contentItems,
+              input.agentIds,
+            );
+            await updateJourneySimulationRecord(simId, {
+              status: "complete",
+              results,
+              totalAgents: results.totalAgents,
+              completedAt: new Date(),
+            });
+          } catch (err: any) {
+            await updateJourneySimulationRecord(simId, {
+              status: "failed",
+              error: err?.message ?? "Unknown error",
+            });
+          }
+        })();
+
+        return { simulationId: simId };
+      }),
+
+    // Ottieni lo stato di una simulazione
+    getSimulation: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const { getJourneySimulationById } = await import("./strategic-simulation-engine");
+        return getJourneySimulationById(input.id);
+      }),
+
+    // Lista tutte le simulazioni (opzionalmente filtrate per brandAgentId)
+    listSimulations: protectedProcedure
+      .input(z.object({ brandAgentId: z.number().optional() }))
+      .query(async ({ input }) => {
+        const { listJourneySimulations } = await import("./strategic-simulation-engine");
+        return listJourneySimulations(input.brandAgentId);
+      }),
+  }),
 });
-export type AppRouter = typeof appRouter;;
+export type AppRouter = typeof appRouter;
 

@@ -43,6 +43,7 @@ import Campaigns from "./pages/Campaigns";
 import CampaignCreate from "./pages/CampaignCreate";
 import GroundTruth from "./pages/GroundTruth";
 import GteDashboard from "./pages/lab/GteDashboard";
+import StrategicSimulations from "./pages/lab/StrategicSimulations";
 import Landing from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
 import Pricing from "./pages/Pricing";
@@ -171,6 +172,9 @@ function Router() {
         <LabLayout>
           <GteDashboard />
         </LabLayout>
+      </Route>
+      <Route path="/lab/strategic">
+        <StrategicSimulations />
       </Route>
 
       {/* ── Legacy routes (keep working) ── */}

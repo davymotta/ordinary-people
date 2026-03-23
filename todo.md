@@ -519,3 +519,19 @@
 - [x] SP13.8 — Prodotti Stripe centralizzati in products.ts
 - [x] SP13.9 — FK brandAgentId su importedCampaigns (da completare migrazione)
 - [x] SP13.10 — Supporto TikTok Ads CSV nel parser campagne
+
+## Sprint 14 — Temporal Decay Layer + Strategic Simulations
+
+- [x] AES.3 — server/scoring/exposure-engine.ts: loadAgentBrandState(), applyDecay(), updateStateAfterExposure(), computeExposureModifier(), computeFrequencyResponseCurve() — già implementato
+- [x] AES.4 — Integrazione exposure state nel campaign-engine: carica stato prima, aggiorna dopo (via exposure-engine.ts)
+- [x] BE.1-BE.17 — Bias Engine con 13 bias cognitivi — già implementato
+- [x] SIM.1 — Journey Simulation (funnel multi-touchpoint sugli stessi agenti) — strategic-simulation-engine.ts
+- [x] SIM.2 — Retargeting Decay Analysis (frequency response curve) — strategic-simulation-engine.ts
+- [x] SIM.3 — Media Mix Optimization (scenari allocazione budget per piattaforma) — strategic-simulation-engine.ts
+- [x] SIM.4 — Competitive Response (interferenza competitiva, anchoring effect) — strategic-simulation-engine.ts
+- [x] SIM.5 — Content Calendar Optimization (sequenza ottimale contenuti) — strategic-simulation-engine.ts
+- [x] SIM.6 — UI /lab/strategic: pagina Simulazioni Strategiche con 5 tipi configurabili e visualizzazione risultati
+- [x] SIM.7 — tRPC router strategicSimulations: runJourney, runRetargetingDecay, runMediaMix, runCompetitiveResponse, runContentCalendar, getSimulation, listSimulations
+- [x] SIM.8 — Voce "Simulazioni Strategiche" nella sidebar Lab
+- [ ] SIM.9 — Vitest: test per strategic-simulation-engine.ts
+- [ ] AES.4b — Integrare exposure state nel campaign-engine principale (processAgentCampaignReaction)
