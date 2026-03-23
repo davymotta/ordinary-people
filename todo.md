@@ -506,3 +506,16 @@
 - [ ] SP13.7 — Tab Campagne nella GTE Dashboard
 - [ ] SP13.8 — Supporto TikTok Ads CSV nel parser
 - [ ] SP13.9 — Redirect automatico admin/client basato su ruolo al login
+
+## Sprint 13 — Landing Page, OAuth, Stripe, UI Ristrutturazione
+
+- [x] SP13.1 — Ristrutturazione UI Admin/Client (separazione ruoli, layout dedicati)
+- [x] SP13.2 — Nuove pagine Admin: Clienti, Brand Agents, Accuracy, Social Auth, Dataset, Retraining
+- [x] SP13.3 — Landing page pubblica con funnel di vendita (Hero, Come funziona, Pricing, FAQ)
+- [x] SP13.4 — Pagina /auth con UI login/register coerente con la landing
+- [x] SP13.5 — Pagina /pricing standalone con piani Starter/Professional/Enterprise
+- [x] SP13.6 — Integrazione Stripe: tabella subscriptions, checkout session, billing portal
+- [x] SP13.7 — Webhook Stripe: checkout.session.completed, subscription.updated/deleted
+- [x] SP13.8 — Prodotti Stripe centralizzati in products.ts
+- [x] SP13.9 — FK brandAgentId su importedCampaigns (da completare migrazione)
+- [x] SP13.10 — Supporto TikTok Ads CSV nel parser campagne

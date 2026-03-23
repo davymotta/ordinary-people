@@ -32,6 +32,67 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // ─── Stripe Webhook (MUST be before express.json()) ───────────────────────────
+  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    if (!sig) { res.status(400).send("Missing stripe-signature"); return; }
+    try {
+      const { constructWebhookEvent } = await import("../stripe/stripe");
+      const event = constructWebhookEvent(req.body as Buffer, sig as string);
+
+      // Test events: return verification response
+      if (event.id.startsWith("evt_test_")) {
+        console.log("[Webhook] Test event detected", event.type);
+        res.json({ verified: true }); return;
+      }
+
+      const { getDb } = await import("../db");
+      const { subscriptions } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const dbConn = await getDb();
+
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as any;
+          const userId = parseInt(session.metadata?.user_id ?? "0", 10);
+          const planId = session.metadata?.planId ?? "starter";
+          if (userId && dbConn) {
+            await dbConn.insert(subscriptions).values({
+              userId,
+              stripeCustomerId: session.customer,
+              stripeSubscriptionId: session.subscription,
+              stripePriceId: null,
+              planId,
+              status: "active",
+            }).onDuplicateKeyUpdate?.({ set: {
+              stripeSubscriptionId: session.subscription,
+              status: "active",
+              planId,
+            }});
+          }
+          break;
+        }
+        case "customer.subscription.updated":
+        case "customer.subscription.deleted": {
+          const sub = event.data.object as any;
+          if (dbConn) {
+            await dbConn.update(subscriptions)
+              .set({ status: sub.status, cancelAtPeriodEnd: sub.cancel_at_period_end })
+              .where(eq(subscriptions.stripeSubscriptionId, sub.id));
+          }
+          break;
+        }
+        default:
+          console.log("[Webhook] Unhandled event:", event.type);
+      }
+      res.json({ received: true });
+    } catch (err: any) {
+      console.error("[Webhook] Error:", err.message);
+      res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  });
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

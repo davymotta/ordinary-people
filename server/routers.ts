@@ -51,8 +51,9 @@ import { detectContentType, estimateIngestionCost } from "./ingestion/detect";
 import { researchBrand } from "./onboarding/brand-researcher";
 import { buildBrandProfile, formatProfilePresentation } from "./onboarding/brand-profiler";
 import { matchPool, formatPoolSummary } from "./onboarding/pool-matcher";
-import { brandAgents, calibrationResults } from "../drizzle/schema";
-import { eq as eqDrizzle } from "drizzle-orm";
+import { brandAgents, calibrationResults, subscriptions } from "../drizzle/schema";
+import { eq as eqDrizzle, eq } from "drizzle-orm";
+import { getDb } from "./db";
 import { runAutoCalibration } from "./onboarding/auto-calibration";
 export const appRouter = router({
   system: systemRouter,
@@ -1966,6 +1967,90 @@ export const appRouter = router({
           cookieCount: cookies.length,
           keySessionCookies: required.filter((n) => cookieNames.includes(n)),
         };
+      }),
+  }),
+
+  // ─── Stripe Payments ──────────────────────────────────────────────────────
+  payments: router({
+    // Ottieni i piani disponibili (pubblico)
+    getPlans: publicProcedure
+      .query(async () => {
+        const { getAllPlans } = await import("./stripe/products");
+        return getAllPlans();
+      }),
+
+    // Crea una checkout session Stripe
+    createCheckout: protectedProcedure
+      .input(z.object({
+        planId: z.enum(["starter", "professional"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createCheckoutSession } = await import("./stripe/stripe");
+        const dbConn = await getDb();
+        if (!dbConn) throw new Error("DB non disponibile");
+
+        const existingSub = await dbConn
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.userId, ctx.user.id))
+          .limit(1);
+
+        const stripeCustomerId = existingSub[0]?.stripeCustomerId ?? null;
+        const origin =
+          (ctx.req.headers.origin as string) ||
+          `https://${ctx.req.headers.host}` ||
+          "http://localhost:3000";
+
+        const url = await createCheckoutSession({
+          planId: input.planId,
+          userId: ctx.user.id,
+          userEmail: ctx.user.email ?? null,
+          userName: ctx.user.name ?? null,
+          stripeCustomerId,
+          origin,
+        });
+        return { url };
+      }),
+
+    // Crea una billing portal session
+    createBillingPortal: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { createBillingPortalSession } = await import("./stripe/stripe");
+        const dbConn = await getDb();
+        if (!dbConn) throw new Error("DB non disponibile");
+
+        const sub = await dbConn
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.userId, ctx.user.id))
+          .limit(1);
+
+        if (!sub[0]?.stripeCustomerId) {
+          throw new Error("Nessun abbonamento attivo trovato");
+        }
+
+        const origin =
+          (ctx.req.headers.origin as string) ||
+          `https://${ctx.req.headers.host}` ||
+          "http://localhost:3000";
+
+        const url = await createBillingPortalSession(sub[0].stripeCustomerId, origin);
+        return { url };
+      }),
+
+    // Ottieni lo stato dell'abbonamento corrente
+    getSubscription: protectedProcedure
+      .query(async ({ ctx }) => {
+        const dbConn = await getDb();
+        if (!dbConn) return null;
+
+        const sub = await dbConn
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.userId, ctx.user.id))
+          .limit(1);
+
+        return sub[0] ?? null;
       }),
   }),
 });

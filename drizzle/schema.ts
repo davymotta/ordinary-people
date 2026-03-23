@@ -1031,3 +1031,22 @@ export const importedCampaigns = mysqlTable("importedCampaigns", {
 });
 export type ImportedCampaign = typeof importedCampaigns.$inferSelect;
 export type InsertImportedCampaign = typeof importedCampaigns.$inferInsert;
+
+// ─── Subscriptions (Stripe) ───────────────────────────────────────────────────
+export const subscriptions = mysqlTable("subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 128 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 128 }),
+  stripePriceId: varchar("stripePriceId", { length: 128 }),
+  planId: varchar("planId", { length: 32 }).notNull().default("starter"),
+  status: varchar("status", { length: 32 }).notNull().default("trialing"),
+  trialEndsAt: timestamp("trialEndsAt"),
+  currentPeriodEnd: timestamp("currentPeriodEnd"),
+  cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;

@@ -43,6 +43,9 @@ import Campaigns from "./pages/Campaigns";
 import CampaignCreate from "./pages/CampaignCreate";
 import GroundTruth from "./pages/GroundTruth";
 import GteDashboard from "./pages/lab/GteDashboard";
+import Landing from "./pages/Landing";
+import AuthPage from "./pages/AuthPage";
+import Pricing from "./pages/Pricing";
 import Calibration from "./pages/Calibration";
 import DashboardLayout from "./components/DashboardLayout";
 import { AdminLayout } from "./components/AdminLayout";
@@ -51,9 +54,19 @@ import { LabLayout } from "./components/LabLayout";
 function Router() {
   return (
     <Switch>
-      {/* Root → redirect to Client Portal */}
+      {/* Root → Landing Page pubblica */}
       <Route path="/">
-        <Redirect to="/app" />
+        <Landing />
+      </Route>
+
+      {/* Auth → Login / Register */}
+      <Route path="/auth">
+        <AuthPage />
+      </Route>
+
+      {/* Pricing */}
+      <Route path="/pricing">
+        <Pricing />
       </Route>
 
       {/* ── Client Portal ── */}

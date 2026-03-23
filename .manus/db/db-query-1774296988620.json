@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `subscriptions` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `stripeCustomerId` varchar(128),\n  `stripeSubscriptionId` varchar(128),\n  `stripePriceId` varchar(128),\n  `planId` varchar(32) NOT NULL DEFAULT 'starter',\n  `status` varchar(32) NOT NULL DEFAULT 'trialing',\n  `trialEndsAt` timestamp,\n  `currentPeriodEnd` timestamp,\n  `cancelAtPeriodEnd` boolean DEFAULT false,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `subscriptions_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 23k7DxJkvxWkDiS.cfce7a4d6a95 --database BrhNBieBfyzPV9fR7mMkGf --execute CREATE TABLE `subscriptions` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `stripeCustomerId` varchar(128),\n  `stripeSubscriptionId` varchar(128),\n  `stripePriceId` varchar(128),\n  `planId` varchar(32) NOT NULL DEFAULT 'starter',\n  `status` varchar(32) NOT NULL DEFAULT 'trialing',\n  `trialEndsAt` timestamp,\n  `currentPeriodEnd` timestamp,\n  `cancelAtPeriodEnd` boolean DEFAULT false,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `subscriptions_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 307
+}
