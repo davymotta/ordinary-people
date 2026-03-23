@@ -36,7 +36,7 @@ import {
   createCampaignReport,
   updateCampaignReport,
 } from "./agents-db";
-import type { Agent, AgentState, Campaign, CampaignReport } from "../drizzle/schema";
+import type { Agent, AgentState, Campaign, CampaignReport, AgentBrandState } from "../drizzle/schema";
 import {
   buildSocialInfluenceContexts,
   applysocialInfluence,
@@ -46,6 +46,12 @@ import {
 import { buildPerceptualPrompt } from "./ingestion/perceptual-filter";
 import type { CampaignDigest } from "./ingestion/schema";
 import { computeBiasVector, applyBiases, describeActiveBiases, formatBiasVectorForPrompt } from "./scoring/bias-engine";
+import {
+  loadAgentBrandState,
+  computeExposureContext,
+  applyExposureAdjustment,
+  updateStateAfterExposure,
+} from "./scoring/exposure-engine";
 import { generateInnerLife, formatInnerLifeForPrompt } from "./scoring/inner-life-generator";
 import { computeSalience } from "./scoring/salience-calculator";
 import type { CampaignSignals } from "./scoring/salience-calculator";
@@ -142,7 +148,22 @@ export async function runCampaignTest(
         5
       );
 
-      const result = await processAgentCampaignReaction(agent, state, campaign, memories, digest);
+      // ─── AES.4: Load exposure state before processing ──────────────────
+      // If a brandAgentId is available (from the campaign), load the agent's
+      // persistent brand state (with temporal decay applied).
+      let exposureContext: import("./scoring/exposure-engine").ExposureContext | null = null;
+      let brandState: AgentBrandState | null = null;
+      const brandAgentIdForExposure = (campaign as any).brandAgentId as number | null | undefined;
+      if (brandAgentIdForExposure) {
+        try {
+          brandState = await loadAgentBrandState(agent.id, brandAgentIdForExposure);
+          exposureContext = computeExposureContext(brandState);
+        } catch (err) {
+          console.warn(`[CampaignEngine] Could not load exposure state for agent ${agent.slug}:`, err);
+        }
+      }
+
+      const result = await processAgentCampaignReaction(agent, state, campaign, memories, digest, exposureContext);
 
       // Save reaction to DB
       await updateCampaignReaction(reactionId, {
@@ -174,6 +195,23 @@ export async function runCampaignTest(
       });
 
       reactions.push(result);
+
+      // ─── AES.4: Update exposure state after reaction ──────────────────
+      if (brandAgentIdForExposure && brandState) {
+        try {
+          await updateStateAfterExposure(
+            agent.id,
+            brandAgentIdForExposure,
+            brandState,
+            result.overallScore,
+            campaign.id,
+            campaign.channel ?? "unknown",
+            campaign.name,
+          );
+        } catch (err) {
+          console.warn(`[CampaignEngine] Could not update exposure state for agent ${agent.slug}:`, err);
+        }
+      }
     } catch (error) {
       console.error(`[CampaignEngine] Error for agent ${agent.slug}:`, error);
       await updateCampaignReaction(reactionId, {
@@ -275,7 +313,8 @@ export async function processAgentCampaignReaction(
   state: AgentState | null,
   campaign: Campaign,
   memories: any[],
-  digest?: CampaignDigest | null
+  digest?: CampaignDigest | null,
+  exposureCtx?: import("./scoring/exposure-engine").ExposureContext | null
 ): Promise<AgentReactionResult> {
   // Build base system prompt
   // IMPORTANTE: usa sempre buildFallbackSystemPrompt (che include Kahneman, Bourdieu, Veblen, Maslow, Thaler)
@@ -544,11 +583,25 @@ export async function processAgentCampaignReaction(
     return buildFallbackReaction(agent);
   }
 
+  // ─── AES.4: Apply exposure adjustment to final score ──────────────────
+  // If we have an exposure context (persistent brand state), modulate the
+  // LLM-generated score with familiarity, saturation, and irritation effects.
+  let finalOverallScore = clamp(parsed.overall_score ?? 0, -1, 1);
+  let exposureNarrative: string[] = [];
+  if (exposureCtx) {
+    const { adjustedScore, adjustmentNarrative } = applyExposureAdjustment(finalOverallScore, exposureCtx);
+    finalOverallScore = adjustedScore;
+    exposureNarrative = adjustmentNarrative;
+    if (adjustmentNarrative.length > 0) {
+      console.log(`[CampaignEngine] Exposure adjustment for ${agent.slug}: ${adjustmentNarrative.join('; ')}`);
+    }
+  }
+
   return {
     agentId: agent.id,
     agentSlug: agent.slug,
     agentName: `${agent.firstName} ${agent.lastName}`,
-    overallScore: clamp(parsed.overall_score ?? 0, -1, 1),
+    overallScore: finalOverallScore,  // AES.4: exposure-adjusted score
     buyProbability: clamp(parsed.buy_probability ?? 0, 0, 1),
     shareProbability: clamp(parsed.share_probability ?? 0, 0, 1),
     attractionScore: clamp(parsed.attraction_score ?? 0, 0, 1),

@@ -533,5 +533,17 @@
 - [x] SIM.6 — UI /lab/strategic: pagina Simulazioni Strategiche con 5 tipi configurabili e visualizzazione risultati
 - [x] SIM.7 — tRPC router strategicSimulations: runJourney, runRetargetingDecay, runMediaMix, runCompetitiveResponse, runContentCalendar, getSimulation, listSimulations
 - [x] SIM.8 — Voce "Simulazioni Strategiche" nella sidebar Lab
-- [ ] SIM.9 — Vitest: test per strategic-simulation-engine.ts
-- [ ] AES.4b — Integrare exposure state nel campaign-engine principale (processAgentCampaignReaction)
+- [x] SIM.9 — Vitest: test per strategic-simulation-engine.ts
+- [x] AES.4b — Integrare exposure state nel campaign-engine principale (processAgentCampaignReaction)
+
+## Sprint 15 — AES.4 + Client Portal Journey + Vitest
+
+- [x] AES.4b — Integrare exposure-engine nel processAgentCampaignReaction (carica stato prima, aggiorna dopo)
+- [x] CP.1 — JourneySimulationPanel.tsx: pagina /app/simulate/journey con configuratore touchpoint
+- [x] CP.2 — JourneyResults.tsx: pagina /app/journey/:id con risultati funnel + polling auto
+- [x] CP.3 — Link "Journey Simulation" nella sidebar ClientLayout con badge "Nuovo"
+- [x] VT.1 — Vitest: 6 test computeExposureContext (familiarity boost, saturation, irritation, decay)
+- [x] VT.2 — Vitest: 7 test applyExposureAdjustment (boost, penalty, clamp, combined effects)
+- [x] VT.3 — Vitest: 8 test computeFrequencyResponseCurve (Zajonc effect, saturation, irritation)
+- [x] VT.4 — Vitest: 3 test temporal decay behavior (half-life formulas)
+- [x] TOTALE: 24/24 test passati

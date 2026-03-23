@@ -10,6 +10,7 @@ import {
   Sparkles,
   Building2,
   HelpCircle,
+  Route,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,13 @@ const navItems: NavItem[] = [
     href: "/app/ingest",
     icon: <Upload className="w-4 h-4" />,
     description: "Importa dati storici",
+  },
+  {
+    label: "Journey Simulation",
+    href: "/app/simulate/journey",
+    icon: <Route className="w-4 h-4" />,
+    description: "Funnel multi-touchpoint",
+    badge: "Nuovo",
   },
 ];
 
