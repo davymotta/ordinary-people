@@ -6,18 +6,40 @@
  * - Meta Ads Manager exports
  * - Generic campaign CSV (custom mapping)
  *
- * Parses the CSV client-side, normalizes columns, and sends the data
- * to the server via the tRPC importCampaignCsv mutation.
+ * Features:
+ * - Auto-detects format (Meta / Google / Generic) with confidence score
+ * - Shows column mapping table with detected → normalized field
+ * - Allows manual override of unmapped columns
+ * - Preview of first 5 rows with mapped data
+ * - Sends normalized data to server via tRPC importCampaignCsv
  */
 
 import { useCallback, useRef, useState } from "react";
-import { Upload, FileText, CheckCircle2, AlertTriangle, X, ChevronDown, ChevronUp, Info } from "lucide-react";
+import {
+  Upload, FileText, CheckCircle2, AlertTriangle, X,
+  ChevronDown, ChevronUp, Info, Settings2, Check, HelpCircle,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type CsvFormat = "meta" | "google" | "generic";
+
+type NormalizedField =
+  | "campaignName" | "adSetName" | "adName" | "platform"
+  | "startDate" | "endDate" | "impressions" | "clicks" | "spend"
+  | "currency" | "ctr" | "cpm" | "cpc" | "reach" | "frequency"
+  | "videoViews" | "videoViewRate" | "conversions" | "conversionRate"
+  | "roas" | "objective" | "status" | "ignore";
+
+interface ColumnMapping {
+  originalHeader: string;
+  detectedField: NormalizedField | null;
+  manualField: NormalizedField | null;
+  confidence: "high" | "medium" | "low" | "unknown";
+  sampleValues: string[];
+}
 
 interface ParsedCampaignRow {
   campaignName: string;
@@ -51,9 +73,39 @@ interface CsvImportProps {
   className?: string;
 }
 
+// ─── Field labels ─────────────────────────────────────────────────────────────
+
+const FIELD_LABELS: Record<NormalizedField, string> = {
+  campaignName: "Nome Campagna",
+  adSetName: "Nome Ad Set",
+  adName: "Nome Annuncio",
+  platform: "Piattaforma",
+  startDate: "Data Inizio",
+  endDate: "Data Fine",
+  impressions: "Impressioni",
+  clicks: "Click",
+  spend: "Spesa",
+  currency: "Valuta",
+  ctr: "CTR",
+  cpm: "CPM",
+  cpc: "CPC",
+  reach: "Reach",
+  frequency: "Frequenza",
+  videoViews: "Video Views",
+  videoViewRate: "Video View Rate",
+  conversions: "Conversioni",
+  conversionRate: "Tasso Conversione",
+  roas: "ROAS",
+  objective: "Obiettivo",
+  status: "Stato",
+  ignore: "— Ignora —",
+};
+
+const ALL_FIELDS: NormalizedField[] = Object.keys(FIELD_LABELS) as NormalizedField[];
+
 // ─── Column mappings ──────────────────────────────────────────────────────────
 
-const META_COLUMN_MAP: Record<string, keyof ParsedCampaignRow> = {
+const META_COLUMN_MAP: Record<string, NormalizedField> = {
   "campaign name": "campaignName",
   "ad set name": "adSetName",
   "ad name": "adName",
@@ -77,7 +129,7 @@ const META_COLUMN_MAP: Record<string, keyof ParsedCampaignRow> = {
   "delivery": "status",
 };
 
-const GOOGLE_COLUMN_MAP: Record<string, keyof ParsedCampaignRow> = {
+const GOOGLE_COLUMN_MAP: Record<string, NormalizedField> = {
   "campaign": "campaignName",
   "campaign name": "campaignName",
   "ad group": "adSetName",
@@ -98,14 +150,71 @@ const GOOGLE_COLUMN_MAP: Record<string, keyof ParsedCampaignRow> = {
   "campaign type": "objective",
 };
 
-// ─── CSV Parser ───────────────────────────────────────────────────────────────
+// ─── Format detection ─────────────────────────────────────────────────────────
 
-function detectFormat(headers: string[]): CsvFormat {
+function detectFormat(headers: string[]): { format: CsvFormat; confidence: number } {
   const lower = headers.map((h) => h.toLowerCase().trim());
-  if (lower.some((h) => h.includes("ad set") || h.includes("amount spent"))) return "meta";
-  if (lower.some((h) => h.includes("ad group") || h.includes("avg. cpm"))) return "google";
-  return "generic";
+  let metaScore = 0;
+  let googleScore = 0;
+
+  const metaSignals = ["ad set name", "amount spent", "link clicks", "delivery", "3-second video plays"];
+  const googleSignals = ["ad group", "avg. cpm", "avg. cpc", "conv. rate", "campaign type"];
+
+  for (const h of lower) {
+    if (metaSignals.some((s) => h.includes(s))) metaScore++;
+    if (googleSignals.some((s) => h.includes(s))) googleScore++;
+  }
+
+  if (metaScore >= 2) return { format: "meta", confidence: Math.min(100, metaScore * 25) };
+  if (googleScore >= 2) return { format: "google", confidence: Math.min(100, googleScore * 25) };
+  if (metaScore === 1) return { format: "meta", confidence: 40 };
+  if (googleScore === 1) return { format: "google", confidence: 40 };
+  return { format: "generic", confidence: 20 };
 }
+
+// ─── Column mapping builder ───────────────────────────────────────────────────
+
+function buildColumnMappings(
+  headers: string[],
+  rows: Record<string, string>[],
+  format: CsvFormat
+): ColumnMapping[] {
+  const columnMap = format === "meta" ? META_COLUMN_MAP : format === "google" ? GOOGLE_COLUMN_MAP : {};
+
+  return headers.map((header) => {
+    const lower = header.toLowerCase().trim();
+    const detectedField = columnMap[lower] ?? null;
+
+    // Collect sample values from first 3 rows
+    const sampleValues = rows
+      .slice(0, 3)
+      .map((r) => r[header] ?? "")
+      .filter(Boolean);
+
+    // Determine confidence
+    let confidence: ColumnMapping["confidence"] = "unknown";
+    if (detectedField) {
+      const isExactMatch = Object.keys(columnMap).includes(lower);
+      confidence = isExactMatch ? "high" : "medium";
+    } else {
+      // Try fuzzy match
+      const fuzzyMatch = Object.keys(columnMap).find(
+        (k) => lower.includes(k) || k.includes(lower)
+      );
+      if (fuzzyMatch) confidence = "low";
+    }
+
+    return {
+      originalHeader: header,
+      detectedField,
+      manualField: null,
+      confidence,
+      sampleValues,
+    };
+  });
+}
+
+// ─── CSV Parser ───────────────────────────────────────────────────────────────
 
 function parseNumber(val: string): number {
   if (!val) return 0;
@@ -117,7 +226,6 @@ function parseCsvText(text: string): { headers: string[]; rows: Record<string, s
   const lines = text.split(/\r?\n/).filter((l) => l.trim());
   if (lines.length < 2) return { headers: [], rows: [] };
 
-  // Detect delimiter
   const firstLine = lines[0];
   const delimiter = firstLine.includes("\t") ? "\t" : ",";
 
@@ -141,8 +249,6 @@ function parseCsvText(text: string): { headers: string[]; rows: Record<string, s
   };
 
   const headers = parseRow(lines[0]);
-
-  // Skip summary rows (Meta exports have them at the end)
   const dataLines = lines.slice(1).filter((l) => {
     const lower = l.toLowerCase();
     return !lower.startsWith("total") && !lower.startsWith("report") && !lower.startsWith("date range");
@@ -160,13 +266,30 @@ function parseCsvText(text: string): { headers: string[]; rows: Record<string, s
   return { headers, rows };
 }
 
-function normalizeRows(
+function normalizeRowsWithMappings(
   rows: Record<string, string>[],
-  headers: string[],
-  format: CsvFormat
+  mappings: ColumnMapping[],
+  format: CsvFormat,
+  headers: string[]
 ): ParsedCampaignRow[] {
-  const columnMap = format === "meta" ? META_COLUMN_MAP : format === "google" ? GOOGLE_COLUMN_MAP : {};
-  const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
+  const numericFields: NormalizedField[] = [
+    "impressions", "clicks", "spend", "ctr", "cpm", "cpc",
+    "reach", "frequency", "videoViews", "videoViewRate",
+    "conversions", "conversionRate", "roas",
+  ];
+
+  // Detect currency from column headers
+  let currency = "EUR";
+  const spendHeader = headers.find((h) => {
+    const l = h.toLowerCase();
+    return l.includes("amount spent") || l === "cost";
+  });
+  if (spendHeader) {
+    const l = spendHeader.toLowerCase();
+    if (l.includes("(eur)")) currency = "EUR";
+    else if (l.includes("(usd)")) currency = "USD";
+    else if (l.includes("(gbp)")) currency = "GBP";
+  }
 
   return rows
     .map((row) => {
@@ -177,28 +300,22 @@ function normalizeRows(
         impressions: 0,
         clicks: 0,
         spend: 0,
-        currency: "EUR",
+        currency,
       };
 
-      for (const [header, value] of Object.entries(row)) {
-        const lowerHeader = header.toLowerCase().trim();
-        const mappedKey = columnMap[lowerHeader];
-        if (mappedKey) {
-          if (["impressions", "clicks", "spend", "ctr", "cpm", "cpc", "reach", "frequency", "videoViews", "videoViewRate", "conversions", "conversionRate", "roas"].includes(mappedKey as string)) {
-            (normalized as Record<string, unknown>)[mappedKey as string] = parseNumber(value);
-          } else {
-            (normalized as Record<string, unknown>)[mappedKey as string] = value;
-          }
+      for (const mapping of mappings) {
+        const effectiveField = mapping.manualField ?? mapping.detectedField;
+        if (!effectiveField || effectiveField === "ignore") continue;
+
+        const value = row[mapping.originalHeader] ?? "";
+        if (numericFields.includes(effectiveField)) {
+          (normalized as Record<string, unknown>)[effectiveField] = parseNumber(value);
+        } else {
+          (normalized as Record<string, unknown>)[effectiveField] = value;
         }
       }
 
-      // Detect currency from column headers
-      const spendHeader = lowerHeaders.find((h) => h.includes("amount spent") || h === "cost");
-      if (spendHeader?.includes("(eur)")) normalized.currency = "EUR";
-      else if (spendHeader?.includes("(usd)")) normalized.currency = "USD";
-      else if (spendHeader?.includes("(gbp)")) normalized.currency = "GBP";
-
-      // Generic mapping: try to find campaign name
+      // Fallback: try to find campaign name
       if (!normalized.campaignName) {
         const nameKey = Object.keys(row).find((k) =>
           k.toLowerCase().includes("campaign") || k.toLowerCase().includes("nome")
@@ -211,15 +328,61 @@ function normalizeRows(
     .filter((r) => r.campaignName || r.impressions > 0);
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Confidence badge ─────────────────────────────────────────────────────────
+
+function ConfidenceBadge({ confidence }: { confidence: ColumnMapping["confidence"] }) {
+  const config = {
+    high: { label: "Alta", className: "bg-emerald-100 text-emerald-700" },
+    medium: { label: "Media", className: "bg-blue-100 text-blue-700" },
+    low: { label: "Bassa", className: "bg-amber-100 text-amber-700" },
+    unknown: { label: "Non rilevata", className: "bg-slate-100 text-slate-500" },
+  };
+  const { label, className } = config[confidence];
+  return (
+    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${className}`}>
+      {label}
+    </span>
+  );
+}
+
+// ─── Format confidence bar ────────────────────────────────────────────────────
+
+function FormatConfidenceBar({ format, confidence }: { format: CsvFormat; confidence: number }) {
+  const formatNames: Record<CsvFormat, string> = {
+    meta: "Meta Ads Manager",
+    google: "Google Ad Manager",
+    generic: "CSV Generico",
+  };
+  const color = confidence >= 75 ? "bg-emerald-500" : confidence >= 40 ? "bg-amber-500" : "bg-slate-400";
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-semibold text-slate-700">{formatNames[format]}</span>
+          <span className="text-xs text-slate-500">{confidence}% confidenza</span>
+        </div>
+        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${confidence}%` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CampaignCsvImport({ brandAgentId, onImportComplete, className = "" }: CsvImportProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [parsedRows, setParsedRows] = useState<ParsedCampaignRow[]>([]);
+  const [rawRows, setRawRows] = useState<Record<string, string>[]>([]);
+  const [rawHeaders, setRawHeaders] = useState<string[]>([]);
+  const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
   const [detectedFormat, setDetectedFormat] = useState<CsvFormat | null>(null);
+  const [formatConfidence, setFormatConfidence] = useState<number>(0);
   const [fileName, setFileName] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
+  const [showMappings, setShowMappings] = useState(true);
   const [importStatus, setImportStatus] = useState<"idle" | "parsing" | "ready" | "importing" | "done" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -259,10 +422,15 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
           return;
         }
 
-        const format = detectFormat(headers);
-        const normalized = normalizeRows(rows, headers, format);
+        const { format, confidence } = detectFormat(headers);
+        const mappings = buildColumnMappings(headers, rows, format);
+        const normalized = normalizeRowsWithMappings(rows, mappings, format, headers);
 
+        setRawHeaders(headers);
+        setRawRows(rows);
+        setColumnMappings(mappings);
         setDetectedFormat(format);
+        setFormatConfidence(confidence);
         setParsedRows(normalized);
         setImportStatus("ready");
       } catch (err) {
@@ -290,6 +458,17 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
     },
     [processFile]
   );
+
+  // Update a manual field override for a column
+  const updateManualMapping = (headerIndex: number, field: NormalizedField) => {
+    const updated = columnMappings.map((m, i) =>
+      i === headerIndex ? { ...m, manualField: field === m.detectedField ? null : field } : m
+    );
+    setColumnMappings(updated);
+    // Re-normalize with updated mappings
+    const normalized = normalizeRowsWithMappings(rawRows, updated, detectedFormat ?? "generic", rawHeaders);
+    setParsedRows(normalized);
+  };
 
   const handleImport = () => {
     if (!parsedRows.length) return;
@@ -325,19 +504,23 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
 
   const handleReset = () => {
     setParsedRows([]);
+    setRawRows([]);
+    setRawHeaders([]);
+    setColumnMappings([]);
     setDetectedFormat(null);
+    setFormatConfidence(0);
     setFileName("");
     setImportStatus("idle");
     setErrorMessage("");
     setShowPreview(false);
+    setShowMappings(true);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const formatLabel: Record<CsvFormat, string> = {
-    meta: "Meta Ads Manager",
-    google: "Google Ad Manager / Campaign Manager 360",
-    generic: "CSV Generico",
-  };
+  // Stats
+  const unmappedCount = columnMappings.filter(
+    (m) => !m.detectedField && !m.manualField
+  ).length;
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -375,9 +558,7 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
           }`}
         >
           <Upload className={`w-8 h-8 mx-auto mb-2 ${isDragging ? "text-indigo-500" : "text-slate-400"}`} />
-          <p className="text-sm font-medium text-slate-700">
-            Trascina qui il file CSV
-          </p>
+          <p className="text-sm font-medium text-slate-700">Trascina qui il file CSV</p>
           <p className="text-xs text-slate-400 mt-1">oppure clicca per selezionare</p>
           <p className="text-xs text-slate-400 mt-2">.csv · .tsv · .txt</p>
           <input
@@ -412,7 +593,7 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
         </div>
       )}
 
-      {/* Ready state */}
+      {/* Ready / Importing state */}
       {(importStatus === "ready" || importStatus === "importing") && (
         <div className="border border-slate-200 rounded-xl overflow-hidden">
           {/* Summary bar */}
@@ -421,9 +602,7 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
               <FileText className="w-4 h-4 text-slate-500" />
               <div>
                 <p className="text-xs font-semibold text-slate-700">{fileName}</p>
-                <p className="text-xs text-slate-500">
-                  {detectedFormat && formatLabel[detectedFormat]} · {parsedRows.length} righe
-                </p>
+                <p className="text-xs text-slate-500">{parsedRows.length} righe valide · {rawHeaders.length} colonne</p>
               </div>
             </div>
             <button onClick={handleReset} className="text-slate-400 hover:text-slate-600">
@@ -431,8 +610,24 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
             </button>
           </div>
 
+          {/* Format detection */}
+          {detectedFormat && (
+            <div className="px-4 py-3 border-b border-slate-100">
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                Formato Rilevato
+              </p>
+              <FormatConfidenceBar format={detectedFormat} confidence={formatConfidence} />
+              {formatConfidence < 50 && (
+                <p className="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1">
+                  <HelpCircle className="w-3 h-3" />
+                  Confidenza bassa — verifica la mappatura colonne manualmente
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Stats summary */}
-          <div className="grid grid-cols-3 divide-x divide-slate-100 px-4 py-3">
+          <div className="grid grid-cols-3 divide-x divide-slate-100 px-4 py-3 border-b border-slate-100">
             <div className="text-center px-2">
               <p className="text-lg font-bold text-slate-800">
                 {parsedRows.reduce((s, r) => s + r.impressions, 0).toLocaleString("it-IT")}
@@ -454,13 +649,93 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
             </div>
           </div>
 
+          {/* Column mappings */}
+          <div className="border-b border-slate-100">
+            <button
+              onClick={() => setShowMappings((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors"
+            >
+              <span className="flex items-center gap-2 text-slate-600 font-medium">
+                <Settings2 className="w-3.5 h-3.5 text-indigo-500" />
+                Mappatura Colonne ({columnMappings.length} colonne)
+                {unmappedCount > 0 && (
+                  <span className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded-full font-semibold">
+                    {unmappedCount} non mappate
+                  </span>
+                )}
+              </span>
+              {showMappings ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
+
+            {showMappings && (
+              <div className="border-t border-slate-100 overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-slate-50">
+                      <th className="text-left px-3 py-2 text-slate-500 font-medium">Colonna CSV</th>
+                      <th className="text-left px-3 py-2 text-slate-500 font-medium">Campo Rilevato</th>
+                      <th className="text-left px-3 py-2 text-slate-500 font-medium">Confidenza</th>
+                      <th className="text-left px-3 py-2 text-slate-500 font-medium">Override Manuale</th>
+                      <th className="text-left px-3 py-2 text-slate-500 font-medium">Esempi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {columnMappings.map((mapping, i) => {
+                      const effectiveField = mapping.manualField ?? mapping.detectedField;
+                      const isOverridden = mapping.manualField !== null;
+                      return (
+                        <tr key={i} className={`border-t border-slate-50 ${!effectiveField ? "bg-amber-50/50" : ""}`}>
+                          <td className="px-3 py-2 font-mono text-slate-700 max-w-[140px] truncate">
+                            {mapping.originalHeader}
+                          </td>
+                          <td className="px-3 py-2">
+                            {mapping.detectedField ? (
+                              <span className="flex items-center gap-1 text-emerald-700">
+                                <Check className="w-3 h-3" />
+                                {FIELD_LABELS[mapping.detectedField]}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 italic">Non rilevata</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2">
+                            <ConfidenceBadge confidence={isOverridden ? "high" : mapping.confidence} />
+                          </td>
+                          <td className="px-3 py-2">
+                            <select
+                              value={mapping.manualField ?? ""}
+                              onChange={(e) => updateManualMapping(i, (e.target.value || "ignore") as NormalizedField)}
+                              className={`text-[11px] border rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 ${
+                                isOverridden
+                                  ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+                                  : "border-slate-200 bg-white text-slate-600"
+                              }`}
+                            >
+                              <option value="">— usa rilevato —</option>
+                              {ALL_FIELDS.map((f) => (
+                                <option key={f} value={f}>{FIELD_LABELS[f]}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-3 py-2 text-slate-400 max-w-[120px] truncate">
+                            {mapping.sampleValues.slice(0, 2).join(", ") || "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           {/* Preview toggle */}
-          <div className="border-t border-slate-100">
+          <div className="border-b border-slate-100">
             <button
               onClick={() => setShowPreview((v) => !v)}
-              className="w-full flex items-center justify-between px-4 py-2 text-xs text-slate-500 hover:bg-slate-50"
+              className="w-full flex items-center justify-between px-4 py-2 text-xs text-slate-500 hover:bg-slate-50 transition-colors"
             >
-              <span>Anteprima righe ({Math.min(parsedRows.length, 5)} di {parsedRows.length})</span>
+              <span>Anteprima dati ({Math.min(parsedRows.length, 5)} di {parsedRows.length} righe)</span>
               {showPreview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
 
@@ -470,18 +745,21 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
                   <thead className="bg-slate-50">
                     <tr>
                       <th className="text-left px-3 py-2 text-slate-500 font-medium">Campagna</th>
+                      <th className="text-left px-3 py-2 text-slate-500 font-medium">Piattaforma</th>
                       <th className="text-right px-3 py-2 text-slate-500 font-medium">Impressioni</th>
                       <th className="text-right px-3 py-2 text-slate-500 font-medium">Click</th>
                       <th className="text-right px-3 py-2 text-slate-500 font-medium">Spesa</th>
                       <th className="text-right px-3 py-2 text-slate-500 font-medium">CTR</th>
+                      <th className="text-right px-3 py-2 text-slate-500 font-medium">CPM</th>
                     </tr>
                   </thead>
                   <tbody>
                     {parsedRows.slice(0, 5).map((row, i) => (
                       <tr key={i} className="border-t border-slate-50 hover:bg-slate-50">
-                        <td className="px-3 py-2 text-slate-700 max-w-[180px] truncate">
+                        <td className="px-3 py-2 text-slate-700 max-w-[160px] truncate">
                           {row.campaignName || "—"}
                         </td>
+                        <td className="px-3 py-2 text-slate-500 capitalize">{row.platform}</td>
                         <td className="px-3 py-2 text-right text-slate-600">
                           {row.impressions.toLocaleString("it-IT")}
                         </td>
@@ -494,6 +772,9 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
                         <td className="px-3 py-2 text-right text-slate-600">
                           {row.ctr ? `${row.ctr.toFixed(2)}%` : "—"}
                         </td>
+                        <td className="px-3 py-2 text-right text-slate-600">
+                          {row.cpm ? `${row.cpm.toFixed(2)}` : "—"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -503,7 +784,13 @@ export function CampaignCsvImport({ brandAgentId, onImportComplete, className = 
           </div>
 
           {/* Import button */}
-          <div className="border-t border-slate-100 p-4">
+          <div className="p-4">
+            {unmappedCount > 0 && (
+              <p className="text-[11px] text-amber-600 mb-3 flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5" />
+                {unmappedCount} colonne non mappate verranno ignorate. Usa gli override manuali per includerle.
+              </p>
+            )}
             <button
               onClick={handleImport}
               disabled={importStatus === "importing"}

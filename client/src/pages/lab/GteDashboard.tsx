@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Loader2, Target, TrendingUp, BarChart3, RefreshCw,
   CheckCircle, AlertTriangle, Eye, ThumbsUp, MessageSquare,
-  Play, Zap, Database, Youtube, ExternalLink, Info, Brain, Star,
+  Play, Zap, Database, Youtube, ExternalLink, Info, Brain, Star, Shield,
 } from "lucide-react";
+import { SocialAuthFlow } from "@/components/SocialAuthFlow";
 import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
@@ -301,6 +302,7 @@ export default function GteDashboard() {
           <TabsTrigger value="posts" className="text-xs">Post Raccolti ({gteStats?.total ?? 0})</TabsTrigger>
           <TabsTrigger value="calibration" className="text-xs">Calibrazione</TabsTrigger>
           <TabsTrigger value="hook" className="text-xs flex items-center gap-1"><Brain className="h-3 w-3" />Hook Analyser</TabsTrigger>
+          <TabsTrigger value="auth" className="text-xs flex items-center gap-1"><Shield className="h-3 w-3" />Social Auth</TabsTrigger>
           {accuracyTimeline && accuracyTimeline.length > 0 && (
             <TabsTrigger value="timeline" className="text-xs">Timeline</TabsTrigger>
           )}
@@ -669,6 +671,28 @@ export default function GteDashboard() {
         {/* ─── HOOK ANALYSER TAB ─────────────────────────────────────────────── */}
         <TabsContent value="hook" className="space-y-4 mt-4">
           <HookAnalyserPanel selectedBrandId={selectedBrandId} />
+        </TabsContent>
+
+        {/* ─── SOCIAL AUTH TAB ─────────────────────────────────────────────────── */}
+        <TabsContent value="auth" className="space-y-4 mt-4">
+          <div className="max-w-lg">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+                <Shield className="h-4 w-4 text-indigo-500" />
+                Autenticazione Social Scraper
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Importa i cookie di sessione per abilitare lo scraping autenticato di Instagram e TikTok.
+                Questo permette di raccogliere dati di engagement (likes, commenti, saves) che non sono
+                disponibili senza autenticazione. Usa un account secondario dedicato allo scraping.
+              </p>
+            </div>
+            <SocialAuthFlow
+              onAuthenticated={(platform, count) => {
+                toast.success(`Sessione ${platform} attiva — ${count} cookie salvati`);
+              }}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

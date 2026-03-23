@@ -486,3 +486,11 @@
 - [x] SP11.3 — Pulsante "Continua" e "Salta" per rendere lo step opzionale
 - [x] SP11.4 — Progress bar aggiornata con 4 step e icona FileSpreadsheet
 - [x] SP11.5 — Colonna destra mostra Brand Profile anche durante lo step Campagne
+
+## Sprint 12 — CSV Preview + Social Auth Flow
+- [x] SP12.1 — Aggiungere mappatura colonne interattiva nel CampaignCsvImport (rilevato/manuale/confidenza)
+- [x] SP12.2 — Aggiungere barra confidenza formato (Meta/Google/Generic)
+- [x] SP12.3 — Aggiungere override manuale per colonne non riconosciute
+- [x] SP12.4 — Aggiungere tab Social Auth nella GTE Dashboard
+- [x] SP12.5 — Creare componente SocialAuthFlow con cookie import guidato
+- [x] SP12.6 — Creare session-manager.ts per persistenza sessioni Instagram/TikTok

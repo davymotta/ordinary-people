@@ -1890,6 +1890,84 @@ export const appRouter = router({
         return { fingerprint, analyzedCount: analyses.size, totalPosts: posts.length };
       }),
   }),
+
+  // ─── Social Auth ─────────────────────────────────────────────────────────────
+  socialAuth: router({
+    // Get session status for a platform (has saved cookies?)
+    getStatus: publicProcedure
+      .input(z.object({
+        platform: z.enum(["instagram", "tiktok"]),
+      }))
+      .query(async ({ input }) => {
+        const { getSessionStatus } = await import("./scrapers/session-manager");
+        return getSessionStatus(input.platform as "instagram" | "tiktok");
+      }),
+
+    // Import cookies from JSON string (exported via browser extension like EditThisCookie)
+    importCookies: publicProcedure
+      .input(z.object({
+        platform: z.enum(["instagram", "tiktok"]),
+        cookiesJson: z.string().min(2),
+      }))
+      .mutation(async ({ input }) => {
+        const { normalizeImportedCookies, saveCookies } = await import("./scrapers/session-manager");
+        let rawCookies: any[];
+        try {
+          rawCookies = JSON.parse(input.cookiesJson);
+          if (!Array.isArray(rawCookies)) throw new Error("Expected array");
+        } catch (e: any) {
+          throw new Error(`JSON non valido: ${e.message}`);
+        }
+        const platform = input.platform as "instagram" | "tiktok";
+        const normalized = normalizeImportedCookies(rawCookies, platform);
+        if (normalized.length === 0) {
+          throw new Error(`Nessun cookie valido trovato per ${platform}. Assicurati di esportare i cookie dal dominio ${platform}.com`);
+        }
+        await saveCookies(platform, normalized);
+        return { success: true, cookieCount: normalized.length };
+      }),
+
+    // Delete saved session
+    deleteSession: publicProcedure
+      .input(z.object({
+        platform: z.enum(["instagram", "tiktok"]),
+      }))
+      .mutation(async ({ input }) => {
+        const { deleteCookies } = await import("./scrapers/session-manager");
+        await deleteCookies(input.platform as "instagram" | "tiktok");
+        return { success: true };
+      }),
+
+    // Verify that saved cookies work (test scrape)
+    verifySession: publicProcedure
+      .input(z.object({
+        platform: z.enum(["instagram", "tiktok"]),
+        testHandle: z.string().default("instagram"),
+      }))
+      .mutation(async ({ input }) => {
+        const { loadCookies } = await import("./scrapers/session-manager");
+        const cookies = await loadCookies(input.platform as "instagram" | "tiktok");
+        if (!cookies || cookies.length === 0) {
+          return { valid: false, reason: "Nessuna sessione salvata" };
+        }
+        // Check for key session cookies
+        const keyNames: Record<string, string[]> = {
+          instagram: ["sessionid", "ds_user_id"],
+          tiktok: ["sessionid", "tt_webid_v2"],
+        };
+        const required = keyNames[input.platform] ?? [];
+        const cookieNames = cookies.map((c) => c.name);
+        const missing = required.filter((n) => !cookieNames.includes(n));
+        if (missing.length > 0) {
+          return { valid: false, reason: `Cookie mancanti: ${missing.join(", ")}` };
+        }
+        return {
+          valid: true,
+          cookieCount: cookies.length,
+          keySessionCookies: required.filter((n) => cookieNames.includes(n)),
+        };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;;
 
