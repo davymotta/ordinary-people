@@ -17,12 +17,13 @@ import { useLocation } from "wouter";
 import {
   Building2, Globe, Instagram, Twitter, Search, CheckCircle2,
   ChevronRight, Edit3, Users, BarChart3, Loader2, ArrowRight,
-  Sparkles, AlertCircle, Save
+  Sparkles, AlertCircle, Save, FileSpreadsheet, SkipForward
 } from "lucide-react";
+import { CampaignCsvImport } from "@/components/CampaignCsvImport";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
-type Step = "identity" | "researching" | "profile" | "saved";
+type Step = "identity" | "researching" | "profile" | "campaigns" | "saved";
 
 interface ChatMessage {
   role: "ai" | "user";
@@ -377,7 +378,7 @@ export default function BrandOnboarding() {
       });
 
       setSavedAgentId((saved as any)?.id ?? null);
-      setStep("saved");
+      setStep("campaigns");
       addMessage("ai", `**Brand Agent salvato!** 🎉\n\nD'ora in poi, ogni volta che lanci una simulazione, il sistema pre-caricherà automaticamente il panel di ${brandProfile.defaultAgentPool?.totalAgents ?? 100} agenti selezionati per **${identity.name ?? form.brandName}**.\n\nPuoi procedere a testare la tua prima campagna.`);
       toast.success("Brand Agent salvato con successo");
     } catch (err: any) {
@@ -407,20 +408,27 @@ export default function BrandOnboarding() {
               label="Identità"
               icon={Building2}
               active={step === "identity"}
-              done={step !== "identity"}
+              done={step === "researching" || step === "profile" || step === "campaigns" || step === "saved"}
             />
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
             <ProgressStep
               label="Ricerca"
               icon={Search}
               active={step === "researching"}
-              done={step === "profile" || step === "saved"}
+              done={step === "profile" || step === "campaigns" || step === "saved"}
             />
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
             <ProgressStep
               label="Validazione"
               icon={CheckCircle2}
               active={step === "profile"}
+              done={step === "campaigns" || step === "saved"}
+            />
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <ProgressStep
+              label="Campagne"
+              icon={FileSpreadsheet}
+              active={step === "campaigns"}
               done={step === "saved"}
             />
           </div>
@@ -529,6 +537,45 @@ export default function BrandOnboarding() {
             </div>
           )}
 
+          {/* Campaigns step — CSV import */}
+          {step === "campaigns" && (
+            <div className="border-t border-slate-100 p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                    <FileSpreadsheet className="w-4 h-4 text-indigo-500" />
+                    Storico Campagne (opzionale)
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Carica i dati storici da Meta Ads Manager o Google Ad Manager per calibrare il modello con dati reali di performance.
+                  </p>
+                </div>
+              </div>
+              <CampaignCsvImport
+                brandAgentId={savedAgentId ?? undefined}
+                onImportComplete={(count) => {
+                  toast.success(`${count} campagne importate con successo`);
+                }}
+              />
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setStep("saved")}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Continua
+                </button>
+                <button
+                  onClick={() => setStep("saved")}
+                  className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-xs px-4 py-3 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors"
+                >
+                  <SkipForward className="w-3.5 h-3.5" />
+                  Salta
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Save button — in profile step */}
           {step === "profile" && (
             <div className="border-t border-slate-100 p-5">
@@ -625,7 +672,7 @@ export default function BrandOnboarding() {
 
         {/* Right: Brand Profile card (visible after research) */}
         <div className="flex flex-col gap-4">
-          {(step === "profile" || step === "saved") && brandProfile ? (
+          {(step === "profile" || step === "campaigns" || step === "saved") && brandProfile ? (
             <>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">

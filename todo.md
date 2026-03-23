@@ -479,3 +479,10 @@
 - [x] SP10b.3 — Tab "Hook Analyser" nella GTE Dashboard con UI completa
 - [x] SP10b.4 — Score ring visivo, dimensioni, triggers, platform forecast, rewrites
 - [x] SP10b.5 — Fix errori TypeScript (0 errori)
+
+## Sprint 11 — CSV Import Onboarding
+- [x] SP11.1 — Aggiunto step "Campagne" nel wizard onboarding (4 step: Identità → Ricerca → Validazione → Campagne)
+- [x] SP11.2 — Integrato CampaignCsvImport con brandAgentId passato automaticamente
+- [x] SP11.3 — Pulsante "Continua" e "Salta" per rendere lo step opzionale
+- [x] SP11.4 — Progress bar aggiornata con 4 step e icona FileSpreadsheet
+- [x] SP11.5 — Colonna destra mostra Brand Profile anche durante lo step Campagne
