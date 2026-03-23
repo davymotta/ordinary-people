@@ -14,6 +14,11 @@ import {
   AlertCircle,
   TrendingUp,
   Clock,
+  Building2,
+  Target,
+  Database,
+  RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -45,11 +50,53 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="p-8 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground mb-1">Admin Console</h1>
-          <p className="text-sm text-muted-foreground">
-            Gestione della popolazione digitale e del World Engine.
-          </p>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">Operator Console</h1>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Panoramica operativa: clienti, simulazioni, calibrazione GTE e training.
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Link href="/admin/clients">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Building2 className="w-4 h-4" />
+                Clienti
+              </Button>
+            </Link>
+            <Link href="/lab/gte">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Target className="w-4 h-4" />
+                GTE
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Quick links operativi */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {[
+            { label: "Clienti", sub: "Gestione account", href: "/admin/clients", icon: <Building2 className="w-4 h-4" />, color: "text-primary" },
+            { label: "Brand Agent", sub: "Configurazioni brand", href: "/admin/brand-agents", icon: <Zap className="w-4 h-4" />, color: "text-chart-2" },
+            { label: "Accuracy GTE", sub: "Spearman ρ timeline", href: "/admin/accuracy", icon: <Target className="w-4 h-4" />, color: "text-chart-3" },
+            { label: "Dataset", sub: "Training data", href: "/admin/dataset", icon: <Database className="w-4 h-4" />, color: "text-chart-4" },
+          ].map((q) => (
+            <Link key={q.href} href={q.href}>
+              <Card className="hover:border-primary/30 transition-colors cursor-pointer group">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={q.color}>{q.icon}</span>
+                    <span className="text-xs font-semibold text-foreground">{q.label}</span>
+                    <ChevronRight className="w-3 h-3 text-muted-foreground ml-auto group-hover:text-primary transition-colors" />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{q.sub}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
 
         {/* Status bar */}
@@ -224,6 +271,18 @@ export default function AdminDashboard() {
                   <Button variant="outline" className="w-full gap-2 h-auto py-3 flex-col text-xs">
                     <TrendingUp className="w-4 h-4" />
                     Simulazioni
+                  </Button>
+                </Link>
+                <Link href="/admin/social-auth">
+                  <Button variant="outline" className="w-full gap-2 h-auto py-3 flex-col text-xs">
+                    <ShieldCheck className="w-4 h-4" />
+                    Social Auth
+                  </Button>
+                </Link>
+                <Link href="/admin/retraining">
+                  <Button variant="outline" className="w-full gap-2 h-auto py-3 flex-col text-xs">
+                    <RefreshCw className="w-4 h-4" />
+                    Retraining
                   </Button>
                 </Link>
               </div>

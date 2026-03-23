@@ -15,6 +15,12 @@ import BrandOnboarding from "./pages/client/BrandOnboarding";
 
 // ── Admin Console (/admin) ────────────────────────────────────────────────────
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminClients from "./pages/admin/AdminClients";
+import AdminBrandAgents from "./pages/admin/AdminBrandAgents";
+import AdminAccuracy from "./pages/admin/AdminAccuracy";
+import AdminSocialAuth from "./pages/admin/AdminSocialAuth";
+import AdminDataset from "./pages/admin/AdminDataset";
+import AdminRetraining from "./pages/admin/AdminRetraining";
 // Re-use existing pages inside AdminLayout
 import Agents from "./pages/Agents";
 import WorldEvents from "./pages/WorldEvents";
@@ -105,6 +111,25 @@ function Router() {
         )}
       </Route>
 
+      {/* ── Admin: nuove sezioni ── */}
+      <Route path="/admin/clients">
+        <AdminClients />
+      </Route>
+      <Route path="/admin/brand-agents">
+        <AdminBrandAgents />
+      </Route>
+      <Route path="/admin/accuracy">
+        <AdminAccuracy />
+      </Route>
+      <Route path="/admin/social-auth">
+        <AdminSocialAuth />
+      </Route>
+      <Route path="/admin/dataset">
+        <AdminDataset />
+      </Route>
+      <Route path="/admin/retraining">
+        <AdminRetraining />
+      </Route>
       {/* ── Lab ── */}
       <Route path="/lab">
         <LabDashboard />

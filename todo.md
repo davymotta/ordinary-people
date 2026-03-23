@@ -494,3 +494,15 @@
 - [x] SP12.4 — Aggiungere tab Social Auth nella GTE Dashboard
 - [x] SP12.5 — Creare componente SocialAuthFlow con cookie import guidato
 - [x] SP12.6 — Creare session-manager.ts per persistenza sessioni Instagram/TikTok
+
+## Sprint 13 — Landing Page + OAuth + Stripe
+
+- [ ] SP13.1 — Landing page pubblica con funnel di vendita (Hero, Come funziona, Pricing, CTA)
+- [ ] SP13.2 — Sezione Social Proof / casi d'uso sulla landing
+- [ ] SP13.3 — Integrazione OAuth Google + LinkedIn nel sistema auth
+- [ ] SP13.4 — Configurazione Stripe: piani, checkout, webhook
+- [ ] SP13.5 — Collegamento piani Stripe ai pulsanti CTA della landing
+- [ ] SP13.6 — FK brandAgentId su importedCampaigns
+- [ ] SP13.7 — Tab Campagne nella GTE Dashboard
+- [ ] SP13.8 — Supporto TikTok Ads CSV nel parser
+- [ ] SP13.9 — Redirect automatico admin/client basato su ruolo al login
