@@ -1542,5 +1542,354 @@ export const appRouter = router({
       }),
   }),
 
+  // ─── Social Scrapers ─────────────────────────────────────────────────────────
+  scrapers: router({
+    // Scrape Instagram profile (followers, posts count, bio)
+    instagramProfile: publicProcedure
+      .input(z.object({ username: z.string() }))
+      .mutation(async ({ input }) => {
+        const { scrapeInstagramProfile } = await import("./scrapers/instagram-scraper");
+        const profile = await scrapeInstagramProfile(input.username);
+        if (!profile) throw new Error(`Could not scrape Instagram profile @${input.username}`);
+        return profile;
+      }),
+
+    // Scrape latest posts from an Instagram profile
+    instagramPosts: publicProcedure
+      .input(z.object({ username: z.string(), limit: z.number().min(1).max(50).default(12) }))
+      .mutation(async ({ input }) => {
+        const { scrapeInstagramPosts } = await import("./scrapers/instagram-scraper");
+        const posts = await scrapeInstagramPosts(input.username, input.limit);
+        return { posts, count: posts.length };
+      }),
+
+    // Scrape a single Instagram post by URL or shortcode
+    instagramPost: publicProcedure
+      .input(z.object({ urlOrShortcode: z.string() }))
+      .mutation(async ({ input }) => {
+        const { scrapeInstagramPost } = await import("./scrapers/instagram-scraper");
+        const post = await scrapeInstagramPost(input.urlOrShortcode);
+        if (!post) throw new Error(`Could not scrape Instagram post: ${input.urlOrShortcode}`);
+        return post;
+      }),
+
+    // Scrape TikTok profile
+    tiktokProfile: publicProcedure
+      .input(z.object({ username: z.string() }))
+      .mutation(async ({ input }) => {
+        const { scrapeTikTokProfile } = await import("./scrapers/tiktok-scraper");
+        const profile = await scrapeTikTokProfile(input.username);
+        if (!profile) throw new Error(`Could not scrape TikTok profile @${input.username}`);
+        return profile;
+      }),
+
+    // Scrape TikTok videos from a profile
+    tiktokVideos: publicProcedure
+      .input(z.object({ username: z.string(), limit: z.number().min(1).max(50).default(20) }))
+      .mutation(async ({ input }) => {
+        const { scrapeTikTokVideos } = await import("./scrapers/tiktok-scraper");
+        const videos = await scrapeTikTokVideos(input.username, input.limit);
+        return { videos, count: videos.length };
+      }),
+
+    // Scrape a single TikTok video
+    tiktokVideo: publicProcedure
+      .input(z.object({ urlOrId: z.string() }))
+      .mutation(async ({ input }) => {
+        const { scrapeTikTokVideo } = await import("./scrapers/tiktok-scraper");
+        const video = await scrapeTikTokVideo(input.urlOrId);
+        if (!video) throw new Error(`Could not scrape TikTok video: ${input.urlOrId}`);
+        return video;
+      }),
+
+    // Scrape YouTube video details (likes, comments — not available via API)
+    youtubeVideo: publicProcedure
+      .input(z.object({ videoIdOrUrl: z.string() }))
+      .mutation(async ({ input }) => {
+        const { scrapeYouTubeVideo } = await import("./scrapers/youtube-scraper");
+        const video = await scrapeYouTubeVideo(input.videoIdOrUrl);
+        if (!video) throw new Error(`Could not scrape YouTube video: ${input.videoIdOrUrl}`);
+        return video;
+      }),
+
+    // ─── Meta Ad Library ─────────────────────────────────────────────────────
+    // Search Meta Ad Library by brand name (requires access token)
+    metaAdLibrarySearch: publicProcedure
+      .input(z.object({
+        searchTerm: z.string(),
+        accessToken: z.string(),
+        adActiveStatus: z.enum(["ALL", "ACTIVE", "INACTIVE"]).default("ALL"),
+        countries: z.array(z.string()).default(["IT", "FR", "ES", "DE", "GB", "US"]),
+        limit: z.number().min(1).max(100).default(25),
+        after: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { searchMetaAdLibrary } = await import("./scrapers/meta-ad-library");
+        return searchMetaAdLibrary(input.searchTerm, input.accessToken, {
+          adActiveStatus: input.adActiveStatus,
+          countries: input.countries,
+          limit: input.limit,
+          after: input.after,
+        });
+      }),
+
+    // Scrape Meta Ad Library via browser (no token needed)
+    metaAdLibraryBrowser: publicProcedure
+      .input(z.object({ brandName: z.string(), country: z.string().default("IT") }))
+      .mutation(async ({ input }) => {
+        const { scrapeMetaAdLibraryWeb } = await import("./scrapers/meta-ad-library");
+        const ads = await scrapeMetaAdLibraryWeb(input.brandName, input.country);
+        return { ads, count: ads.length };
+      }),
+
+    // ─── TikTok Creative Center ───────────────────────────────────────────────
+    // Get top performing TikTok ads
+    tiktokTopAds: publicProcedure
+      .input(z.object({
+        industry: z.string().default(""),
+        country: z.string().default("IT"),
+        period: z.union([z.literal(7), z.literal(30), z.literal(180)]).default(30),
+        limit: z.number().min(1).max(50).default(20),
+      }))
+      .query(async ({ input }) => {
+        const { getTikTokTopAds } = await import("./scrapers/tiktok-creative-center");
+        return getTikTokTopAds(input);
+      }),
+
+    // Get trending hashtags from TikTok Creative Center
+    tiktokTrendingHashtags: publicProcedure
+      .input(z.object({
+        country: z.string().default("IT"),
+        period: z.union([z.literal(7), z.literal(30)]).default(7),
+        limit: z.number().min(1).max(50).default(20),
+      }))
+      .query(async ({ input }) => {
+        const { getTikTokTrendingHashtags } = await import("./scrapers/tiktok-creative-center");
+        const hashtags = await getTikTokTrendingHashtags(input);
+        return { hashtags, count: hashtags.length };
+      }),
+
+    // Search TikTok Creative Center for ads by brand name
+    tiktokAdsByBrand: publicProcedure
+      .input(z.object({ brandName: z.string(), country: z.string().default("IT") }))
+      .mutation(async ({ input }) => {
+        const { searchTikTokAdsByBrand } = await import("./scrapers/tiktok-creative-center");
+        const ads = await searchTikTokAdsByBrand(input.brandName, input.country);
+        return { ads, count: ads.length };
+      }),
+
+    // ─── CSV Campaign Import (Meta Ads Manager / Google Ad Manager) ───────────────────────────────────────────
+    importCampaignCsv: publicProcedure
+      .input(z.object({
+        brandAgentId: z.number().nullable().optional(),
+        format: z.enum(["meta", "google", "generic"]),
+        rows: z.array(z.object({
+          campaignName: z.string(),
+          adSetName: z.string().nullable().optional(),
+          adName: z.string().nullable().optional(),
+          platform: z.string(),
+          startDate: z.string().nullable().optional(),
+          endDate: z.string().nullable().optional(),
+          impressions: z.number(),
+          clicks: z.number(),
+          spend: z.number(),
+          currency: z.string(),
+          ctr: z.number().nullable().optional(),
+          cpm: z.number().nullable().optional(),
+          cpc: z.number().nullable().optional(),
+          reach: z.number().nullable().optional(),
+          frequency: z.number().nullable().optional(),
+          videoViews: z.number().nullable().optional(),
+          conversions: z.number().nullable().optional(),
+          roas: z.number().nullable().optional(),
+          objective: z.string().nullable().optional(),
+          status: z.string().nullable().optional(),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const { importedCampaigns } = await import("../drizzle/schema");
+        const dbConn = (await db.getDb())!;
+        const records = input.rows.map((r) => ({
+          brandAgentId: input.brandAgentId ?? null,
+          sourceFormat: input.format,
+          campaignName: r.campaignName,
+          adSetName: r.adSetName ?? null,
+          adName: r.adName ?? null,
+          platform: r.platform,
+          startDate: r.startDate ?? null,
+          endDate: r.endDate ?? null,
+          impressions: r.impressions,
+          clicks: r.clicks,
+          spend: r.spend,
+          currency: r.currency,
+          ctr: r.ctr ?? null,
+          cpm: r.cpm ?? null,
+          cpc: r.cpc ?? null,
+          reach: r.reach ?? null,
+          frequency: r.frequency ?? null,
+          videoViews: r.videoViews ?? null,
+          conversions: r.conversions ?? null,
+          roas: r.roas ?? null,
+          objective: r.objective ?? null,
+          status: r.status ?? null,
+        }));
+        // Insert in batches of 100
+        let imported = 0;
+        for (let i = 0; i < records.length; i += 100) {
+          const batch = records.slice(i, i + 100);
+          await dbConn.insert(importedCampaigns).values(batch);
+          imported += batch.length;
+        }
+        return { imported, total: records.length };
+      }),
+
+    // Get imported campaigns for a brand
+    getImportedCampaigns: publicProcedure
+      .input(z.object({
+        brandAgentId: z.number().optional(),
+        limit: z.number().min(1).max(500).default(100),
+      }))
+      .query(async ({ input }) => {
+        const { importedCampaigns } = await import("../drizzle/schema");
+        const { desc, eq } = await import("drizzle-orm");
+        const dbConn = (await db.getDb())!;
+        const conditions = input.brandAgentId
+          ? [eq(importedCampaigns.brandAgentId, input.brandAgentId)]
+          : [];
+        const rows = await dbConn
+          .select()
+          .from(importedCampaigns)
+          .where(conditions.length > 0 ? conditions[0] : undefined)
+          .orderBy(desc(importedCampaigns.importedAt))
+          .limit(input.limit);
+        return { campaigns: rows, count: rows.length };
+      }),
+
+    // Import scraped posts directly into groundTruthPosts
+    importScrapedPosts: publicProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+        platform: z.enum(["instagram", "tiktok", "youtube"]),
+        posts: z.array(z.object({
+          postId: z.string(),
+          postUrl: z.string(),
+          contentType: z.enum(["image", "video", "carousel", "reel", "short", "story", "text"]),
+          caption: z.string().default(""),
+          hashtags: z.array(z.string()).default([]),
+          thumbnailUrl: z.string().optional(),
+          publishedAt: z.string(),
+          metrics: z.object({
+            views: z.number().default(0),
+            likes: z.number().default(0),
+            comments: z.number().default(0),
+            shares: z.number().default(0),
+            saves: z.number().optional(),
+          }),
+          authorHandle: z.string().default(""),
+          authorFollowers: z.number().default(0),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const dbConn = await db.getDb();
+        if (!dbConn) throw new Error("DB not available");
+        const { groundTruthPosts } = await import("../drizzle/schema");
+        const { eq: eqDrizzle2, and: andDrizzle2 } = await import("drizzle-orm");
+
+        let imported = 0;
+        let skipped = 0;
+
+        for (const post of input.posts) {
+          const existing = await dbConn
+            .select({ id: groundTruthPosts.id })
+            .from(groundTruthPosts)
+            .where(andDrizzle2(
+              eqDrizzle2(groundTruthPosts.platform, input.platform),
+              eqDrizzle2(groundTruthPosts.postId, post.postId),
+            ))
+            .limit(1);
+
+          if (existing.length > 0) { skipped++; continue; }
+
+          await dbConn.insert(groundTruthPosts).values({
+            brandAgentId: input.brandAgentId,
+            platform: input.platform,
+            postId: post.postId,
+            postUrl: post.postUrl,
+            publishedAt: new Date(post.publishedAt),
+            contentType: post.contentType,
+            caption: post.caption,
+            hashtags: post.hashtags,
+            imageUrls: post.thumbnailUrl ? [post.thumbnailUrl] : [],
+            brandHandle: post.authorHandle,
+            brandFollowersAtTime: post.authorFollowers || null,
+            metrics48h: {
+              views: post.metrics.views,
+              likes: post.metrics.likes,
+              comments: post.metrics.comments,
+              shares: post.metrics.shares,
+              saves: post.metrics.saves,
+            },
+            metrics7d: null,
+            commentAnalysis: null,
+          });
+          imported++;
+        }
+
+        return { imported, skipped, total: input.posts.length };
+      }),
+
+    // ─── Hook Analyser ────────────────────────────────────────────────────────
+    analyzeHook: publicProcedure
+      .input(z.object({
+        text: z.string(),
+        imageBase64: z.string().optional(),
+        imageMediaType: z.string().optional(),
+        brandContext: z.string().optional(),
+        platform: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { analyzeHook: analyzeHookFn } = await import("./gte/hook-analyser");
+        const result = await analyzeHookFn(input.text, {
+          imageBase64: input.imageBase64,
+          imageMediaType: input.imageMediaType,
+          brandContext: input.brandContext,
+          platform: input.platform,
+        });
+        return result;
+      }),
+
+    // Analyze top posts of a brand and build its hook fingerprint
+    analyzeBrandHookFingerprint: publicProcedure
+      .input(z.object({
+        brandAgentId: z.number(),
+        maxPosts: z.number().min(1).max(50).default(20),
+      }))
+      .mutation(async ({ input }) => {
+        const dbConn = (await db.getDb())!;
+        const { groundTruthPosts } = await import("../drizzle/schema");
+        const { desc, eq: eqDrizzle } = await import("drizzle-orm");
+        // Get top posts by views
+        const posts = await dbConn
+          .select({
+            id: groundTruthPosts.id,
+            title: groundTruthPosts.caption,
+            caption: groundTruthPosts.caption,
+            platform: groundTruthPosts.platform,
+          })
+          .from(groundTruthPosts)
+          .where(eqDrizzle(groundTruthPosts.brandAgentId, input.brandAgentId))
+          .orderBy(desc(groundTruthPosts.id))
+          .limit(input.maxPosts);
+        const { analyzePostsBatch, buildBrandHookFingerprint } = await import("./gte/hook-analyser");
+        const analyses = await analyzePostsBatch(
+          posts.map((p) => ({ id: p.id, title: p.title ?? undefined, caption: p.caption ?? undefined, platform: p.platform })),
+          undefined,
+          { delayMs: 400, maxPosts: input.maxPosts }
+        );
+        const fingerprint = buildBrandHookFingerprint(Array.from(analyses.values()));
+        return { fingerprint, analyzedCount: analyses.size, totalPosts: posts.length };
+      }),
+  }),
 });
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof appRouter;;
+

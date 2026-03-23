@@ -1000,3 +1000,34 @@ export const accuracyTimeline = mysqlTable("accuracyTimeline", {
 
 export type AccuracyTimeline = typeof accuracyTimeline.$inferSelect;
 export type InsertAccuracyTimeline = typeof accuracyTimeline.$inferInsert;
+
+// ─── Imported Campaign Data (from Meta Ads Manager / Google Ad Manager CSV) ──
+export const importedCampaigns = mysqlTable("importedCampaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  brandAgentId: int("brandAgentId"),  // optional link to a Brand Agent
+  sourceFormat: varchar("sourceFormat", { length: 32 }).notNull().default("generic"), // "meta" | "google" | "generic"
+  campaignName: varchar("campaignName", { length: 512 }).notNull(),
+  adSetName: varchar("adSetName", { length: 512 }),
+  adName: varchar("adName", { length: 512 }),
+  platform: varchar("platform", { length: 64 }).notNull().default("unknown"),
+  startDate: varchar("startDate", { length: 32 }),
+  endDate: varchar("endDate", { length: 32 }),
+  impressions: int("impressions").notNull().default(0),
+  clicks: int("clicks").notNull().default(0),
+  spend: float("spend").notNull().default(0),
+  currency: varchar("currency", { length: 8 }).notNull().default("EUR"),
+  ctr: float("ctr"),
+  cpm: float("cpm"),
+  cpc: float("cpc"),
+  reach: int("reach"),
+  frequency: float("frequency"),
+  videoViews: int("videoViews"),
+  conversions: int("conversions"),
+  conversionRate: float("conversionRate"),
+  roas: float("roas"),
+  objective: varchar("objective", { length: 256 }),
+  status: varchar("status", { length: 64 }),
+  importedAt: timestamp("importedAt").defaultNow().notNull(),
+});
+export type ImportedCampaign = typeof importedCampaigns.$inferSelect;
+export type InsertImportedCampaign = typeof importedCampaigns.$inferInsert;

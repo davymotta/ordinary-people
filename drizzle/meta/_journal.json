@@ -78,6 +78,13 @@
       "when": 1774210489205,
       "tag": "0010_far_ares",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1774285118652,
+      "tag": "0011_stormy_spot",
+      "breakpoints": true
     }
   ]
 }

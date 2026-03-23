@@ -429,3 +429,53 @@
 - [x] Creazione modulo server/gte/simulator.ts con runGteSimulation()
 - [x] Aggiunta procedura tRPC runGteSimulation e getSimulationStats
 - [x] Aggiornamento GTE Dashboard: pulsante Simula funzionante, step4Status, stato reale del ciclo
+
+## Sprint 10 — Social Data Ingestion System
+
+### A. Social Scraper (Playwright headless)
+- [ ] INS.1 — Installare Playwright come dipendenza server-side (playwright + chromium)
+- [ ] INS.2 — server/scrapers/instagram-scraper.ts: scrape profilo pubblico Instagram (followers, post count, bio)
+- [ ] INS.3 — server/scrapers/instagram-scraper.ts: scrape singolo post (likes, comments, views, caption, hashtags)
+- [ ] INS.4 — server/scrapers/instagram-scraper.ts: scrape ultimi N post di un profilo con metriche
+- [ ] INS.5 — server/scrapers/tiktok-scraper.ts: scrape profilo TikTok (followers, likes totali)
+- [ ] INS.6 — server/scrapers/tiktok-scraper.ts: scrape video TikTok (views, likes, comments, shares, hashtags)
+- [ ] INS.7 — server/scrapers/youtube-scraper.ts: scrape video YouTube (likes, comments, views — dati mancanti dall'API)
+- [ ] INS.8 — tRPC router scrapers: scrapeInstagramProfile, scrapeInstagramPost, scrapeTikTokProfile, scrapeTikTokVideo
+- [ ] INS.9 — UI GTE Dashboard: tab "Scraper" con input URL/handle, anteprima dati, pulsante "Importa nel GTE"
+
+### B. Meta Ad Library (API ufficiale)
+- [ ] ADS.1 — Aggiungere META_AD_LIBRARY_TOKEN nei secrets
+- [ ] ADS.2 — server/scrapers/meta-ad-library.ts: searchAdsByPage(pageId, country) → lista ads con creative, impressions, spend range
+- [ ] ADS.3 — server/scrapers/meta-ad-library.ts: getAdDetails(adId) → creative completo, targeting, date
+- [ ] ADS.4 — tRPC router: searchMetaAds, importMetaAdToGTE
+- [ ] ADS.5 — UI: sezione "Meta Ad Library" nella GTE Dashboard con ricerca per brand name
+
+### C. TikTok Creative Center
+- [ ] TCC.1 — server/scrapers/tiktok-creative-center.ts: getTopAds(industry, country) via API Data365/searchapi.io
+- [ ] TCC.2 — tRPC router: searchTikTokTopAds, importTikTokAdToGTE
+- [ ] TCC.3 — UI: sezione "TikTok Creative Center" nella GTE Dashboard
+
+### D. CSV Import nell'Onboarding
+- [ ] CSV.1 — Schema CSV normalizzato per Meta Ads Manager export (colonne: campaign_name, ad_name, impressions, reach, clicks, spend, video_views, 3s_views, thruplay, ctr, cpm)
+- [ ] CSV.2 — Schema CSV normalizzato per Google Ad Manager export (colonne: campaign, ad_unit, impressions, clicks, revenue, ctr, ecpm)
+- [ ] CSV.3 — server/ingestion/csv-parser.ts: parseMeta AdsCSV(), parseGoogleAdManagerCSV() → normalizza in CampaignHistoryRecord[]
+- [ ] CSV.4 — Schema DB: tabella campaign_history_records (brand_agent_id, source, campaign_name, ad_name, impressions, reach, clicks, spend, video_views, ctr, cpm, date_start, date_end, raw_row JSON)
+- [ ] CSV.5 — tRPC router: uploadCampaignHistoryCSV, getCampaignHistory, deleteCampaignHistory
+- [ ] CSV.6 — UI Onboarding: step "Storico Campagne" con drag&drop CSV, preview tabella, mapping colonne automatico
+- [ ] CSV.7 — Integrazione GTE: usa campaign_history_records come ground truth aggiuntiva per la calibrazione
+
+## Sprint 10b — Hook Analyser Integration
+
+- [ ] SP10b.1 — Creare modulo server-side hook-analyser.ts (Claude API, system prompt comportamentale)
+- [ ] SP10b.2 — Aggiungere procedura tRPC analyzeHook (testo + immagine opzionale)
+- [ ] SP10b.3 — Aggiungere campo hookAnalysis JSON in groundTruthPosts schema
+- [ ] SP10b.4 — Integrare hook analysis nel GTE harvest pipeline (auto-analysis post-harvest)
+- [ ] SP10b.5 — Integrare hook analysis nell'onboarding Brand Agent (top post analysis)
+- [ ] SP10b.6 — Aggiungere HookAnalyser UI nella GTE Dashboard come tool standalone
+
+## Sprint 10b completato
+- [x] SP10b.1 — Creare hook-analyser.ts server-side con Claude
+- [x] SP10b.2 — Procedure tRPC analyzeHook e analyzeBrandHookFingerprint
+- [x] SP10b.3 — Tab "Hook Analyser" nella GTE Dashboard con UI completa
+- [x] SP10b.4 — Score ring visivo, dimensioni, triggers, platform forecast, rewrites
+- [x] SP10b.5 — Fix errori TypeScript (0 errori)
