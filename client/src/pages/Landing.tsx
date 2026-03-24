@@ -21,7 +21,9 @@ import {
   Globe,
   MessageSquare,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
+
+const HeartGraph3D = lazy(() => import("@/components/HeartGraph3D"));
 
 // ── Dati ────────────────────────────────────────────────────────────────────
 
@@ -210,51 +212,93 @@ function NavBar() {
 
 function HeroSection() {
   return (
-    <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+    <section className="relative pt-28 pb-20 px-6 overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/8 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-chart-2/6 rounded-full blur-[80px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-primary/6 rounded-full blur-[140px]" />
+        <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-chart-2/5 rounded-full blur-[80px]" />
+        <div className="absolute top-1/2 right-1/4 w-[200px] h-[200px] bg-primary/4 rounded-full blur-[60px]" />
       </div>
 
-      <div className="max-w-4xl mx-auto text-center relative">
-        <Badge variant="secondary" className="mb-6 gap-2 px-4 py-1.5 text-xs border border-primary/20 bg-primary/10 text-primary">
-          <Zap className="w-3 h-3" />
-          Powered by Synthetic Population Engine
-        </Badge>
+      <div className="max-w-6xl mx-auto relative">
+        {/* Layout split: testo sinistra, cuore destra */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-[1.05] tracking-tight mb-6">
-          Testa le tue campagne<br />
-          <span className="text-primary">prima di lanciarle.</span>
-        </h1>
+          {/* Colonna testo */}
+          <div className="flex flex-col items-start">
+            <Badge variant="secondary" className="mb-6 gap-2 px-4 py-1.5 text-xs border border-primary/20 bg-primary/10 text-primary">
+              <Zap className="w-3 h-3" />
+              Powered by Synthetic Population Engine
+            </Badge>
 
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-          Ordinary People simula la reazione del tuo pubblico a campagne, copy e creatività usando agenti digitali con 50 anni di storia vissuta — calibrati sul tuo brand.
-        </p>
+            <h1 className="text-5xl md:text-6xl font-display font-bold text-foreground leading-[1.05] tracking-tight mb-6">
+              Testa le tue campagne<br />
+              <span className="text-primary">prima di lanciarle.</span>
+            </h1>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <Link href="/auth?mode=register">
-            <Button size="lg" className="gap-2 px-8 h-12 text-base font-semibold">
-              <Sparkles className="w-4 h-4" />
-              Inizia gratis — 14 giorni
-            </Button>
-          </Link>
-          <a href="#how">
-            <Button variant="outline" size="lg" className="gap-2 px-8 h-12 text-base border-border/60">
-              <Play className="w-4 h-4" />
-              Come funziona
-            </Button>
-          </a>
-        </div>
+            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
+              Ordinary People simula la reazione del tuo pubblico a campagne, copy e creatività usando agenti digitali con 50 anni di storia vissuta — calibrati sul tuo brand.
+            </p>
 
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-          {STATS.map((s) => (
-            <div key={s.label} className="p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
-              <div className="text-2xl font-bold text-primary mb-1">{s.value}</div>
-              <div className="text-xs text-muted-foreground">{s.label}</div>
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-12">
+              <Link href="/auth?mode=register">
+                <Button size="lg" className="gap-2 px-8 h-12 text-base font-semibold">
+                  <Sparkles className="w-4 h-4" />
+                  Inizia gratis — 14 giorni
+                </Button>
+              </Link>
+              <a href="#how">
+                <Button variant="outline" size="lg" className="gap-2 px-8 h-12 text-base border-border/60">
+                  <Play className="w-4 h-4" />
+                  Come funziona
+                </Button>
+              </a>
             </div>
-          ))}
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+              {STATS.map((s) => (
+                <div key={s.label} className="p-3 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+                  <div className="text-xl font-bold text-primary mb-0.5">{s.value}</div>
+                  <div className="text-xs text-muted-foreground leading-tight">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Colonna cuore 3D */}
+          <div className="relative flex items-center justify-center">
+            {/* Etichetta hover */}
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+              <span className="text-[10px] text-muted-foreground/50 tracking-widest uppercase">
+                trascina per ruotare
+              </span>
+            </div>
+
+            {/* Canvas 3D */}
+            <div
+              className="w-full"
+              style={{ height: "520px", maxWidth: "480px" }}
+            >
+              <Suspense
+                fallback={
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                  </div>
+                }
+              >
+                <HeartGraph3D width="100%" height="100%" />
+              </Suspense>
+            </div>
+
+            {/* Label Psyche Engine */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+              <Badge variant="secondary" className="gap-1.5 text-[10px] px-3 py-1 border border-primary/15 bg-background/70 backdrop-blur-sm text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
+                Psyche Engine — 33 nodi cognitivi attivi
+              </Badge>
+            </div>
+          </div>
         </div>
       </div>
     </section>

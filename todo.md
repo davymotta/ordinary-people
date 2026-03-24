@@ -607,3 +607,6 @@
 - [x] SP22.5 — AgentPsycheState.tsx: aggiornato a 33 nodi + sezione Episodic Log (ultimi 5 episodi)
 - [x] SP22.6 — Vitest: 13 test per hebbianUpdate, interact, exportStateVector
 - [x] TOTALE SUITE: 232/232 test passati, 0 errori TypeScript
+
+- [x] HeartGraph3D: componente Three.js con cuore antropomorfo come grafo 3D animato (battito, rotazione, pulsazione nodi)
+- [x] Integrare HeartGraph3D nell'hero della landing page

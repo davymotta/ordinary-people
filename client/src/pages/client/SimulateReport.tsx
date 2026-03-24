@@ -89,7 +89,7 @@ function KpiCard({
   label: string;
   value: string;
   sub?: string;
-  icon: React.ElementType;
+  icon: React.ElementType<{ className?: string }>;
   colorClass?: string;
 }) {
   return (
