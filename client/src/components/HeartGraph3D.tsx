@@ -1,65 +1,85 @@
-import { useRef, useMemo, useCallback } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+/**
+ * HeartGraph3D — Cuore antropomorfo come grafo luminoso 3D
+ *
+ * Design:
+ * - Nodi: punti luminosi flat con glow (additive blending, sprite-like)
+ *   → rosso (#C1622F) e nero/antracite (#1a1a1a) con diverse intensità
+ * - Archi: molte linee sottili con propagazione di energia (glow direzionale)
+ * - Battito: espansione/contrazione RADIALE dei nodi periferici (non zoom camera)
+ * - Energia: impulso luminoso che viaggia lungo gli edge da nodo attivo a nodo target
+ */
+
+import { useRef, useMemo, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NODI del cuore antropomorfo — coordinate normalizzate [-1, 1]
-// Estratte fedelmente dall'immagine di riferimento.
-// x: asse orizzontale (destra = +), y: asse verticale (su = +), z: profondità
-// type: "orange" = nodo arancio grande, "dark" = nodo scuro grande, "small" = nodo piccolo
+// TOPOLOGIA — 35 nodi con coordinate 3D normalizzate
+// Centro del cuore = (0, 0, 0). Asse Y = verticale, Z = profondità.
+// "radialDist" = distanza dal centro (0–1), usata per il battito radiale.
+// "type": "red" | "dark" — colore del punto luminoso
 // ─────────────────────────────────────────────────────────────────────────────
-const NODES: Array<{ id: number; x: number; y: number; z: number; type: "orange" | "dark" | "small" }> = [
-  // Aorta / sommità sinistra
-  { id: 0,  x: -0.25, y:  0.95, z:  0.05, type: "dark" },
-  { id: 1,  x: -0.40, y:  0.80, z:  0.10, type: "orange" },
-  { id: 2,  x: -0.30, y:  0.70, z: -0.05, type: "small" },
-  { id: 3,  x: -0.15, y:  0.85, z:  0.08, type: "small" },
-  // Aorta / sommità destra
-  { id: 4,  x:  0.10, y:  0.98, z:  0.00, type: "orange" },
-  { id: 5,  x:  0.25, y:  0.90, z:  0.05, type: "small" },
-  { id: 6,  x:  0.15, y:  0.78, z: -0.05, type: "dark" },
-  { id: 7,  x:  0.30, y:  0.75, z:  0.10, type: "small" },
-  // Spalla destra (bulge atriale)
-  { id: 8,  x:  0.55, y:  0.60, z:  0.08, type: "small" },
-  { id: 9,  x:  0.65, y:  0.45, z:  0.05, type: "dark" },
-  { id: 10, x:  0.70, y:  0.30, z:  0.00, type: "orange" },
-  { id: 11, x:  0.60, y:  0.15, z:  0.05, type: "small" },
-  // Fianco destro
-  { id: 12, x:  0.75, y:  0.00, z: -0.05, type: "dark" },
-  { id: 13, x:  0.65, y: -0.20, z:  0.05, type: "small" },
-  { id: 14, x:  0.55, y: -0.40, z:  0.10, type: "orange" },
-  // Apice (punta inferiore)
-  { id: 15, x:  0.20, y: -0.80, z:  0.00, type: "dark" },
-  { id: 16, x:  0.00, y: -0.95, z:  0.05, type: "small" },
-  { id: 17, x: -0.20, y: -0.80, z: -0.05, type: "dark" },
-  // Fianco sinistro
-  { id: 18, x: -0.55, y: -0.40, z:  0.10, type: "orange" },
-  { id: 19, x: -0.65, y: -0.20, z:  0.05, type: "small" },
-  { id: 20, x: -0.75, y:  0.00, z: -0.05, type: "dark" },
-  { id: 21, x: -0.65, y:  0.20, z:  0.05, type: "orange" },
-  // Spalla sinistra
-  { id: 22, x: -0.60, y:  0.40, z:  0.08, type: "small" },
-  { id: 23, x: -0.50, y:  0.55, z:  0.05, type: "dark" },
-  // Nodi interni centrali
-  { id: 24, x: -0.05, y:  0.60, z:  0.15, type: "dark" },
-  { id: 25, x:  0.20, y:  0.50, z:  0.10, type: "orange" },
-  { id: 26, x: -0.20, y:  0.35, z:  0.12, type: "small" },
-  { id: 27, x:  0.10, y:  0.20, z:  0.20, type: "dark" },
-  { id: 28, x: -0.30, y:  0.10, z:  0.15, type: "orange" },
-  { id: 29, x:  0.35, y:  0.00, z:  0.10, type: "small" },
-  { id: 30, x: -0.10, y: -0.15, z:  0.18, type: "dark" },
-  { id: 31, x:  0.25, y: -0.30, z:  0.12, type: "orange" },
-  { id: 32, x: -0.25, y: -0.50, z:  0.08, type: "small" },
-  { id: 33, x:  0.40, y:  0.35, z: -0.10, type: "small" },
-  { id: 34, x: -0.40, y: -0.10, z: -0.12, type: "orange" },
+interface NodeDef {
+  id: number;
+  x: number; y: number; z: number;
+  type: "red" | "dark";
+  size: number;          // raggio base del glow (0.03–0.10)
+  radialDist: number;    // 0 = centro, 1 = bordo esterno
+}
+
+const NODES: NodeDef[] = [
+  // ── Aorta sinistra (sommità) ──
+  { id: 0,  x: -0.22, y:  0.90, z:  0.05, type: "dark", size: 0.055, radialDist: 0.95 },
+  { id: 1,  x: -0.38, y:  0.75, z:  0.10, type: "red",  size: 0.075, radialDist: 0.85 },
+  { id: 2,  x: -0.28, y:  0.65, z: -0.05, type: "dark", size: 0.038, radialDist: 0.72 },
+  { id: 3,  x: -0.12, y:  0.80, z:  0.08, type: "dark", size: 0.038, radialDist: 0.82 },
+  // ── Aorta destra (sommità) ──
+  { id: 4,  x:  0.10, y:  0.95, z:  0.00, type: "red",  size: 0.068, radialDist: 0.97 },
+  { id: 5,  x:  0.26, y:  0.88, z:  0.05, type: "dark", size: 0.038, radialDist: 0.90 },
+  { id: 6,  x:  0.18, y:  0.75, z: -0.05, type: "dark", size: 0.055, radialDist: 0.78 },
+  { id: 7,  x:  0.32, y:  0.72, z:  0.10, type: "dark", size: 0.038, radialDist: 0.80 },
+  // ── Spalla destra (bulge atriale) ──
+  { id: 8,  x:  0.56, y:  0.58, z:  0.08, type: "dark", size: 0.038, radialDist: 0.82 },
+  { id: 9,  x:  0.68, y:  0.42, z:  0.05, type: "dark", size: 0.055, radialDist: 0.88 },
+  { id: 10, x:  0.72, y:  0.25, z:  0.00, type: "red",  size: 0.082, radialDist: 0.92 },
+  { id: 11, x:  0.62, y:  0.10, z:  0.05, type: "dark", size: 0.038, radialDist: 0.80 },
+  // ── Fianco destro ──
+  { id: 12, x:  0.78, y: -0.05, z: -0.05, type: "dark", size: 0.055, radialDist: 0.95 },
+  { id: 13, x:  0.68, y: -0.25, z:  0.05, type: "dark", size: 0.038, radialDist: 0.88 },
+  { id: 14, x:  0.56, y: -0.42, z:  0.10, type: "red",  size: 0.075, radialDist: 0.82 },
+  // ── Apice (punta inferiore) ──
+  { id: 15, x:  0.22, y: -0.78, z:  0.00, type: "dark", size: 0.055, radialDist: 0.90 },
+  { id: 16, x:  0.00, y: -0.95, z:  0.05, type: "dark", size: 0.038, radialDist: 0.98 },
+  { id: 17, x: -0.22, y: -0.78, z: -0.05, type: "dark", size: 0.055, radialDist: 0.90 },
+  // ── Fianco sinistro ──
+  { id: 18, x: -0.56, y: -0.42, z:  0.10, type: "red",  size: 0.075, radialDist: 0.82 },
+  { id: 19, x: -0.66, y: -0.22, z:  0.05, type: "dark", size: 0.038, radialDist: 0.88 },
+  { id: 20, x: -0.76, y:  0.00, z: -0.05, type: "dark", size: 0.055, radialDist: 0.95 },
+  { id: 21, x: -0.66, y:  0.22, z:  0.05, type: "red",  size: 0.082, radialDist: 0.85 },
+  // ── Spalla sinistra ──
+  { id: 22, x: -0.58, y:  0.42, z:  0.08, type: "dark", size: 0.038, radialDist: 0.78 },
+  { id: 23, x: -0.48, y:  0.56, z:  0.05, type: "dark", size: 0.055, radialDist: 0.72 },
+  // ── Nodi interni — strato medio ──
+  { id: 24, x: -0.05, y:  0.58, z:  0.15, type: "dark", size: 0.055, radialDist: 0.45 },
+  { id: 25, x:  0.22, y:  0.48, z:  0.10, type: "red",  size: 0.082, radialDist: 0.42 },
+  { id: 26, x: -0.22, y:  0.32, z:  0.12, type: "dark", size: 0.038, radialDist: 0.35 },
+  { id: 27, x:  0.12, y:  0.18, z:  0.20, type: "dark", size: 0.055, radialDist: 0.28 },
+  { id: 28, x: -0.32, y:  0.08, z:  0.15, type: "red",  size: 0.075, radialDist: 0.38 },
+  { id: 29, x:  0.36, y: -0.02, z:  0.10, type: "dark", size: 0.038, radialDist: 0.40 },
+  { id: 30, x: -0.10, y: -0.18, z:  0.18, type: "dark", size: 0.055, radialDist: 0.30 },
+  { id: 31, x:  0.26, y: -0.32, z:  0.12, type: "red",  size: 0.075, radialDist: 0.42 },
+  { id: 32, x: -0.26, y: -0.52, z:  0.08, type: "dark", size: 0.038, radialDist: 0.58 },
+  { id: 33, x:  0.42, y:  0.32, z: -0.10, type: "dark", size: 0.038, radialDist: 0.52 },
+  { id: 34, x: -0.42, y: -0.12, z: -0.12, type: "red",  size: 0.068, radialDist: 0.48 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ARCHI — connessioni tra nodi (ispirate alla rete dell'immagine)
+// ARCHI — molti più edge per densità visiva
 // ─────────────────────────────────────────────────────────────────────────────
-const EDGES: Array<[number, number, "strong" | "light"]> = [
-  // Contorno esterno
+type EdgeType = "strong" | "light" | "cross";
+const EDGES: Array<[number, number, EdgeType]> = [
+  // Contorno esterno (strong)
   [0, 1, "strong"], [1, 2, "strong"], [2, 3, "strong"], [3, 0, "strong"],
   [3, 4, "strong"], [4, 5, "strong"], [5, 6, "strong"], [6, 7, "strong"],
   [7, 8, "strong"], [8, 9, "strong"], [9, 10, "strong"], [10, 11, "strong"],
@@ -68,160 +88,461 @@ const EDGES: Array<[number, number, "strong" | "light"]> = [
   [17, 18, "strong"], [18, 19, "strong"], [19, 20, "strong"],
   [20, 21, "strong"], [21, 22, "strong"], [22, 23, "strong"],
   [23, 1, "strong"],
-  // Connessioni interne forti (neri nell'immagine)
+  // Diagonali esterne
+  [0, 3, "light"], [1, 23, "light"], [4, 6, "light"], [5, 7, "light"],
+  [7, 9, "light"], [8, 10, "light"], [9, 11, "light"], [10, 12, "light"],
+  [11, 13, "light"], [12, 14, "light"], [13, 15, "light"], [14, 17, "light"],
+  [15, 32, "light"], [16, 32, "light"], [17, 19, "light"], [18, 20, "light"],
+  [19, 21, "light"], [20, 22, "light"], [21, 23, "light"], [22, 1, "light"],
+  // Connessioni bordo→interno
+  [0, 24, "light"], [3, 24, "light"], [4, 25, "light"], [6, 25, "light"],
+  [7, 33, "light"], [8, 33, "light"], [9, 33, "light"], [10, 33, "light"],
+  [11, 29, "light"], [12, 29, "light"], [13, 31, "light"], [14, 31, "light"],
+  [15, 32, "light"], [17, 30, "light"], [18, 34, "light"], [19, 34, "light"],
+  [20, 34, "light"], [21, 28, "light"], [22, 28, "light"], [23, 26, "light"],
+  [1, 26, "light"], [2, 26, "light"],
+  // Rete interna forte
   [24, 25, "strong"], [25, 27, "strong"], [27, 30, "strong"],
   [30, 32, "strong"], [32, 17, "strong"], [31, 15, "strong"],
   [28, 21, "strong"], [26, 23, "strong"], [24, 6, "strong"],
   [25, 10, "strong"], [27, 29, "strong"], [29, 14, "strong"],
   [28, 20, "strong"], [30, 18, "strong"],
-  // Connessioni leggere (arancio/bronzo nell'immagine)
-  [0, 24, "light"], [3, 24, "light"], [4, 25, "light"], [6, 25, "light"],
-  [7, 33, "light"], [8, 33, "light"], [9, 33, "light"], [10, 33, "light"],
-  [11, 29, "light"], [12, 29, "light"], [13, 31, "light"], [14, 31, "light"],
-  [15, 32, "light"], [16, 32, "light"], [17, 30, "light"], [18, 34, "light"],
-  [19, 34, "light"], [20, 34, "light"], [21, 28, "light"], [22, 28, "light"],
-  [23, 26, "light"], [1, 26, "light"], [2, 26, "light"],
+  // Rete interna leggera
   [24, 26, "light"], [25, 33, "light"], [26, 28, "light"],
   [27, 31, "light"], [28, 30, "light"], [29, 31, "light"],
   [30, 34, "light"], [31, 32, "light"], [33, 29, "light"],
   [34, 32, "light"], [24, 27, "light"], [25, 26, "light"],
   [27, 28, "light"], [26, 30, "light"], [33, 27, "light"],
+  // Cross-link lunghi (effetto grafo cognitivo)
+  [0, 25, "cross"], [4, 24, "cross"], [1, 21, "cross"], [10, 28, "cross"],
+  [14, 30, "cross"], [20, 31, "cross"], [12, 27, "cross"], [18, 26, "cross"],
+  [21, 31, "cross"], [9, 34, "cross"], [5, 33, "cross"], [23, 30, "cross"],
+  [6, 28, "cross"], [11, 32, "cross"], [3, 25, "cross"], [7, 29, "cross"],
+  [22, 34, "cross"], [16, 30, "cross"], [8, 27, "cross"], [13, 28, "cross"],
+  [19, 32, "cross"], [2, 27, "cross"], [17, 34, "cross"],
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Colori del design system
+// Colori
 // ─────────────────────────────────────────────────────────────────────────────
-const COLOR_ORANGE = new THREE.Color("#C1622F");
-const COLOR_DARK   = new THREE.Color("#2C2C2C");
-const COLOR_SMALL  = new THREE.Color("#7A5C4A");
-const COLOR_EDGE_STRONG = new THREE.Color("#2C2C2C");
-const COLOR_EDGE_LIGHT  = new THREE.Color("#C1622F");
+const COL_RED       = new THREE.Color("#C1622F");
+const COL_DARK      = new THREE.Color("#1C1C1C");
+const COL_GLOW_RED  = new THREE.Color("#E8541A");
+const COL_GLOW_DARK = new THREE.Color("#3a3a3a");
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Componente interno: il grafo animato
+// Shader per punto luminoso flat (glow additivo)
+// ─────────────────────────────────────────────────────────────────────────────
+const VERT_GLOW = /* glsl */`
+  attribute float aSize;
+  attribute float aIntensity;
+  varying float vIntensity;
+  void main() {
+    vIntensity = aIntensity;
+    vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = aSize * (480.0 / -mvPos.z);
+    gl_Position = projectionMatrix * mvPos;
+  }
+`;
+
+const FRAG_GLOW = /* glsl */`
+  uniform vec3 uColor;
+  uniform vec3 uGlowColor;
+  varying float vIntensity;
+  void main() {
+    vec2 uv = gl_PointCoord - 0.5;
+    float d = length(uv);
+    if (d > 0.5) discard;
+    // Core solido (punto duro al centro)
+    float core = smoothstep(0.12, 0.0, d);
+    // Alone interno
+    float inner = smoothstep(0.28, 0.0, d) * 0.75;
+    // Glow esterno sfumato
+    float outer = smoothstep(0.5, 0.08, d) * 0.35;
+    float totalAlpha = (core + inner + outer) * (0.5 + vIntensity * 0.5);
+    // Su sfondo chiaro: colore scuro con alone
+    vec3 col = mix(uColor, uGlowColor, vIntensity * 0.5);
+    gl_FragColor = vec4(col, totalAlpha);
+  }
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shader per edge con propagazione energia (glow direzionale)
+// ─────────────────────────────────────────────────────────────────────────────
+const VERT_EDGE = /* glsl */`
+  attribute float aProgress;   // 0 = nodo A, 1 = nodo B
+  attribute float aEnergy;     // 0–1: quanto energia sta passando
+  varying float vProgress;
+  varying float vEnergy;
+  void main() {
+    vProgress = aProgress;
+    vEnergy = aEnergy;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const FRAG_EDGE = /* glsl */`
+  uniform vec3 uBaseColor;
+  uniform vec3 uGlowColor;
+  uniform float uPulseHead;  // posizione testa impulso 0–1
+  varying float vProgress;
+  varying float vEnergy;
+  void main() {
+    // Opacità base dell'arco
+    float baseAlpha = 0.30;
+    // Impulso: alone gaussiano attorno alla testa
+    float dist = abs(vProgress - uPulseHead);
+    float pulse = exp(-dist * dist * 50.0) * vEnergy;
+    // Scia dietro la testa
+    float trail = 0.0;
+    if (vProgress < uPulseHead) {
+      float trailDist = uPulseHead - vProgress;
+      trail = exp(-trailDist * trailDist * 12.0) * vEnergy * 0.5;
+    }
+    float alpha = baseAlpha + (pulse + trail) * 0.9;
+    vec3 col = mix(uBaseColor, uGlowColor, pulse + trail * 0.5);
+    gl_FragColor = vec4(col, alpha);
+  }
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stato runtime per ogni nodo
+// ─────────────────────────────────────────────────────────────────────────────
+interface NodeState {
+  intensity: number;       // 0–1 luminosità corrente
+  targetIntensity: number; // 0–1 obiettivo
+  phase: number;           // fase personale [0, 2π]
+  pulseTimer: number;      // timer per pulsazione individuale
+}
+
+// Stato runtime per ogni edge
+interface EdgeState {
+  pulseHead: number;   // 0–1 posizione testa impulso
+  energy: number;      // 0–1 energia corrente
+  active: boolean;     // sta propagando?
+  direction: number;   // +1 A→B, -1 B→A
+  cooldown: number;    // secondi prima del prossimo impulso
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Componente scena
 // ─────────────────────────────────────────────────────────────────────────────
 function HeartGraphScene() {
-  const groupRef = useRef<THREE.Group>(null!);
-  const timeRef  = useRef(0);
+  const clockRef = useRef(0);
 
-  // Geometrie e materiali nodi
-  const nodeMeshes = useMemo(() => {
-    return NODES.map((n) => {
-      const size = n.type === "orange" ? 0.055 : n.type === "dark" ? 0.048 : 0.028;
-      const color = n.type === "orange" ? COLOR_ORANGE : n.type === "dark" ? COLOR_DARK : COLOR_SMALL;
-      const geo = new THREE.SphereGeometry(size, 16, 16);
-      const mat = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.4,
-        metalness: 0.1,
-        emissive: color,
-        emissiveIntensity: 0.08,
+  // Stato nodi
+  const nodeStates = useRef<NodeState[]>(
+    NODES.map((n) => ({
+      intensity: 0.3 + Math.random() * 0.4,
+      targetIntensity: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+      pulseTimer: Math.random() * 3,
+    }))
+  );
+
+  // Stato edge
+  const edgeStates = useRef<EdgeState[]>(
+    EDGES.map(() => ({
+      pulseHead: 0,
+      energy: 0,
+      active: false,
+      direction: 1,
+      cooldown: 0.5 + Math.random() * 4,
+    }))
+  );
+
+  // ── Geometria nodi (Points con shader) ──
+  const { nodeGeo, nodeMatRed, nodeMatDark } = useMemo(() => {
+    const redNodes  = NODES.filter((n) => n.type === "red");
+    const darkNodes = NODES.filter((n) => n.type === "dark");
+
+    function buildPointsGeo(nodes: NodeDef[]) {
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(nodes.length * 3);
+      const sizes = new Float32Array(nodes.length);
+      const intensities = new Float32Array(nodes.length);
+      nodes.forEach((n, i) => {
+        pos[i * 3]     = n.x;
+        pos[i * 3 + 1] = n.y;
+        pos[i * 3 + 2] = n.z;
+        sizes[i]       = n.size;
+        intensities[i] = 0.5;
       });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(n.x, n.y, n.z);
-      mesh.userData = { baseX: n.x, baseY: n.y, baseZ: n.z, type: n.type, nodeId: n.id };
-      return mesh;
+      geo.setAttribute("position",   new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute("aSize",      new THREE.BufferAttribute(sizes, 1));
+      geo.setAttribute("aIntensity", new THREE.BufferAttribute(intensities, 1));
+      return geo;
+    }
+
+    const geoRed  = buildPointsGeo(redNodes);
+    const geoDark = buildPointsGeo(darkNodes);
+
+    const matRed = new THREE.ShaderMaterial({
+      vertexShader: VERT_GLOW,
+      fragmentShader: FRAG_GLOW,
+      uniforms: {
+        uColor:     { value: COL_RED },
+        uGlowColor: { value: COL_GLOW_RED },
+      },
+      transparent: true,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      alphaTest: 0.01,
     });
+
+    const matDark = new THREE.ShaderMaterial({
+      vertexShader: VERT_GLOW,
+      fragmentShader: FRAG_GLOW,
+      uniforms: {
+        uColor:     { value: COL_DARK },
+        uGlowColor: { value: COL_GLOW_DARK },
+      },
+      transparent: true,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      alphaTest: 0.01,
+    });
+
+    return {
+      nodeGeo: { red: geoRed, dark: geoDark },
+      nodeMatRed: matRed,
+      nodeMatDark: matDark,
+      redNodes,
+      darkNodes,
+    };
   }, []);
 
-  // Linee degli archi
-  const edgeLines = useMemo(() => {
-    return EDGES.map(([a, b, strength]) => {
+  // Mappa nodeId → indice nei rispettivi array red/dark
+  const redNodeIds  = useMemo(() => NODES.filter((n) => n.type === "red").map((n) => n.id), []);
+  const darkNodeIds = useMemo(() => NODES.filter((n) => n.type === "dark").map((n) => n.id), []);
+
+  // ── Geometria edge (LineSegments con shader) ──
+  const edgeObjects = useMemo(() => {
+    return EDGES.map(([a, b, type], idx) => {
       const nA = NODES[a];
       const nB = NODES[b];
-      const points = [
-        new THREE.Vector3(nA.x, nA.y, nA.z),
-        new THREE.Vector3(nB.x, nB.y, nB.z),
-      ];
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const color = strength === "strong" ? COLOR_EDGE_STRONG : COLOR_EDGE_LIGHT;
-      const mat = new THREE.LineBasicMaterial({
-        color,
+      // Suddividi ogni edge in N segmenti per animare la testa dell'impulso
+      const N = 20;
+      const positions = new Float32Array(N * 2 * 3);
+      const progress  = new Float32Array(N * 2);
+      const energies  = new Float32Array(N * 2);
+
+      for (let i = 0; i < N; i++) {
+        const t0 = i / N;
+        const t1 = (i + 1) / N;
+        // Punto A del segmento
+        positions[(i * 2)     * 3 + 0] = nA.x + (nB.x - nA.x) * t0;
+        positions[(i * 2)     * 3 + 1] = nA.y + (nB.y - nA.y) * t0;
+        positions[(i * 2)     * 3 + 2] = nA.z + (nB.z - nA.z) * t0;
+        // Punto B del segmento
+        positions[(i * 2 + 1) * 3 + 0] = nA.x + (nB.x - nA.x) * t1;
+        positions[(i * 2 + 1) * 3 + 1] = nA.y + (nB.y - nA.y) * t1;
+        positions[(i * 2 + 1) * 3 + 2] = nA.z + (nB.z - nA.z) * t1;
+        progress[i * 2]     = t0;
+        progress[i * 2 + 1] = t1;
+        energies[i * 2]     = 0;
+        energies[i * 2 + 1] = 0;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position",  new THREE.BufferAttribute(positions, 3));
+      geo.setAttribute("aProgress", new THREE.BufferAttribute(progress, 1));
+      geo.setAttribute("aEnergy",   new THREE.BufferAttribute(energies, 1));
+
+      const baseColor = type === "strong"
+        ? new THREE.Color("#8B5A3A")
+        : type === "cross"
+          ? new THREE.Color("#C1622F")
+          : new THREE.Color("#7A4A2A");
+
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: VERT_EDGE,
+        fragmentShader: FRAG_EDGE,
+        uniforms: {
+          uBaseColor:  { value: baseColor },
+          uGlowColor:  { value: COL_GLOW_RED },
+          uPulseHead:  { value: -1.0 },
+        },
         transparent: true,
-        opacity: strength === "strong" ? 0.55 : 0.22,
+        blending: THREE.NormalBlending,
+        depthWrite: false,
       });
-      const line = new THREE.Line(geo, mat);
-      line.userData = { nodeA: a, nodeB: b, strength };
-      return line;
+
+      const lines = new THREE.LineSegments(geo, mat);
+      return { lines, geo, mat, nodeA: a, nodeB: b };
     });
   }, []);
 
-  // Aggiornamento frame: battito + pulsazione nodi
+  // ── Posizioni originali dei nodi (per battito radiale) ──
+  const origPositions = useMemo(() =>
+    NODES.map((n) => new THREE.Vector3(n.x, n.y, n.z)), []);
+
+  // ── Refs per i Points objects ──
+  const pointsRedRef  = useRef<THREE.Points>(null!);
+  const pointsDarkRef = useRef<THREE.Points>(null!);
+
+  // ── Loop animazione ──
   useFrame((_, delta) => {
-    timeRef.current += delta;
-    const t = timeRef.current;
+    clockRef.current += delta;
+    const t = clockRef.current;
 
-    // ── Battito cardiaco: scala globale con forma a doppio picco ──
-    // Simula il classico "lub-dub" del battito
-    const bpm = 68; // battiti al minuto
-    const phase = (t * bpm / 60) % 1; // [0, 1] per ogni ciclo
+    const ns = nodeStates.current;
+    const es = edgeStates.current;
+
+    // ── 1. Battito cardiaco radiale ──
+    // Forma lub-dub: due picchi ravvicinati ogni ~0.88s (68 BPM)
+    const bpm = 68;
+    const cycle = (t * bpm / 60) % 1; // [0,1] per ciclo
     let heartbeat = 0;
-    if (phase < 0.08) {
-      // Primo picco (lub): rapida espansione
-      heartbeat = Math.sin((phase / 0.08) * Math.PI) * 0.12;
-    } else if (phase < 0.18) {
-      // Breve contrazione
-      heartbeat = -Math.sin(((phase - 0.08) / 0.10) * Math.PI) * 0.04;
-    } else if (phase < 0.28) {
-      // Secondo picco (dub): espansione più morbida
-      heartbeat = Math.sin(((phase - 0.18) / 0.10) * Math.PI) * 0.07;
-    } else {
-      // Diastole: ritorno lento a riposo
-      heartbeat = 0;
+    if (cycle < 0.06) {
+      heartbeat = Math.sin((cycle / 0.06) * Math.PI) * 0.18;
+    } else if (cycle < 0.14) {
+      heartbeat = -Math.sin(((cycle - 0.06) / 0.08) * Math.PI) * 0.06;
+    } else if (cycle < 0.22) {
+      heartbeat = Math.sin(((cycle - 0.14) / 0.08) * Math.PI) * 0.10;
     }
+    // Applica espansione radiale: i nodi periferici si spostano verso l'esterno
+    // proporzionalmente alla loro distanza dal centro
+    NODES.forEach((n, i) => {
+      const orig = origPositions[i];
+      const radial = n.radialDist;
+      // Vettore dal centro al nodo (normalizzato)
+      const len = orig.length();
+      if (len < 0.001) return;
+      const dir = orig.clone().divideScalar(len);
+      // Spostamento radiale: più esterno = più si muove
+      const displacement = heartbeat * radial * 0.22;
+      // Aggiorna posizione nel buffer geometry
+      // (gestiamo tramite i Points objects)
+    });
 
-    const globalScale = 1.0 + heartbeat;
-    if (groupRef.current) {
-      groupRef.current.scale.setScalar(globalScale);
-    }
+    // ── 2. Aggiornamento intensità nodi ──
+    ns.forEach((state, i) => {
+      state.pulseTimer -= delta;
+      if (state.pulseTimer <= 0) {
+        // Nuova pulsazione casuale
+        state.targetIntensity = 0.25 + Math.random() * 0.75;
+        state.pulseTimer = 0.8 + Math.random() * 2.5;
+      }
+      // Lerp verso target
+      state.intensity += (state.targetIntensity - state.intensity) * delta * 2.5;
+    });
 
-    // ── Pulsazione individuale dei nodi colorati ──
-    nodeMeshes.forEach((mesh) => {
-      const { type, nodeId } = mesh.userData;
-      if (type === "orange" || type === "dark") {
-        // Ogni nodo ha una fase leggermente diversa (effetto "propagazione")
-        const offset = (nodeId * 0.37) % 1;
-        const pulsePhase = (phase + offset) % 1;
-        let pulse = 0;
-        if (pulsePhase < 0.12) {
-          pulse = Math.sin((pulsePhase / 0.12) * Math.PI) * (type === "orange" ? 0.35 : 0.20);
+    // Aggiorna attributo aIntensity per nodi rossi
+    const redIntArr = nodeGeo.red.attributes.aIntensity as THREE.BufferAttribute;
+    redNodeIds.forEach((nodeId, idx) => {
+      const state = ns[nodeId];
+      // Battito: i nodi periferici pulsano di più
+      const radialPulse = NODES[nodeId].radialDist * heartbeat * 2.5;
+      redIntArr.array[idx] = Math.min(1.0, state.intensity + radialPulse);
+    });
+    redIntArr.needsUpdate = true;
+
+    // Aggiorna attributo aIntensity per nodi scuri
+    const darkIntArr = nodeGeo.dark.attributes.aIntensity as THREE.BufferAttribute;
+    darkNodeIds.forEach((nodeId, idx) => {
+      const state = ns[nodeId];
+      const radialPulse = NODES[nodeId].radialDist * heartbeat * 2.0;
+      darkIntArr.array[idx] = Math.min(1.0, state.intensity + radialPulse);
+    });
+    darkIntArr.needsUpdate = true;
+
+    // ── 3. Battito radiale: sposta posizioni nodi ──
+    const redPosArr  = nodeGeo.red.attributes.position as THREE.BufferAttribute;
+    const darkPosArr = nodeGeo.dark.attributes.position as THREE.BufferAttribute;
+
+    redNodeIds.forEach((nodeId, idx) => {
+      const orig = origPositions[nodeId];
+      const len = orig.length();
+      if (len < 0.001) return;
+      const radial = NODES[nodeId].radialDist;
+      const disp = heartbeat * radial * 0.18;
+      redPosArr.array[idx * 3]     = orig.x + (orig.x / len) * disp;
+      redPosArr.array[idx * 3 + 1] = orig.y + (orig.y / len) * disp;
+      redPosArr.array[idx * 3 + 2] = orig.z + (orig.z / len) * disp;
+    });
+    redPosArr.needsUpdate = true;
+
+    darkNodeIds.forEach((nodeId, idx) => {
+      const orig = origPositions[nodeId];
+      const len = orig.length();
+      if (len < 0.001) return;
+      const radial = NODES[nodeId].radialDist;
+      const disp = heartbeat * radial * 0.18;
+      darkPosArr.array[idx * 3]     = orig.x + (orig.x / len) * disp;
+      darkPosArr.array[idx * 3 + 1] = orig.y + (orig.y / len) * disp;
+      darkPosArr.array[idx * 3 + 2] = orig.z + (orig.z / len) * disp;
+    });
+    darkPosArr.needsUpdate = true;
+
+    // ── 4. Propagazione energia lungo gli edge ──
+    es.forEach((estate, i) => {
+      const { nodeA, nodeB } = edgeObjects[i];
+      const mat = edgeObjects[i].mat;
+
+      if (!estate.active) {
+        estate.cooldown -= delta;
+        if (estate.cooldown <= 0) {
+          // Attiva impulso: parte dal nodo più luminoso
+          const intA = ns[nodeA].intensity;
+          const intB = ns[nodeB].intensity;
+          estate.active    = true;
+          estate.direction = intA >= intB ? 1 : -1;
+          estate.pulseHead = estate.direction > 0 ? 0 : 1;
+          estate.energy    = 0.5 + Math.random() * 0.5;
+          estate.cooldown  = 0;
         }
-        const baseScale = 1.0 + pulse;
-        mesh.scale.setScalar(baseScale);
+      } else {
+        // Avanza la testa dell'impulso
+        const speed = 1.2 + Math.random() * 0.5;
+        estate.pulseHead += estate.direction * delta * speed;
 
-        // Intensità emissiva pulsante
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        mat.emissiveIntensity = 0.08 + pulse * 0.6;
+        // Aggiorna uniform
+        mat.uniforms.uPulseHead.value = estate.pulseHead;
+        mat.uniforms.uGlowColor.value = EDGES[i][2] === "cross"
+          ? COL_GLOW_DARK
+          : COL_GLOW_RED;
+
+        // Aggiorna energy attribute (tutti i vertici dell'edge)
+        const energyAttr = edgeObjects[i].geo.attributes.aEnergy as THREE.BufferAttribute;
+        for (let v = 0; v < energyAttr.count; v++) {
+          energyAttr.array[v] = estate.energy;
+        }
+        energyAttr.needsUpdate = true;
+
+        // Fine impulso
+        if (estate.pulseHead > 1.2 || estate.pulseHead < -0.2) {
+          estate.active    = false;
+          estate.energy    = 0;
+          estate.pulseHead = 0;
+          estate.cooldown  = 0.3 + Math.random() * 3.5;
+          mat.uniforms.uPulseHead.value = -2.0; // fuori range = invisibile
+
+          // Accendi il nodo destinazione
+          const destNode = estate.direction > 0 ? nodeB : nodeA;
+          ns[destNode].targetIntensity = 0.7 + Math.random() * 0.3;
+          ns[destNode].pulseTimer = 0.5 + Math.random() * 1.5;
+        }
       }
     });
-
-    // ── Aggiornamento posizioni archi in sync con scala nodi ──
-    // (le linee seguono i nodi automaticamente perché sono nel gruppo)
   });
 
-  // Costruzione scena
-  const { scene } = useThree();
-  useMemo(() => {
-    // Pulizia sicura: rimuovi solo oggetti del grafo, non luci/camera
-    // (gestito dal gruppo ref)
-  }, []);
-
   return (
-    <group ref={groupRef}>
-      {/* Luci */}
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[2, 3, 2]} intensity={0.8} color="#fff8f0" />
-      <pointLight position={[-2, 1, 1]} intensity={0.4} color="#C1622F" />
+    <group>
+      {/* Luci ambientali */}
+      <ambientLight intensity={0.15} />
+      <pointLight position={[0, 0, 3]} intensity={0.3} color="#ff6030" />
 
-      {/* Archi */}
-      {edgeLines.map((line, i) => (
-        <primitive key={`edge-${i}`} object={line} />
+      {/* Edge */}
+      {edgeObjects.map((obj, i) => (
+        <primitive key={`edge-${i}`} object={obj.lines} />
       ))}
 
-      {/* Nodi */}
-      {nodeMeshes.map((mesh, i) => (
-        <primitive key={`node-${i}`} object={mesh} />
-      ))}
+      {/* Nodi rossi */}
+      <points ref={pointsRedRef} geometry={nodeGeo.red} material={nodeMatRed} />
+
+      {/* Nodi scuri */}
+      <points ref={pointsDarkRef} geometry={nodeGeo.dark} material={nodeMatDark} />
     </group>
   );
 }
@@ -247,7 +568,7 @@ export default function HeartGraph3D({
       aria-label="Grafo psicologico animato a forma di cuore"
     >
       <Canvas
-        camera={{ position: [0, 0, 2.8], fov: 45 }}
+        camera={{ position: [0, 0, 2.6], fov: 48 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: "transparent" }}
         dpr={[1, 2]}
@@ -257,11 +578,11 @@ export default function HeartGraph3D({
           enableZoom={false}
           enablePan={false}
           autoRotate
-          autoRotateSpeed={0.6}
-          minPolarAngle={Math.PI * 0.25}
-          maxPolarAngle={Math.PI * 0.75}
-          rotateSpeed={0.7}
-          dampingFactor={0.08}
+          autoRotateSpeed={0.5}
+          minPolarAngle={Math.PI * 0.2}
+          maxPolarAngle={Math.PI * 0.8}
+          rotateSpeed={0.6}
+          dampingFactor={0.07}
           enableDamping
         />
       </Canvas>
