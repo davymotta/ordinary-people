@@ -11,6 +11,7 @@ import {
   Building2,
   HelpCircle,
   Route,
+  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,13 @@ const navItems: NavItem[] = [
     icon: <Route className="w-4 h-4" />,
     description: "Funnel multi-touchpoint",
     badge: "Nuovo",
+  },
+  {
+    label: "Stato Psicologico",
+    href: "/app/psyche",
+    icon: <Brain className="w-4 h-4" />,
+    description: "Grafo cognitivo agente",
+    badge: "Psyche",
   },
 ];
 

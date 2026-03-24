@@ -64,9 +64,9 @@ const PROFILE_CONFIDENT: AgentProfile = {
 // ============================================================
 
 describe("initializeFromProfile", () => {
-  it("dovrebbe creare 32 nodi nel GraphState", () => {
+  it("dovrebbe creare 33 nodi nel GraphState", () => {
     const state = initializeFromProfile(PROFILE_ANXIOUS);
-    expect(Object.keys(state.nodes).length).toBe(32);
+    expect(Object.keys(state.nodes).length).toBe(33);
   });
 
   it("agente ansioso dovrebbe avere stress_level più alto di agente sicuro", () => {
@@ -420,5 +420,352 @@ describe("mapOPThemesToPsyche", () => {
   it("dovrebbe gestire temi sconosciuti passandoli direttamente", () => {
     const themes = mapOPThemesToPsyche(["tema_sconosciuto"]);
     expect(themes).toContain("tema_sconosciuto");
+  });
+});
+
+// ============================================================
+// SPRINT 21 — Episodic Memory & Action Feedback Loop
+// ============================================================
+
+import {
+  recordEpisode,
+  recallRelevantEpisodes,
+  applyActionFeedback,
+  type EpisodicEntry,
+  type ActionType,
+} from "./psyche/engine";
+
+describe("recordEpisode", () => {
+  it("non registra episodio se arousal < soglia", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const psycheState = readState(state);
+    // arousal iniziale basso — soglia alta (0.99) per forzare il non-registro
+    const entry = recordEpisode(state, ["luxury"], psycheState, "campaign", 0.99);
+    expect(entry).toBeNull();
+    expect(state.episodicLog ?? []).toHaveLength(0);
+  });
+
+  it("registra episodio se arousal > soglia dopo stimolo forte", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    injectStimulus(state, ["exclusion", "fear"], 1.5);
+    propagate(state);
+    const psycheState = readState(state);
+    // Soglia bassa per garantire la registrazione
+    const entry = recordEpisode(state, ["exclusion", "fear"], psycheState, "campaign", 0.0);
+    expect(entry).not.toBeNull();
+    expect(entry!.themes).toContain("exclusion");
+    expect(entry!.source).toBe("campaign");
+    expect(state.episodicLog).toHaveLength(1);
+  });
+
+  it("aggiorna il nodo episodic_memory dopo registrazione", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const baseMem = state.nodes["episodic_memory"]?.activation ?? 0;
+    injectStimulus(state, ["exclusion"], 1.5);
+    propagate(state);
+    const psycheState = readState(state);
+    recordEpisode(state, ["exclusion"], psycheState, "campaign", 0.0);
+    const newMem = state.nodes["episodic_memory"]?.activation ?? 0;
+    expect(newMem).toBeGreaterThan(baseMem);
+  });
+
+  it("mantiene al massimo 20 episodi nel log", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    for (let i = 0; i < 25; i++) {
+      injectStimulus(state, ["exclusion"], 1.5);
+      propagate(state);
+      const ps = readState(state);
+      recordEpisode(state, ["exclusion"], ps, "campaign", 0.0);
+    }
+    expect(state.episodicLog!.length).toBeLessThanOrEqual(20);
+  });
+
+  it("EpisodicEntry contiene tutti i campi richiesti", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    injectStimulus(state, ["exclusion"], 1.5);
+    propagate(state);
+    const ps = readState(state);
+    const entry = recordEpisode(state, ["exclusion"], ps, "world_event", 0.0);
+    expect(entry).not.toBeNull();
+    expect(entry!.timestamp).toBeDefined();
+    expect(Array.isArray(entry!.themes)).toBe(true);
+    expect(typeof entry!.arousal).toBe("number");
+    expect(typeof entry!.valence).toBe("number");
+    expect(typeof entry!.woundActive).toBe("boolean");
+    expect(Array.isArray(entry!.activeBiases)).toBe(true);
+    expect(entry!.source).toBe("world_event");
+  });
+});
+
+describe("recallRelevantEpisodes", () => {
+  it("restituisce array vuoto se nessun episodio registrato", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const recalled = recallRelevantEpisodes(state, ["luxury"], 3);
+    expect(recalled).toHaveLength(0);
+  });
+
+  it("recupera episodi con temi sovrapposti prima degli altri", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    // Episodio con tema luxury
+    injectStimulus(state, ["luxury", "scarcity"], 1.5);
+    propagate(state);
+    const ps1 = readState(state);
+    recordEpisode(state, ["luxury", "scarcity"], ps1, "campaign", 0.0);
+    // Episodio con tema exclusion (non sovrapposto)
+    injectStimulus(state, ["exclusion"], 1.5);
+    propagate(state);
+    const ps2 = readState(state);
+    recordEpisode(state, ["exclusion"], ps2, "campaign", 0.0);
+
+    const recalled = recallRelevantEpisodes(state, ["luxury"], 3);
+    expect(recalled.length).toBeGreaterThan(0);
+    // Il primo risultato deve avere "luxury" tra i temi
+    expect(recalled[0].themes).toContain("luxury");
+  });
+
+  it("non restituisce più di limit episodi", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    for (let i = 0; i < 8; i++) {
+      injectStimulus(state, ["luxury"], 1.5);
+      propagate(state);
+      const ps = readState(state);
+      recordEpisode(state, ["luxury"], ps, "campaign", 0.0);
+    }
+    const recalled = recallRelevantEpisodes(state, ["luxury"], 3);
+    expect(recalled.length).toBeLessThanOrEqual(3);
+  });
+});
+
+describe("applyActionFeedback", () => {
+  it("purchase riduce aspiration_engine (proxy reward_anticipation)", () => {
+    const state = initializeFromProfile(PROFILE_CONFIDENT);
+    state.nodes["aspiration_engine"].activation = 0.8;
+    applyActionFeedback(state, "purchase" as ActionType, 1.0);
+    expect(state.nodes["aspiration_engine"].activation).toBeLessThan(0.8);
+  });
+
+  it("complain riduce stress_level (effetto catartico)", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    state.nodes["stress_level"].activation = 0.8;
+    applyActionFeedback(state, "complain" as ActionType, 1.0);
+    expect(state.nodes["stress_level"].activation).toBeLessThan(0.8);
+  });
+
+  it("reject aumenta identity_defense", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const baseDefense = state.nodes["identity_defense"].activation;
+    applyActionFeedback(state, "reject" as ActionType, 1.0);
+    expect(state.nodes["identity_defense"].activation).toBeGreaterThan(baseDefense);
+  });
+
+  it("recommend aumenta social_standing", () => {
+    const state = initializeFromProfile(PROFILE_CONFIDENT);
+    const baseStanding = state.nodes["social_standing"].activation;
+    applyActionFeedback(state, "recommend" as ActionType, 1.0);
+    expect(state.nodes["social_standing"].activation).toBeGreaterThan(baseStanding);
+  });
+
+  it("i valori rimangono sempre nel range [0, 1] dopo feedback intensi", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    for (let i = 0; i < 10; i++) {
+      applyActionFeedback(state, "reject" as ActionType, 2.0);
+      applyActionFeedback(state, "complain" as ActionType, 2.0);
+    }
+    for (const ns of Object.values(state.nodes)) {
+      expect(ns.activation).toBeGreaterThanOrEqual(0.0);
+      expect(ns.activation).toBeLessThanOrEqual(1.0);
+    }
+  });
+
+  it("share aumenta social_standing con valenza positiva", () => {
+    const state = initializeFromProfile(PROFILE_CONFIDENT);
+    const baseValence = state.nodes["social_standing"].valence;
+    applyActionFeedback(state, "share" as ActionType, 1.0);
+    expect(state.nodes["social_standing"].valence).toBeGreaterThan(baseValence);
+  });
+});
+
+describe("serializeState con episodicLog", () => {
+  it("serializza e deserializza il log episodico correttamente", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    injectStimulus(state, ["exclusion"], 1.5);
+    propagate(state);
+    const ps = readState(state);
+    recordEpisode(state, ["exclusion"], ps, "campaign", 0.0);
+
+    const json = serializeState(state);
+    const restored = deserializeState(json);
+
+    expect(restored.episodicLog).toBeDefined();
+    expect(restored.episodicLog!.length).toBe(state.episodicLog!.length);
+    if (restored.episodicLog!.length > 0) {
+      expect(restored.episodicLog![0].themes).toEqual(state.episodicLog![0].themes);
+      expect(restored.episodicLog![0].source).toBe("campaign");
+    }
+  });
+});
+
+// ============================================================
+// SPRINT 22 — Hebbian Update, interact, exportStateVector
+// ============================================================
+
+import {
+  hebbianUpdate,
+  interact,
+  exportStateVector,
+  exportStateVectorLabeled,
+  type HebbianWeights,
+  type SocialAction,
+} from "./psyche/engine";
+
+describe("hebbianUpdate", () => {
+  it("dovrebbe rinforzare edge tra nodi co-attivi", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    // Forza alta co-attivazione su core_wound → stress_level
+    state.nodes["core_wound"].activation = 0.8;
+    state.nodes["stress_level"].activation = 0.8;
+
+    const weights: HebbianWeights = {};
+    hebbianUpdate(state, weights);
+
+    const key = "core_wound→stress_level";
+    expect(weights[key]).toBeDefined();
+    expect(weights[key]).toBeGreaterThan(0);
+  });
+
+  it("dovrebbe clampare i pesi a [-0.5, 0.5]", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    // Forza attivazioni massime
+    for (const id of Object.keys(state.nodes)) {
+      state.nodes[id].activation = 1.0;
+    }
+
+    const weights: HebbianWeights = {};
+    // Applica 100 update consecutivi
+    for (let i = 0; i < 100; i++) {
+      hebbianUpdate(state, weights);
+    }
+
+    for (const w of Object.values(weights)) {
+      expect(w).toBeLessThanOrEqual(0.5);
+      expect(w).toBeGreaterThanOrEqual(-0.5);
+    }
+  });
+
+  it("dovrebbe applicare decay su edge inutilizzati", () => {
+    const state = initializeFromProfile(PROFILE_CONFIDENT);
+    // Forza attivazioni basse
+    for (const id of Object.keys(state.nodes)) {
+      state.nodes[id].activation = 0.0;
+    }
+
+    const weights: HebbianWeights = { "core_wound→stress_level": 0.3 };
+    hebbianUpdate(state, weights, 0.05, 0.01);
+
+    // Con attivazioni a 0, il termine Hebbian è 0, rimane solo il decay
+    expect(weights["core_wound→stress_level"]).toBeLessThan(0.3);
+  });
+});
+
+describe("interact (Social Graph Bridge)", () => {
+  it("agree: agente B dovrebbe avere bandwagon_bias aumentato", () => {
+    const stateA = initializeFromProfile(PROFILE_ANXIOUS);
+    const stateB = initializeFromProfile(PROFILE_CONFIDENT);
+    const prevBandwagon = stateB.nodes["bandwagon_bias"].activation;
+
+    interact(stateA, stateB, "agree");
+
+    expect(stateB.nodes["bandwagon_bias"].activation).toBeGreaterThan(prevBandwagon);
+  });
+
+  it("disagree: agente B dovrebbe avere identity_defense aumentato", () => {
+    const stateA = initializeFromProfile(PROFILE_CONFIDENT);
+    const stateB = initializeFromProfile(PROFILE_ANXIOUS);
+    const prevDefense = stateB.nodes["identity_defense"].activation;
+
+    interact(stateA, stateB, "disagree");
+
+    expect(stateB.nodes["identity_defense"].activation).toBeGreaterThan(prevDefense);
+  });
+
+  it("criticize: agente B dovrebbe avere core_wound aumentato", () => {
+    const stateA = initializeFromProfile(PROFILE_CONFIDENT);
+    const stateB = initializeFromProfile(PROFILE_ANXIOUS);
+    const prevWound = stateB.nodes["core_wound"].activation;
+
+    interact(stateA, stateB, "criticize", 1.0);
+
+    expect(stateB.nodes["core_wound"].activation).toBeGreaterThan(prevWound);
+  });
+
+  it("admire: agente B dovrebbe avere social_standing aumentato", () => {
+    const stateA = initializeFromProfile(PROFILE_ANXIOUS);
+    const stateB = initializeFromProfile(PROFILE_CONFIDENT);
+    const prevStanding = stateB.nodes["social_standing"].activation;
+
+    interact(stateA, stateB, "admire", 1.0);
+
+    expect(stateB.nodes["social_standing"].activation).toBeGreaterThan(prevStanding);
+  });
+
+  it("interact dovrebbe restituire InteractionResult con timestamp", () => {
+    const stateA = initializeFromProfile(PROFILE_ANXIOUS);
+    const stateB = initializeFromProfile(PROFILE_CONFIDENT);
+
+    const result = interact(stateA, stateB, "share");
+
+    expect(result.action).toBe("share");
+    expect(result.timestamp).toBeDefined();
+    expect(typeof result.agentADelta).toBe("object");
+    expect(typeof result.agentBDelta).toBe("object");
+  });
+
+  it("intensità 0 non dovrebbe cambiare lo stato", () => {
+    const stateA = initializeFromProfile(PROFILE_ANXIOUS);
+    const stateB = initializeFromProfile(PROFILE_CONFIDENT);
+    const snapB = JSON.stringify(stateB.nodes);
+
+    interact(stateA, stateB, "criticize", 0);
+
+    expect(JSON.stringify(stateB.nodes)).toBe(snapB);
+  });
+});
+
+describe("exportStateVector", () => {
+  it("dovrebbe esportare un vettore di 33 elementi", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const vector = exportStateVector(state);
+
+    expect(vector.length).toBe(33);
+  });
+
+  it("tutti i valori dovrebbero essere in [0, 1]", () => {
+    const state = initializeFromProfile(PROFILE_CONFIDENT);
+    const vector = exportStateVector(state);
+
+    for (const v of vector) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("exportStateVectorLabeled dovrebbe restituire 33 oggetti con id, label, activation, valence", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const labeled = exportStateVectorLabeled(state);
+
+    expect(labeled.length).toBe(33);
+    for (const entry of labeled) {
+      expect(entry.id).toBeDefined();
+      expect(entry.label).toBeDefined();
+      expect(typeof entry.activation).toBe("number");
+      expect(typeof entry.valence).toBe("number");
+    }
+  });
+
+  it("il 33° elemento dovrebbe corrispondere a episodic_memory", () => {
+    const state = initializeFromProfile(PROFILE_ANXIOUS);
+    const labeled = exportStateVectorLabeled(state);
+
+    expect(labeled[32].id).toBe("episodic_memory");
   });
 });

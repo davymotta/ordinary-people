@@ -2338,6 +2338,175 @@ export const appRouter = router({
         return listJourneySimulations(input.brandAgentId);
       }),
   }),
+
+  // ─── Psyche Engine ─────────────────────────────────────────────────────────
+  psyche: router({
+    // Stato psicologico corrente di un agente per un brand
+    getAgentState: protectedProcedure
+      .input(z.object({ agentId: z.number(), brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const { agentBrandStates } = await import("../drizzle/schema");
+        const { eq: eqD, and } = await import("drizzle-orm");
+        const [row] = await db.select()
+          .from(agentBrandStates)
+          .where(and(
+            eqD(agentBrandStates.agentId, input.agentId),
+            eqD(agentBrandStates.brandAgentId, input.brandAgentId)
+          ))
+          .limit(1);
+        if (!row) return null;
+        const { deserializeState, readState } = await import("./psyche/engine");
+        if (!row.psycheState) return { hasState: false, agentId: input.agentId, brandAgentId: input.brandAgentId };
+        const graphState = typeof row.psycheState === "string"
+          ? deserializeState(row.psycheState)
+          : deserializeState(JSON.stringify(row.psycheState));
+        const psycheState = readState(graphState);
+        return {
+          hasState: true,
+          agentId: input.agentId,
+          brandAgentId: input.brandAgentId,
+          psycheState,
+          graphNodes: graphState.nodes,
+          mood: row.psycheMood,
+          activeBiases: row.psycheActiveBiases,
+          lastTick: row.psycheLastTick,
+          brandFamiliarity: row.brandFamiliarity,
+          brandSentiment: row.brandSentiment,
+          exposureCount: row.exposureCount,
+        };
+      }),
+
+    // Stato Psyche di tutti gli agenti per un brand
+    listBrandStates: protectedProcedure
+      .input(z.object({ brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const { agentBrandStates } = await import("../drizzle/schema");
+        const { eq: eqD } = await import("drizzle-orm");
+        const rows = await db.select()
+          .from(agentBrandStates)
+          .where(eqD(agentBrandStates.brandAgentId, input.brandAgentId));
+        const { deserializeState, readState } = await import("./psyche/engine");
+        return rows.map(row => {
+          if (!row.psycheState) return { agentId: row.agentId, hasState: false };
+          const graphState = typeof row.psycheState === "string"
+            ? deserializeState(row.psycheState)
+            : deserializeState(JSON.stringify(row.psycheState));
+          const ps = readState(graphState);
+          return {
+            agentId: row.agentId,
+            hasState: true,
+            mood: ps.mood,
+            arousal: ps.arousal,
+            activeBiases: ps.active_biases,
+            woundActive: ps.wound_active,
+            shadowActive: ps.shadow_active,
+            defenseActive: ps.defense_active,
+            socialPosture: ps.social_posture,
+            processingMode: ps.processing_mode,
+            brandFamiliarity: row.brandFamiliarity,
+            brandSentiment: row.brandSentiment,
+            exposureCount: row.exposureCount,
+          };
+        });
+      }),
+
+    // Calibra manualmente i parametri Psyche di un agente
+    calibrate: protectedProcedure
+      .input(z.object({
+        agentId: z.number(),
+        brandAgentId: z.number(),
+        coreWound: z.string().optional(),
+        coreShadow: z.string().optional(),
+        coreDesire: z.string().optional(),
+        innerVoice: z.enum(["critical", "nurturing", "neutral", "aspirational"]).optional(),
+        humourStyle: z.string().optional(),
+        openness: z.number().min(0).max(1).optional(),
+        conscientiousness: z.number().min(0).max(1).optional(),
+        extraversion: z.number().min(0).max(1).optional(),
+        agreeableness: z.number().min(0).max(1).optional(),
+        neuroticism: z.number().min(0).max(1).optional(),
+        stimulusThemes: z.array(z.string()).optional(),
+        stimulusIntensity: z.number().min(0).max(1).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const { agentBrandStates } = await import("../drizzle/schema");
+        const { eq: eqD, and } = await import("drizzle-orm");
+        const { deserializeState, readState, serializeState, injectStimulus, propagate, applyDecay, initializeFromProfile, stateToPrompt } = await import("./psyche/engine");
+        const { buildAgentProfile } = await import("./psyche/psyche-integration");
+
+        const agent = await agentsDb.getAgentById(input.agentId);
+        if (!agent) throw new Error("Agent not found");
+
+        const [row] = await db.select()
+          .from(agentBrandStates)
+          .where(and(
+            eqD(agentBrandStates.agentId, input.agentId),
+            eqD(agentBrandStates.brandAgentId, input.brandAgentId)
+          ))
+          .limit(1);
+
+        const profile = buildAgentProfile(agent);
+
+        let graphState = row?.psycheState
+          ? (typeof row.psycheState === "string" ? deserializeState(row.psycheState) : deserializeState(JSON.stringify(row.psycheState)))
+          : initializeFromProfile(profile);
+
+        if (input.stimulusThemes && input.stimulusThemes.length > 0) {
+          applyDecay(graphState, 5);
+          injectStimulus(graphState, input.stimulusThemes, input.stimulusIntensity ?? 0.5);
+          propagate(graphState);
+        }
+
+        const psycheState = readState(graphState);
+        const serialized = serializeState(graphState);
+        const promptPreview = stateToPrompt(psycheState, profile);
+
+        await db.update(agentBrandStates)
+          .set({
+            psycheState: JSON.parse(serialized),
+            psycheMood: psycheState.mood,
+            psycheActiveBiases: psycheState.active_biases,
+            psycheLastTick: new Date(),
+          })
+          .where(and(
+            eqD(agentBrandStates.agentId, input.agentId),
+            eqD(agentBrandStates.brandAgentId, input.brandAgentId)
+          ));
+
+        return { psycheState, promptPreview, graphNodes: graphState.nodes };
+      }),
+
+    // Export vettore di stato 32D per clustering
+    exportStateVector: protectedProcedure
+      .input(z.object({ agentId: z.number(), brandAgentId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const { agentBrandStates } = await import("../drizzle/schema");
+        const { eq: eqD, and } = await import("drizzle-orm");
+        const [row] = await db.select()
+          .from(agentBrandStates)
+          .where(and(
+            eqD(agentBrandStates.agentId, input.agentId),
+            eqD(agentBrandStates.brandAgentId, input.brandAgentId)
+          ))
+          .limit(1);
+        if (!row?.psycheState) return { vector: null };
+        const { deserializeState } = await import("./psyche/engine");
+        const { NODES } = await import("./psyche/topology");
+        const graphState = typeof row.psycheState === "string"
+          ? deserializeState(row.psycheState)
+          : deserializeState(JSON.stringify(row.psycheState));
+        const vector = NODES.map(n => graphState.nodes[n.id]?.activation ?? n.base_activation);
+        return { vector, nodeIds: NODES.map(n => n.id) };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;
 

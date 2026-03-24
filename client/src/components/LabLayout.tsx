@@ -12,6 +12,7 @@ import {
   Microscope,
   Target,
   Route,
+  Brain,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -29,6 +30,7 @@ const navItems: NavItem[] = [
   { label: "Campaign Testing", href: "/lab/campaign-testing", icon: <FlaskConical className="w-4 h-4" />, group: "engines" },
   { label: "Ground Truth Engine", href: "/lab/gte", icon: <Target className="w-4 h-4" />, group: "calibration" },
   { label: "Simulazioni Strategiche", href: "/lab/strategic", icon: <Route className="w-4 h-4" />, group: "calibration" },
+  { label: "Psyche Calibration", href: "/lab/psyche-calibration", icon: <Brain className="w-4 h-4" />, group: "calibration" },
   { label: "Dataset", href: "/lab/datasets", icon: <Database className="w-4 h-4" />, group: "data" },
   { label: "Configurazione", href: "/lab/settings", icon: <Settings className="w-4 h-4" />, group: "system" },
 ];

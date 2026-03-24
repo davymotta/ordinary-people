@@ -588,3 +588,22 @@
 - [x] SP18.5 — social-influence.ts: getPsycheSocialStimulus (social_proof, peer_pressure, conformity, disagreement)
 - [x] SP18.6 — UI WorldEvents.tsx: badge mood (colorati) + badge "ferita attiva" + delta moodValence nei risultati
 - [x] TOTALE: 204/204 test passati, 0 errori TypeScript
+
+## Sprint 19-22 — Psyche Advanced Features (COMPLETATI)
+
+- [x] SP19.1 — AgentPsycheState.tsx: pagina /app/psyche con grafo 33 nodi, mood, bias, wound, vettore 33D, episodic log
+- [x] SP19.2 — PsycheCalibration.tsx: /lab/psyche-calibration con slider Big Five, wound selector, preview [PSYCHE_STATE]
+- [x] SP19.3 — Router tRPC psyche: getAgentState, listBrandStates, calibrate, exportStateVector
+- [x] SP19.4 — Link "Psyche State" nella sidebar ClientLayout + link "Psyche Calibration" nella LabLayout
+- [x] SP20.1 — SimulateReport.tsx: sezione "Psyche Impact Report" con delta nodi, bias attivati, wound touches, risk nodes
+- [x] SP21.1 — engine.ts: recordEpisode() — log vettoriale stimoli ad alto arousal (episodic_memory node)
+- [x] SP21.2 — engine.ts: applyActionFeedback() — catarsi (reduce stress/wound), social_reward (boost standing/mood)
+- [x] SP21.3 — topology.ts: aggiunto episodic_memory come 33° nodo (category: memory)
+- [x] SP21.4 — Vitest: 15 test per recordEpisode, applyActionFeedback, serialize episodicLog
+- [x] SP22.1 — engine.ts: hebbianUpdate() — rinforza edge co-attivi (lr=0.05, decay=0.01, clamp [-0.5, 0.5])
+- [x] SP22.2 — engine.ts: applyHebbianWeights() — applica pesi Hebbian durante propagazione
+- [x] SP22.3 — engine.ts: interact() — Social Graph Bridge (agree, disagree, admire, criticize, share, ignore)
+- [x] SP22.4 — engine.ts: exportStateVector() + exportStateVectorLabeled() — vettore 33D per clustering
+- [x] SP22.5 — AgentPsycheState.tsx: aggiornato a 33 nodi + sezione Episodic Log (ultimi 5 episodi)
+- [x] SP22.6 — Vitest: 13 test per hebbianUpdate, interact, exportStateVector
+- [x] TOTALE SUITE: 232/232 test passati, 0 errori TypeScript

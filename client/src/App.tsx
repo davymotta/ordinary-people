@@ -14,6 +14,7 @@ import SimulateReport from "./pages/client/SimulateReport";
 import BrandOnboarding from "./pages/client/BrandOnboarding";
 import JourneySimulationPanel from "./pages/client/JourneySimulationPanel";
 import JourneyResults from "./pages/client/JourneyResults";
+import AgentPsycheState from "./pages/client/AgentPsycheState";
 
 // ── Admin Console (/admin) ────────────────────────────────────────────────────
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -46,6 +47,7 @@ import CampaignCreate from "./pages/CampaignCreate";
 import GroundTruth from "./pages/GroundTruth";
 import GteDashboard from "./pages/lab/GteDashboard";
 import StrategicSimulations from "./pages/lab/StrategicSimulations";
+import PsycheCalibration from "./pages/lab/PsycheCalibration";
 import Landing from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
 import Pricing from "./pages/Pricing";
@@ -84,6 +86,9 @@ function Router() {
       </Route>
       <Route path="/app/journey/:id">
         <JourneyResults />
+      </Route>
+      <Route path="/app/psyche">
+        <AgentPsycheState />
       </Route>
       <Route path="/app/simulations">
         <ClientDashboard />
@@ -183,6 +188,11 @@ function Router() {
       </Route>
       <Route path="/lab/strategic">
         <StrategicSimulations />
+      </Route>
+      <Route path="/lab/psyche-calibration">
+        <LabLayout>
+          <PsycheCalibration />
+        </LabLayout>
       </Route>
 
       {/* ── Legacy routes (keep working) ── */}

@@ -217,6 +217,48 @@ export default function SimulateReport() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  // Psyche Delta — impatto psicologico della campagna
+  // Calcola per ogni nodo Psyche quanti agenti lo hanno attivato (bias attivi)
+  // e il delta mood (valence shift) rispetto al baseline neutro
+  const PSYCHE_NODES_ORDERED = [
+    "identity", "core_wound", "shadow", "inner_voice", "defense_mechanism",
+    "loss_aversion", "risk_calculator", "reward_anticipation", "aspiration_engine",
+    "belonging_need", "distinction_need", "social_mirror", "conformity_pressure",
+    "status_signaling", "reciprocity_engine", "fairness_monitor", "trust_calibrator",
+    "nostalgia_module", "scarcity_detector", "authority_bias", "anchoring_effect",
+    "identity_defense", "cognitive_dissonance", "emotional_memory", "arousal_regulator",
+    "attention_filter", "narrative_constructor", "meaning_maker", "time_perception",
+    "body_schema", "episodic_memory", "prospection_engine",
+  ];
+
+  // Conta quante volte ogni bias è stato attivato (già in biasCounts)
+  // Calcola il delta mood: quanti agenti sono passati a mood positivo vs negativo
+  const positiveMoods = ["joy", "excitement", "contentment", "trust", "anticipation"];
+  const negativeMoods = ["fear", "anger", "sadness", "disgust", "anxiety", "shame", "guilt"];
+  const moodPositiveCount = psycheReactions.filter((r: any) => positiveMoods.includes(String(r.psycheMood))).length;
+  const moodNegativeCount = psycheReactions.filter((r: any) => negativeMoods.includes(String(r.psycheMood))).length;
+  const moodNeutralCount = psycheReactions.length - moodPositiveCount - moodNegativeCount;
+  const moodValenceDelta = psycheReactions.length > 0
+    ? Math.round(((moodPositiveCount - moodNegativeCount) / psycheReactions.length) * 100)
+    : 0;
+
+  // Top nodi attivati (bias con frequenza > 0, ordinati per frequenza)
+  const topActivatedNodes = Object.entries(biasCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([node, count]) => ({
+      node,
+      count,
+      pct: Math.round((count / n) * 100),
+    }));
+
+  // Nodi "a rischio" = attivati in >40% degli agenti e con valenza negativa
+  const riskNodes = topActivatedNodes.filter(n => n.pct > 40 &&
+    ["core_wound", "shadow", "loss_aversion", "cognitive_dissonance", "fairness_monitor", "identity_defense"].includes(n.node)
+  );
+
+  const hasPsycheDelta = psycheReactions.length > 0;
+
   // Big Five radar data from reactions
   const bigFiveKeys = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"] as const;
   const bigFiveLabels: Record<string, string> = {
@@ -564,6 +606,116 @@ export default function SimulateReport() {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Psyche Impact Report */}
+        {hasPsycheDelta && (
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Brain className="w-4 h-4 text-indigo-500" />
+                Impatto Psicologico
+                <Badge variant="outline" className="text-xs ml-auto">Psyche Delta Report</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Mood Valence Delta */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="rounded-lg border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Delta Valenza Mood</p>
+                  <p className={`text-2xl font-bold ${
+                    moodValenceDelta > 20 ? "text-emerald-600" :
+                    moodValenceDelta < -20 ? "text-rose-600" : "text-amber-600"
+                  }`}>
+                    {moodValenceDelta > 0 ? "+" : ""}{moodValenceDelta}%
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {moodValenceDelta > 20 ? "Risposta emotiva positiva" :
+                     moodValenceDelta < -20 ? "Risposta emotiva negativa" : "Risposta ambivalente"}
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Mood Positivi</p>
+                  <p className="text-2xl font-bold text-emerald-600">{moodPositiveCount}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{psycheReactions.length > 0 ? Math.round((moodPositiveCount / psycheReactions.length) * 100) : 0}% del panel</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Mood Negativi</p>
+                  <p className="text-2xl font-bold text-rose-600">{moodNegativeCount}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{psycheReactions.length > 0 ? Math.round((moodNegativeCount / psycheReactions.length) * 100) : 0}% del panel</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Mood Neutri</p>
+                  <p className="text-2xl font-bold text-slate-500">{moodNeutralCount}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{psycheReactions.length > 0 ? Math.round((moodNeutralCount / psycheReactions.length) * 100) : 0}% del panel</p>
+                </div>
+              </div>
+
+              {/* Nodi attivati */}
+              {topActivatedNodes.length > 0 && (
+                <div className="mb-5">
+                  <p className="text-xs font-medium text-muted-foreground mb-3">Nodi cognitivi attivati dalla campagna</p>
+                  <div className="space-y-2">
+                    {topActivatedNodes.map(({ node, count, pct }) => {
+                      const isRisk = ["core_wound", "shadow", "loss_aversion", "cognitive_dissonance", "fairness_monitor", "identity_defense"].includes(node);
+                      const isPositive = ["reward_anticipation", "aspiration_engine", "trust_calibrator", "belonging_need"].includes(node);
+                      return (
+                        <div key={node} className="flex items-center gap-3">
+                          <div className="w-36 text-xs text-muted-foreground truncate flex-shrink-0">
+                            {node.replace(/_/g, " ")}
+                          </div>
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                isRisk ? "bg-rose-500" : isPositive ? "bg-emerald-500" : "bg-indigo-400"
+                              }`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <div className="w-16 text-right">
+                            <span className={`text-xs font-medium ${
+                              isRisk ? "text-rose-600" : isPositive ? "text-emerald-600" : "text-indigo-600"
+                            }`}>{pct}%</span>
+                            <span className="text-xs text-muted-foreground ml-1">({count})</span>
+                          </div>
+                          {isRisk && (
+                            <span className="text-xs px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 flex-shrink-0">⚠ rischio</span>
+                          )}
+                          {isPositive && (
+                            <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0">✓ positivo</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Risk nodes alert */}
+              {riskNodes.length > 0 && (
+                <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-rose-800 mb-1">Nodi a rischio attivati</p>
+                      <p className="text-xs text-rose-700">
+                        La campagna ha attivato nodi cognitivi ad alto rischio in oltre il 40% degli agenti:
+                        {" "}{riskNodes.map(n => n.node.replace(/_/g, " ")).join(", ")}.
+                        Considera di riformulare il messaggio per ridurre l'attivazione di ferite primarie e meccanismi difensivi.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Nessun nodo attivato */}
+              {topActivatedNodes.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">
+                  Nessun nodo cognitivo attivato. Esegui una simulazione per vedere i dati.
+                </p>
+              )}
             </CardContent>
           </Card>
         )}

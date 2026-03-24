@@ -20,10 +20,22 @@ export interface NodeState {
   lastStimulus: number; // ultimo delta ricevuto
 }
 
+// ─── Episodic Memory ─────────────────────────────────────────────────────────
+export interface EpisodicEntry {
+  timestamp: string;         // ISO 8601
+  themes: string[];          // stimoli che hanno generato l'episodio
+  arousal: number;           // arousal al momento della registrazione [0-1]
+  valence: number;           // valenza emotiva dell'episodio [-1, 1]
+  woundActive: boolean;      // ferita primaria attivata?
+  activeBiases: string[];    // bias attivi al momento
+  source: string;            // "campaign" | "world_event" | "social" | "manual"
+}
+
 export interface GraphState {
   nodes: Record<string, NodeState>;
   stepCount: number;
   timestamp: string;
+  episodicLog?: EpisodicEntry[];  // log vettoriale degli episodi ad alto arousal
 }
 
 export interface AgentProfile {
@@ -536,6 +548,132 @@ export function stateToPrompt(psycheState: PsycheState, profile: AgentProfile): 
 }
 
 // ============================================================
+// EPISODIC MEMORY
+// ============================================================
+
+/**
+ * Registra un episodio nella memoria episodica dell'agente.
+ * Viene chiamata automaticamente dal tick() quando l'arousal supera la soglia.
+ * La memoria episodica influenza il nodo episodic_memory del grafo.
+ */
+export function recordEpisode(
+  state: GraphState,
+  themes: string[],
+  psycheState: PsycheState,
+  source: string = "campaign",
+  arousalThreshold: number = 0.55
+): EpisodicEntry | null {
+  const arousalVal = state.nodes["emotional_arousal"]?.activation ?? 0;
+  if (arousalVal < arousalThreshold) return null;
+
+  const entry: EpisodicEntry = {
+    timestamp: new Date().toISOString(),
+    themes,
+    arousal: Math.round(arousalVal * 1000) / 1000,
+    valence: Math.round((state.nodes["current_mood"]?.valence ?? 0) * 1000) / 1000,
+    woundActive: psycheState.wound_active,
+    activeBiases: [...psycheState.active_biases],
+    source,
+  };
+
+  if (!state.episodicLog) state.episodicLog = [];
+  state.episodicLog.push(entry);
+
+  // Mantieni al massimo 20 episodi (rimuovi i più vecchi)
+  if (state.episodicLog.length > 20) {
+    state.episodicLog = state.episodicLog.slice(-20);
+  }
+
+  // Aggiorna il nodo episodic_memory nel grafo
+  const emNode = state.nodes["episodic_memory"];
+  if (emNode) {
+    // L'attivazione del nodo episodic_memory cresce con episodi ad alto arousal
+    const boost = arousalVal * 0.3;
+    emNode.activation = Math.min(1.0, emNode.activation + boost);
+    // La valenza del nodo riflette la valenza media degli ultimi 5 episodi
+    const recent = state.episodicLog.slice(-5);
+    const avgValence = recent.reduce((s, e) => s + e.valence, 0) / recent.length;
+    emNode.valence = Math.max(-1.0, Math.min(1.0, avgValence));
+  }
+
+  return entry;
+}
+
+/**
+ * Recupera gli episodi rilevanti per un set di temi (similarity matching).
+ * Usato per il "priming" — se un tema corrente è già stato vissuto,
+ * l'agente risponde con maggiore intensità.
+ */
+export function recallRelevantEpisodes(
+  state: GraphState,
+  themes: string[],
+  limit: number = 3
+): EpisodicEntry[] {
+  if (!state.episodicLog || state.episodicLog.length === 0) return [];
+  
+  const themeSet = new Set(themes);
+  const scored = state.episodicLog.map(ep => {
+    const overlap = ep.themes.filter(t => themeSet.has(t)).length;
+    const recency = new Date(ep.timestamp).getTime();
+    return { ep, score: overlap * 10 + recency / 1e12 };
+  });
+  
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(s => s.ep);
+}
+
+// ============================================================
+// ACTION FEEDBACK LOOP
+// ============================================================
+
+export type ActionType =
+  | "purchase"        // acquisto → reward_anticipation up, aspiration_engine down
+  | "share"           // condivisione → social_standing up, belonging_need down
+  | "ignore"          // ignora → attention_filter up, aspiration_engine unchanged
+  | "reject"          // rifiuto → identity_defense up, core_wound risk
+  | "complain"        // lamentela → catarsi: stress down, fairness_monitor up
+  | "recommend"       // raccomandazione → social_standing up, trust_calibrator up
+  | "bookmark"        // salva per dopo → aspiration_engine up, risk_calculator down
+  | "return"          // reso → loss_aversion up, trust_calibrator down
+;
+
+const ACTION_FEEDBACK: Record<ActionType, Array<[string, number, number]>> = {
+  // [nodeId, activationDelta, valenceDelta]
+  purchase:   [["reward_anticipation", -0.2, 0.0], ["aspiration_engine", -0.1, 0.0], ["social_standing", +0.1, +0.2]],
+  share:      [["social_standing", +0.2, +0.3], ["belonging_need", -0.1, 0.0], ["trust_calibrator", +0.1, 0.0]],
+  ignore:     [["attention_filter", +0.1, 0.0], ["current_mood", 0.0, -0.05]],
+  reject:     [["identity_defense", +0.2, 0.0], ["core_wound", +0.1, -0.2], ["stress_level", +0.1, 0.0]],
+  complain:   [["stress_level", -0.2, 0.0], ["fairness_monitor", +0.2, -0.2], ["current_mood", 0.0, +0.1]],
+  recommend:  [["social_standing", +0.3, +0.3], ["trust_calibrator", +0.2, +0.2], ["belonging_need", -0.1, 0.0]],
+  bookmark:   [["aspiration_engine", +0.15, +0.1], ["risk_calculator", -0.1, 0.0]],
+  return:     [["loss_aversion", +0.2, -0.1], ["trust_calibrator", -0.2, -0.3], ["stress_level", +0.1, 0.0]],
+};
+
+/**
+ * Applica il feedback di un'azione dell'agente al grafo Psyche.
+ * Simula l'effetto psicologico post-azione (catarsi, rinforzo, rimpianto).
+ */
+export function applyActionFeedback(
+  state: GraphState,
+  action: ActionType,
+  intensity: number = 1.0
+): void {
+  const effects = ACTION_FEEDBACK[action];
+  if (!effects) return;
+
+  for (const [nodeId, activationDelta, valenceDelta] of effects) {
+    const ns = state.nodes[nodeId];
+    if (!ns) continue;
+    ns.activation = Math.max(0.0, Math.min(1.0, ns.activation + activationDelta * intensity));
+    if (valenceDelta !== 0) {
+      ns.valence = Math.max(-1.0, Math.min(1.0, ns.valence + valenceDelta * intensity));
+    }
+  }
+}
+
+// ============================================================
 // MAIN TICK
 // ============================================================
 
@@ -581,6 +719,24 @@ export function tick(
   // 5. Read state
   state.timestamp = new Date().toISOString();
   const psycheState = readState(state);
+
+  // 6. Episodic memory — registra episodio se arousal > soglia
+  if (stimulusThemes && stimulusThemes.length > 0) {
+    recordEpisode(state, stimulusThemes, psycheState, "campaign");
+  }
+
+  // 7. Episodic priming — se ci sono episodi rilevanti, boost lieve al nodo episodic_memory
+  if (stimulusThemes && stimulusThemes.length > 0) {
+    const relevant = recallRelevantEpisodes(state, stimulusThemes, 3);
+    if (relevant.length > 0) {
+      const emNode = state.nodes["episodic_memory"];
+      if (emNode) {
+        // Priming: episodi rilevanti aumentano l'attivazione del nodo
+        const primingBoost = Math.min(0.15, relevant.length * 0.05);
+        emNode.activation = Math.min(1.0, emNode.activation + primingBoost);
+      }
+    }
+  }
   
   return psycheState;
 }
@@ -599,6 +755,7 @@ export function serializeState(state: GraphState): string {
     ),
     stepCount: state.stepCount,
     timestamp: state.timestamp,
+    episodicLog: state.episodicLog ?? [],
   });
 }
 
@@ -614,5 +771,229 @@ export function deserializeState(json: string): GraphState {
     nodes,
     stepCount: raw.stepCount ?? 0,
     timestamp: raw.timestamp ?? new Date().toISOString(),
+    episodicLog: (raw.episodicLog as EpisodicEntry[]) ?? [],
   };
+}
+
+// ============================================================
+// HEBBIAN EDGE WEIGHTS
+// ============================================================
+
+/**
+ * Mappa dei pesi Hebbian per edge (from→to).
+ * Persiste nel GraphState come campo opzionale.
+ */
+export type HebbianWeights = Record<string, number>; // key: "from→to"
+
+function hebbianKey(from: string, to: string): string {
+  return `${from}→${to}`;
+}
+
+/**
+ * hebbianUpdate — rinforza gli edge dove entrambi i nodi
+ * erano attivi durante la propagazione (Hebb: "neurons that fire together, wire together").
+ * 
+ * @param state     GraphState corrente
+ * @param weights   Mappa dei pesi Hebbian da aggiornare in-place
+ * @param lr        Learning rate (default 0.05)
+ * @param decay     Decay rate per edge inutilizzati (default 0.01)
+ */
+export function hebbianUpdate(
+  state: GraphState,
+  weights: HebbianWeights,
+  lr: number = 0.05,
+  decay: number = 0.01
+): void {
+  for (const edge of TOPOLOGY.edges) {
+    const src = state.nodes[edge.from];
+    const tgt = state.nodes[edge.to];
+    if (!src || !tgt) continue;
+
+    const key = hebbianKey(edge.from, edge.to);
+    const current = weights[key] ?? 0.0;
+
+    // Hebbian rule: Δw = lr * src.activation * tgt.activation
+    const coactivation = src.activation * tgt.activation;
+    const delta = lr * coactivation - decay * current;
+
+    // Clamp a [-0.5, 0.5] per non dominare i pesi base
+    weights[key] = Math.max(-0.5, Math.min(0.5, current + delta));
+  }
+}
+
+/**
+ * applyHebbianWeights — applica i pesi Hebbian durante la propagazione.
+ * Modifica i delta di attivazione in base ai pesi appresi.
+ */
+export function applyHebbianWeights(
+  state: GraphState,
+  weights: HebbianWeights,
+  deltas: Record<string, number>
+): void {
+  for (const edge of TOPOLOGY.edges) {
+    const src = state.nodes[edge.from];
+    if (!src) continue;
+
+    const key = hebbianKey(edge.from, edge.to);
+    const hebbW = weights[key] ?? 0.0;
+    if (Math.abs(hebbW) < 0.001) continue;
+
+    // Il peso Hebbian modula il delta: percorsi rinforzati diventano più "scivolosi"
+    const additionalDelta = src.activation * hebbW * 0.15;
+    deltas[edge.to] = (deltas[edge.to] ?? 0) + additionalDelta;
+  }
+}
+
+// ============================================================
+// SOCIAL GRAPH BRIDGE — interact()
+// ============================================================
+
+export type SocialAction =
+  | "agree"        // accordo → rinforza bandwagon, belonging
+  | "disagree"     // disaccordo → attiva identity_defense
+  | "admire"       // ammirazione → boost social_standing del target
+  | "criticize"    // critica → attiva core_wound del target
+  | "share"        // condivisione → social_proof + reference_mirror
+  | "ignore";      // ignoranza → lieve boost distinction_need
+
+export interface InteractionResult {
+  agentADelta: Record<string, number>;  // delta nodi per agente A
+  agentBDelta: Record<string, number>;  // delta nodi per agente B
+  action: SocialAction;
+  timestamp: string;
+}
+
+/**
+ * interact — simula un'interazione sociale tra due agenti.
+ * Aggiorna i GraphState di entrambi in-place.
+ * 
+ * @param stateA    GraphState dell'agente A (iniziatore)
+ * @param stateB    GraphState dell'agente B (ricevente)
+ * @param action    Tipo di interazione sociale
+ * @param intensity Intensità dell'interazione [0-1], default 0.5
+ */
+export function interact(
+  stateA: GraphState,
+  stateB: GraphState,
+  action: SocialAction,
+  intensity: number = 0.5
+): InteractionResult {
+  const deltaA: Record<string, number> = {};
+  const deltaB: Record<string, number> = {};
+
+  const applyDelta = (
+    state: GraphState,
+    deltas: Record<string, number>,
+    nodeId: string,
+    delta: number
+  ) => {
+    const ns = state.nodes[nodeId];
+    if (!ns) return;
+    const prev = ns.activation;
+    ns.activation = Math.max(0.0, Math.min(1.0, ns.activation + delta * intensity));
+    deltas[nodeId] = ns.activation - prev;
+  };
+
+  switch (action) {
+    case "agree":
+      // A: si sente validato → boost belonging, mood positivo
+      applyDelta(stateA, deltaA, "belonging_need", -0.1);      // soddisfatto → cala il bisogno
+      applyDelta(stateA, deltaA, "current_mood", 0.15);
+      applyDelta(stateA, deltaA, "social_standing", 0.1);
+      // B: accordo → rinforza bandwagon, riduce identity_defense
+      applyDelta(stateB, deltaB, "bandwagon_bias", 0.2);
+      applyDelta(stateB, deltaB, "identity_defense", -0.1);
+      applyDelta(stateB, deltaB, "reference_mirror", 0.15);
+      break;
+
+    case "disagree":
+      // A: esprime disaccordo → lieve stress, boost critical_thinking
+      applyDelta(stateA, deltaA, "stress_level", 0.1);
+      applyDelta(stateA, deltaA, "critical_thinking", 0.1);
+      applyDelta(stateA, deltaA, "distinction_need", 0.1);
+      // B: riceve disaccordo → attiva identity_defense, core_wound
+      applyDelta(stateB, deltaB, "identity_defense", 0.3);
+      applyDelta(stateB, deltaB, "core_wound", 0.15);
+      applyDelta(stateB, deltaB, "stress_level", 0.2);
+      applyDelta(stateB, deltaB, "emotional_arousal", 0.2);
+      break;
+
+    case "admire":
+      // A: esprime ammirazione → lieve boost aspiration
+      applyDelta(stateA, deltaA, "aspiration_engine", 0.1);
+      applyDelta(stateA, deltaA, "halo_effect", 0.15);
+      // B: riceve ammirazione → boost social_standing, mood positivo
+      applyDelta(stateB, deltaB, "social_standing", 0.25);
+      applyDelta(stateB, deltaB, "current_mood", 0.2);
+      applyDelta(stateB, deltaB, "belonging_need", -0.1);
+      break;
+
+    case "criticize":
+      // A: critica → lieve boost identity, stress
+      applyDelta(stateA, deltaA, "identity_defense", 0.1);
+      applyDelta(stateA, deltaA, "stress_level", 0.1);
+      // B: riceve critica → attiva core_wound, identity_defense, stress
+      applyDelta(stateB, deltaB, "core_wound", 0.25);
+      applyDelta(stateB, deltaB, "identity_defense", 0.35);
+      applyDelta(stateB, deltaB, "stress_level", 0.25);
+      applyDelta(stateB, deltaB, "social_standing", -0.15);
+      break;
+
+    case "share":
+      // A: condivide → social_proof, boost belonging
+      applyDelta(stateA, deltaA, "belonging_need", 0.1);
+      applyDelta(stateA, deltaA, "reference_mirror", 0.1);
+      // B: riceve condivisione → social_proof, reference_mirror
+      applyDelta(stateB, deltaB, "bandwagon_bias", 0.15);
+      applyDelta(stateB, deltaB, "reference_mirror", 0.2);
+      applyDelta(stateB, deltaB, "attention_filter", 0.1);
+      break;
+
+    case "ignore":
+      // A: ignora → boost distinction_need
+      applyDelta(stateA, deltaA, "distinction_need", 0.1);
+      // B: viene ignorato → lieve attivazione core_wound
+      applyDelta(stateB, deltaB, "core_wound", 0.1);
+      applyDelta(stateB, deltaB, "belonging_need", 0.15);
+      applyDelta(stateB, deltaB, "social_standing", -0.1);
+      break;
+  }
+
+  return {
+    agentADelta: deltaA,
+    agentBDelta: deltaB,
+    action,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// ============================================================
+// STATE VECTOR EXPORT (33D)
+// ============================================================
+
+/**
+ * exportStateVector — esporta lo stato del grafo come vettore numerico 33D.
+ * Ordine: stesso ordine di TOPOLOGY.nodes (stabile).
+ * Utile per clustering, heatmap, confronto pre/post campagna.
+ */
+export function exportStateVector(state: GraphState): number[] {
+  return TOPOLOGY.nodes.map(nd => {
+    const ns = state.nodes[nd.id];
+    return ns ? Math.round(ns.activation * 10000) / 10000 : 0.0;
+  });
+}
+
+/**
+ * exportStateVectorLabeled — versione con etichette per debug e UI.
+ */
+export function exportStateVectorLabeled(state: GraphState): Array<{ id: string; label: string; activation: number; valence: number }> {
+  return TOPOLOGY.nodes.map(nd => {
+    const ns = state.nodes[nd.id];
+    return {
+      id: nd.id,
+      label: nd.label,
+      activation: ns ? Math.round(ns.activation * 10000) / 10000 : 0.0,
+      valence: ns ? Math.round(ns.valence * 10000) / 10000 : 0.0,
+    };
+  });
 }

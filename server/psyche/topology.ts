@@ -78,6 +78,8 @@ export const NODES: NodeDef[] = [
   { id: "time_orientation",     category: "cultural", label: "Time Orientation",     base_activation: 0.5,  decay_rate: 0.01, volatility: 0.05 },
   { id: "cultural_decode",      category: "cultural", label: "Cultural Decode",      base_activation: 0.4,  decay_rate: 0.05, volatility: 0.20 },
   { id: "humor_processor",      category: "cultural", label: "Humor Processor",      base_activation: 0.2,  decay_rate: 0.10, volatility: 0.35 },
+  // Sprint 21 — Episodic Memory
+  { id: "episodic_memory",       category: "cognitive", label: "Episodic Memory",        base_activation: 0.1,  decay_rate: 0.02, volatility: 0.15 },
 ];
 
 // ============================================================
