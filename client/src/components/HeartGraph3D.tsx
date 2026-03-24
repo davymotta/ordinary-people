@@ -15,63 +15,72 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TOPOLOGIA — 35 nodi con coordinate 3D normalizzate
-// Centro del cuore = (0, 0, 0). Asse Y = verticale, Z = profondità.
-// "radialDist" = distanza dal centro (0–1), usata per il battito radiale.
+// TOPOLOGIA — 32 nodi reali di Psyche 3.0
+// Coordinate 3D normalizzate sulla forma del cuore.
+// "category": categoria psicologica del nodo
 // "type": "red" | "dark" — colore del punto luminoso
+//   red  = core + bias (nodi ad alta volatilità)
+//   dark = cognitive + social + cultural + emotional + expressive
 // ─────────────────────────────────────────────────────────────────────────────
 interface NodeDef {
   id: number;
+  psycheId: string;
+  label: string;
+  category: "core" | "emotional" | "cognitive" | "social" | "bias" | "cultural" | "expressive";
   x: number; y: number; z: number;
   type: "red" | "dark";
   size: number;          // raggio base del glow (0.03–0.10)
   radialDist: number;    // 0 = centro, 1 = bordo esterno
+  baseActivation: number; // da Karpathy Loop
 }
 
 const NODES: NodeDef[] = [
-  // ── Aorta sinistra (sommità) ──
-  { id: 0,  x: -0.22, y:  0.90, z:  0.05, type: "dark", size: 0.055, radialDist: 0.95 },
-  { id: 1,  x: -0.38, y:  0.75, z:  0.10, type: "red",  size: 0.075, radialDist: 0.85 },
-  { id: 2,  x: -0.28, y:  0.65, z: -0.05, type: "dark", size: 0.038, radialDist: 0.72 },
-  { id: 3,  x: -0.12, y:  0.80, z:  0.08, type: "dark", size: 0.038, radialDist: 0.82 },
-  // ── Aorta destra (sommità) ──
-  { id: 4,  x:  0.10, y:  0.95, z:  0.00, type: "red",  size: 0.068, radialDist: 0.97 },
-  { id: 5,  x:  0.26, y:  0.88, z:  0.05, type: "dark", size: 0.038, radialDist: 0.90 },
-  { id: 6,  x:  0.18, y:  0.75, z: -0.05, type: "dark", size: 0.055, radialDist: 0.78 },
-  { id: 7,  x:  0.32, y:  0.72, z:  0.10, type: "dark", size: 0.038, radialDist: 0.80 },
-  // ── Spalla destra (bulge atriale) ──
-  { id: 8,  x:  0.56, y:  0.58, z:  0.08, type: "dark", size: 0.038, radialDist: 0.82 },
-  { id: 9,  x:  0.68, y:  0.42, z:  0.05, type: "dark", size: 0.055, radialDist: 0.88 },
-  { id: 10, x:  0.72, y:  0.25, z:  0.00, type: "red",  size: 0.082, radialDist: 0.92 },
-  { id: 11, x:  0.62, y:  0.10, z:  0.05, type: "dark", size: 0.038, radialDist: 0.80 },
-  // ── Fianco destro ──
-  { id: 12, x:  0.78, y: -0.05, z: -0.05, type: "dark", size: 0.055, radialDist: 0.95 },
-  { id: 13, x:  0.68, y: -0.25, z:  0.05, type: "dark", size: 0.038, radialDist: 0.88 },
-  { id: 14, x:  0.56, y: -0.42, z:  0.10, type: "red",  size: 0.075, radialDist: 0.82 },
-  // ── Apice (punta inferiore) ──
-  { id: 15, x:  0.22, y: -0.78, z:  0.00, type: "dark", size: 0.055, radialDist: 0.90 },
-  { id: 16, x:  0.00, y: -0.95, z:  0.05, type: "dark", size: 0.038, radialDist: 0.98 },
-  { id: 17, x: -0.22, y: -0.78, z: -0.05, type: "dark", size: 0.055, radialDist: 0.90 },
-  // ── Fianco sinistro ──
-  { id: 18, x: -0.56, y: -0.42, z:  0.10, type: "red",  size: 0.075, radialDist: 0.82 },
-  { id: 19, x: -0.66, y: -0.22, z:  0.05, type: "dark", size: 0.038, radialDist: 0.88 },
-  { id: 20, x: -0.76, y:  0.00, z: -0.05, type: "dark", size: 0.055, radialDist: 0.95 },
-  { id: 21, x: -0.66, y:  0.22, z:  0.05, type: "red",  size: 0.082, radialDist: 0.85 },
-  // ── Spalla sinistra ──
-  { id: 22, x: -0.58, y:  0.42, z:  0.08, type: "dark", size: 0.038, radialDist: 0.78 },
-  { id: 23, x: -0.48, y:  0.56, z:  0.05, type: "dark", size: 0.055, radialDist: 0.72 },
-  // ── Nodi interni — strato medio ──
-  { id: 24, x: -0.05, y:  0.58, z:  0.15, type: "dark", size: 0.055, radialDist: 0.45 },
-  { id: 25, x:  0.22, y:  0.48, z:  0.10, type: "red",  size: 0.082, radialDist: 0.42 },
-  { id: 26, x: -0.22, y:  0.32, z:  0.12, type: "dark", size: 0.038, radialDist: 0.35 },
-  { id: 27, x:  0.12, y:  0.18, z:  0.20, type: "dark", size: 0.055, radialDist: 0.28 },
-  { id: 28, x: -0.32, y:  0.08, z:  0.15, type: "red",  size: 0.075, radialDist: 0.38 },
-  { id: 29, x:  0.36, y: -0.02, z:  0.10, type: "dark", size: 0.038, radialDist: 0.40 },
-  { id: 30, x: -0.10, y: -0.18, z:  0.18, type: "dark", size: 0.055, radialDist: 0.30 },
-  { id: 31, x:  0.26, y: -0.32, z:  0.12, type: "red",  size: 0.075, radialDist: 0.42 },
-  { id: 32, x: -0.26, y: -0.52, z:  0.08, type: "dark", size: 0.038, radialDist: 0.58 },
-  { id: 33, x:  0.42, y:  0.32, z: -0.10, type: "dark", size: 0.038, radialDist: 0.52 },
-  { id: 34, x: -0.42, y: -0.12, z: -0.12, type: "red",  size: 0.068, radialDist: 0.48 },
+  // ── CORE (rosso intenso — cuore del grafo, posizioni centrali alte) ──
+  { id:  0, psycheId: "identity",    label: "Identity",    category: "core",      x: -0.05, y:  0.55, z:  0.18, type: "red",  size: 0.088, radialDist: 0.40, baseActivation: 0.455 },
+  { id:  1, psycheId: "shadow",      label: "Shadow",      category: "core",      x:  0.18, y:  0.62, z:  0.10, type: "red",  size: 0.062, radialDist: 0.48, baseActivation: 0.130 },
+  { id:  2, psycheId: "core_wound",  label: "Core Wound",  category: "core",      x: -0.22, y:  0.38, z:  0.22, type: "red",  size: 0.055, radialDist: 0.35, baseActivation: 0.098 },
+  { id:  3, psycheId: "core_desire", label: "Core Desire", category: "core",      x:  0.10, y:  0.42, z:  0.20, type: "red",  size: 0.072, radialDist: 0.38, baseActivation: 0.260 },
+
+  // ── EMOTIONAL (antracite medio — strato medio del cuore) ──
+  { id:  4, psycheId: "current_mood",      label: "Mood",          category: "emotional", x: -0.32, y:  0.22, z:  0.15, type: "dark", size: 0.068, radialDist: 0.42, baseActivation: 0.325 },
+  { id:  5, psycheId: "stress_level",      label: "Stress",        category: "emotional", x:  0.30, y:  0.18, z:  0.12, type: "dark", size: 0.055, radialDist: 0.40, baseActivation: 0.130 },
+  { id:  6, psycheId: "energy",            label: "Energy",        category: "emotional", x: -0.12, y:  0.18, z:  0.25, type: "dark", size: 0.072, radialDist: 0.28, baseActivation: 0.455 },
+  { id:  7, psycheId: "emotional_arousal", label: "Arousal",       category: "emotional", x:  0.14, y:  0.08, z:  0.22, type: "dark", size: 0.055, radialDist: 0.22, baseActivation: 0.130 },
+
+  // ── COGNITIVE (antracite chiaro — strato interno) ──
+  { id:  8, psycheId: "attention_filter",    label: "Attention",    category: "cognitive", x: -0.08, y: -0.05, z:  0.20, type: "dark", size: 0.062, radialDist: 0.18, baseActivation: 0.325 },
+  { id:  9, psycheId: "confirmation_engine", label: "Confirmation", category: "cognitive", x:  0.22, y: -0.08, z:  0.15, type: "dark", size: 0.055, radialDist: 0.28, baseActivation: 0.260 },
+  { id: 10, psycheId: "risk_calculator",     label: "Risk",         category: "cognitive", x: -0.28, y: -0.12, z:  0.18, type: "dark", size: 0.055, radialDist: 0.35, baseActivation: 0.195 },
+  { id: 11, psycheId: "aspiration_engine",   label: "Aspiration",   category: "cognitive", x:  0.05, y: -0.18, z:  0.22, type: "dark", size: 0.062, radialDist: 0.25, baseActivation: 0.195 },
+  { id: 12, psycheId: "critical_thinking",   label: "System 2",     category: "cognitive", x: -0.18, y: -0.28, z:  0.15, type: "dark", size: 0.055, radialDist: 0.35, baseActivation: 0.260 },
+  { id: 13, psycheId: "inner_voice",         label: "Inner Voice",  category: "cognitive", x:  0.28, y: -0.22, z:  0.10, type: "dark", size: 0.062, radialDist: 0.42, baseActivation: 0.325 },
+  { id: 14, psycheId: "episodic_memory",     label: "Memory",       category: "cognitive", x: -0.38, y: -0.05, z:  0.12, type: "dark", size: 0.048, radialDist: 0.45, baseActivation: 0.100 },
+
+  // ── SOCIAL (antracite — bordo superiore) ──
+  { id: 15, psycheId: "social_standing",  label: "Social Standing", category: "social",    x: -0.48, y:  0.52, z:  0.08, type: "dark", size: 0.062, radialDist: 0.72, baseActivation: 0.325 },
+  { id: 16, psycheId: "belonging_need",   label: "Belonging",       category: "social",    x:  0.38, y:  0.48, z:  0.05, type: "dark", size: 0.055, radialDist: 0.68, baseActivation: 0.260 },
+  { id: 17, psycheId: "distinction_need", label: "Distinction",     category: "social",    x: -0.58, y:  0.32, z:  0.05, type: "dark", size: 0.048, radialDist: 0.78, baseActivation: 0.195 },
+  { id: 18, psycheId: "reference_mirror", label: "Ref. Mirror",     category: "social",    x:  0.48, y:  0.28, z:  0.00, type: "dark", size: 0.055, radialDist: 0.72, baseActivation: 0.260 },
+
+  // ── BIAS (rosso scuro — bordo esterno, alta volatilità) ──
+  { id: 19, psycheId: "loss_aversion",    label: "Loss Aversion",   category: "bias",      x:  0.62, y:  0.08, z: -0.05, type: "red",  size: 0.048, radialDist: 0.88, baseActivation: 0.050 },
+  { id: 20, psycheId: "bandwagon_bias",   label: "Bandwagon",       category: "bias",      x:  0.72, y: -0.08, z:  0.00, type: "red",  size: 0.048, radialDist: 0.92, baseActivation: 0.050 },
+  { id: 21, psycheId: "authority_bias",   label: "Authority",       category: "bias",      x:  0.68, y: -0.28, z:  0.05, type: "red",  size: 0.048, radialDist: 0.88, baseActivation: 0.050 },
+  { id: 22, psycheId: "scarcity_bias",    label: "Scarcity",        category: "bias",      x:  0.55, y: -0.45, z:  0.08, type: "red",  size: 0.048, radialDist: 0.82, baseActivation: 0.050 },
+  { id: 23, psycheId: "identity_defense", label: "ID Defense",      category: "bias",      x: -0.62, y: -0.08, z: -0.05, type: "red",  size: 0.055, radialDist: 0.88, baseActivation: 0.050 },
+  { id: 24, psycheId: "halo_effect",      label: "Halo Effect",     category: "bias",      x: -0.72, y:  0.12, z:  0.00, type: "red",  size: 0.048, radialDist: 0.92, baseActivation: 0.050 },
+
+  // ── CULTURAL (antracite scuro — bordo sinistro) ──
+  { id: 25, psycheId: "cultural_lens",       label: "Cultural Lens",  category: "cultural",  x: -0.68, y:  0.38, z:  0.05, type: "dark", size: 0.062, radialDist: 0.85, baseActivation: 0.390 },
+  { id: 26, psycheId: "class_consciousness",  label: "Class",          category: "cultural",  x: -0.75, y:  0.18, z: -0.05, type: "dark", size: 0.055, radialDist: 0.92, baseActivation: 0.260 },
+  { id: 27, psycheId: "generational_memory",  label: "Generation",     category: "cultural",  x: -0.55, y: -0.35, z:  0.08, type: "dark", size: 0.048, radialDist: 0.80, baseActivation: 0.195 },
+  { id: 28, psycheId: "moral_foundations",    label: "Morality",       category: "cultural",  x: -0.42, y: -0.52, z:  0.05, type: "dark", size: 0.048, radialDist: 0.75, baseActivation: 0.130 },
+  { id: 29, psycheId: "cultural_decode",      label: "Cultural Decode",category: "cultural",  x: -0.28, y: -0.62, z:  0.00, type: "dark", size: 0.055, radialDist: 0.82, baseActivation: 0.325 },
+
+  // ── EXPRESSIVE (rosso tenue — apice e punta) ──
+  { id: 30, psycheId: "humor_processor",   label: "Humor",           category: "expressive", x:  0.20, y: -0.55, z:  0.10, type: "dark", size: 0.055, radialDist: 0.78, baseActivation: 0.195 },
+  { id: 31, psycheId: "money_relationship", label: "Money",           category: "expressive", x:  0.05, y: -0.72, z:  0.05, type: "dark", size: 0.048, radialDist: 0.88, baseActivation: 0.130 },
+  { id: 32, psycheId: "time_orientation",   label: "Time",            category: "expressive", x: -0.10, y: -0.88, z:  0.00, type: "dark", size: 0.048, radialDist: 0.95, baseActivation: 0.195 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -79,47 +88,75 @@ const NODES: NodeDef[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 type EdgeType = "strong" | "light" | "cross";
 const EDGES: Array<[number, number, EdgeType]> = [
-  // Contorno esterno (strong)
-  [0, 1, "strong"], [1, 2, "strong"], [2, 3, "strong"], [3, 0, "strong"],
-  [3, 4, "strong"], [4, 5, "strong"], [5, 6, "strong"], [6, 7, "strong"],
-  [7, 8, "strong"], [8, 9, "strong"], [9, 10, "strong"], [10, 11, "strong"],
-  [11, 12, "strong"], [12, 13, "strong"], [13, 14, "strong"],
-  [14, 15, "strong"], [15, 16, "strong"], [16, 17, "strong"],
-  [17, 18, "strong"], [18, 19, "strong"], [19, 20, "strong"],
-  [20, 21, "strong"], [21, 22, "strong"], [22, 23, "strong"],
-  [23, 1, "strong"],
-  // Diagonali esterne
-  [0, 3, "light"], [1, 23, "light"], [4, 6, "light"], [5, 7, "light"],
-  [7, 9, "light"], [8, 10, "light"], [9, 11, "light"], [10, 12, "light"],
-  [11, 13, "light"], [12, 14, "light"], [13, 15, "light"], [14, 17, "light"],
-  [15, 32, "light"], [16, 32, "light"], [17, 19, "light"], [18, 20, "light"],
-  [19, 21, "light"], [20, 22, "light"], [21, 23, "light"], [22, 1, "light"],
-  // Connessioni bordo→interno
-  [0, 24, "light"], [3, 24, "light"], [4, 25, "light"], [6, 25, "light"],
-  [7, 33, "light"], [8, 33, "light"], [9, 33, "light"], [10, 33, "light"],
-  [11, 29, "light"], [12, 29, "light"], [13, 31, "light"], [14, 31, "light"],
-  [15, 32, "light"], [17, 30, "light"], [18, 34, "light"], [19, 34, "light"],
-  [20, 34, "light"], [21, 28, "light"], [22, 28, "light"], [23, 26, "light"],
-  [1, 26, "light"], [2, 26, "light"],
-  // Rete interna forte
-  [24, 25, "strong"], [25, 27, "strong"], [27, 30, "strong"],
-  [30, 32, "strong"], [32, 17, "strong"], [31, 15, "strong"],
-  [28, 21, "strong"], [26, 23, "strong"], [24, 6, "strong"],
-  [25, 10, "strong"], [27, 29, "strong"], [29, 14, "strong"],
-  [28, 20, "strong"], [30, 18, "strong"],
-  // Rete interna leggera
-  [24, 26, "light"], [25, 33, "light"], [26, 28, "light"],
-  [27, 31, "light"], [28, 30, "light"], [29, 31, "light"],
-  [30, 34, "light"], [31, 32, "light"], [33, 29, "light"],
-  [34, 32, "light"], [24, 27, "light"], [25, 26, "light"],
-  [27, 28, "light"], [26, 30, "light"], [33, 27, "light"],
-  // Cross-link lunghi (effetto grafo cognitivo)
-  [0, 25, "cross"], [4, 24, "cross"], [1, 21, "cross"], [10, 28, "cross"],
-  [14, 30, "cross"], [20, 31, "cross"], [12, 27, "cross"], [18, 26, "cross"],
-  [21, 31, "cross"], [9, 34, "cross"], [5, 33, "cross"], [23, 30, "cross"],
-  [6, 28, "cross"], [11, 32, "cross"], [3, 25, "cross"], [7, 29, "cross"],
-  [22, 34, "cross"], [16, 30, "cross"], [8, 27, "cross"], [13, 28, "cross"],
-  [19, 32, "cross"], [2, 27, "cross"], [17, 34, "cross"],
+  // ── CORE ↔ CORE (backbone identitario) ──
+  [0, 1, "strong"], [0, 2, "strong"], [0, 3, "strong"],
+  [1, 2, "light"],  [1, 3, "light"],  [2, 3, "strong"],
+
+  // ── CORE ↔ EMOTIONAL (regolazione emotiva) ──
+  [0, 4, "strong"], [0, 6, "strong"], [0, 7, "strong"],
+  [2, 4, "light"],  [2, 5, "strong"], [3, 6, "strong"],
+  [3, 7, "light"],  [1, 5, "light"],
+
+  // ── EMOTIONAL ↔ COGNITIVE (elaborazione) ──
+  [4, 8, "strong"], [4, 10, "light"], [4, 14, "light"],
+  [5, 9, "strong"], [5, 12, "light"],
+  [6, 8, "strong"], [6, 11, "light"], [6, 13, "light"],
+  [7, 8, "strong"], [7, 9, "light"],  [7, 11, "light"],
+
+  // ── COGNITIVE ↔ COGNITIVE (rete interna) ──
+  [8, 9, "strong"],  [8, 10, "strong"], [8, 11, "strong"],
+  [9, 12, "light"],  [9, 13, "strong"], [10, 12, "strong"],
+  [11, 12, "light"], [11, 13, "light"], [12, 13, "strong"],
+  [13, 14, "light"], [10, 14, "light"],
+
+  // ── CORE ↔ SOCIAL (identità sociale) ──
+  [0, 15, "strong"], [0, 16, "strong"],
+  [1, 17, "light"],  [3, 16, "strong"], [3, 18, "light"],
+
+  // ── SOCIAL ↔ COGNITIVE (confronto sociale) ──
+  [15, 9, "light"],  [15, 12, "light"], [16, 11, "light"],
+  [17, 10, "light"], [18, 13, "light"],
+
+  // ── BIAS ↔ EMOTIONAL (trigger automatici) ──
+  [19, 5, "strong"], [19, 7, "strong"],
+  [20, 4, "light"],  [20, 6, "light"],
+  [21, 5, "light"],  [22, 7, "strong"],
+  [23, 2, "strong"], [24, 4, "light"],
+
+  // ── BIAS ↔ COGNITIVE (distorsioni cognitive) ──
+  [19, 10, "strong"], [20, 9, "light"],
+  [21, 12, "light"],  [22, 8, "strong"],
+  [23, 12, "strong"], [24, 9, "light"],
+
+  // ── CULTURAL ↔ CORE (condizionamento culturale) ──
+  [25, 0, "strong"], [25, 2, "strong"],
+  [26, 0, "light"],  [29, 3, "light"],
+
+  // ── CULTURAL ↔ SOCIAL (identità collettiva) ──
+  [25, 15, "strong"], [26, 17, "strong"],
+  [27, 15, "light"],  [28, 16, "light"], [29, 18, "light"],
+
+  // ── CULTURAL ↔ COGNITIVE (decodifica simbolica) ──
+  [25, 8, "light"],  [27, 14, "light"],
+  [28, 12, "light"], [29, 9, "light"],
+
+  // ── EXPRESSIVE ↔ EMOTIONAL (espressione) ──
+  [30, 4, "light"],  [30, 7, "light"],
+  [31, 5, "strong"], [31, 10, "light"],
+  [32, 6, "light"],  [32, 14, "light"],
+
+  // ── EXPRESSIVE ↔ CORE (espressione identitaria) ──
+  [30, 1, "light"], [31, 3, "light"], [32, 0, "light"],
+
+  // ── Cross-link lunghi (propagazione lunga distanza) ──
+  [0, 19, "cross"],  [0, 23, "cross"],
+  [3, 22, "cross"],  [6, 20, "cross"],
+  [8, 19, "cross"],  [12, 23, "cross"],
+  [15, 25, "cross"], [16, 29, "cross"],
+  [25, 19, "cross"], [26, 24, "cross"],
+  [27, 22, "cross"], [28, 21, "cross"],
+  [30, 20, "cross"], [31, 22, "cross"],
+  [32, 29, "cross"],
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

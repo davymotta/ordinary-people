@@ -19,6 +19,7 @@ import {
   type TickOptions,
 } from "./engine";
 import { mapOPThemesToPsyche, PerceptualRouter } from "./perceptual-router";
+import { translateThemes } from "./theme-bridge";
 import { getDb } from "../db";
 import { agentBrandStates } from "../../drizzle/schema";
 import { and, eq } from "drizzle-orm";
@@ -322,7 +323,13 @@ export async function runPsycheTick(
 
     // Aggiungi i temi OP mappati
     const opMappedThemes = mapOPThemesToPsyche(campaignTopics);
-    const allThemes = Array.from(new Set([...routingResult.themes, ...opMappedThemes]));
+    // Applica il Theme Bridge v3.0 per tradurre temi NLP in temi engine
+    const bridgedThemes = translateThemes(
+      [...routingResult.themes, ...opMappedThemes],
+      routingResult.intensity,
+      0.3,
+    );
+    const allThemes = Array.from(new Set([...bridgedThemes, ...routingResult.triggeredNodes ? Object.keys(routingResult.triggeredNodes) : []]));
 
     // Aggiungi temi dal tono della campagna
     if (campaignTone) {

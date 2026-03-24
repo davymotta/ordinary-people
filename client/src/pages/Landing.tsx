@@ -28,10 +28,10 @@ const HeartGraph3D = lazy(() => import("@/components/HeartGraph3D"));
 // ── Dati ────────────────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: "50+", label: "anni di storia per agente" },
-  { value: "10K+", label: "agenti nel panel" },
+  { value: "32", label: "nodi psicologici per agente" },
+  { value: "57.6%", label: "reaction accuracy (Karpathy Loop)" },
   { value: "~3 min", label: "per simulazione completa" },
-  { value: "94%", label: "tasso di risposta medio" },
+  { value: "0.647", label: "arousal medio calibrato" },
 ];
 
 const HOW_IT_WORKS = [
@@ -228,7 +228,7 @@ function HeroSection() {
           <div className="flex flex-col items-start">
             <Badge variant="secondary" className="mb-6 gap-2 px-4 py-1.5 text-xs border border-primary/20 bg-primary/10 text-primary">
               <Zap className="w-3 h-3" />
-              Powered by Synthetic Population Engine
+              Powered by Psyche Engine v3.0 · Karpathy Calibrated
             </Badge>
 
             <h1 className="text-5xl md:text-6xl font-display font-bold text-foreground leading-[1.05] tracking-tight mb-6">
@@ -237,7 +237,7 @@ function HeroSection() {
             </h1>
 
             <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-              Ordinary People simula la reazione del tuo pubblico a campagne, copy e creatività usando agenti digitali con 50 anni di storia vissuta — calibrati sul tuo brand.
+              Ordinary People simula la reazione del tuo pubblico a campagne, copy e creatività usando agenti digitali con grafo psicologico a 32 nodi — calibrati sul tuo brand tramite Karpathy Loop.
             </p>
 
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-12">
@@ -295,7 +295,7 @@ function HeroSection() {
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
               <Badge variant="secondary" className="gap-1.5 text-[10px] px-3 py-1 border border-primary/15 bg-background/70 backdrop-blur-sm text-muted-foreground">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
-                Psyche Engine — 33 nodi cognitivi attivi
+                Psyche Engine v3.0 — 32 nodi · 68 archi · Karpathy calibrated
               </Badge>
             </div>
           </div>

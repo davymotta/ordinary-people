@@ -610,3 +610,15 @@
 
 - [x] HeartGraph3D: componente Three.js con cuore antropomorfo come grafo 3D animato (battito, rotazione, pulsazione nodi)
 - [x] Integrare HeartGraph3D nell'hero della landing page
+
+---
+
+## Psyche 3.0 Sync — Marzo 2026
+
+- [x] topology.ts: valori base_activation calibrati dal Karpathy Loop (identity 0.455, energy 0.455, cultural_lens 0.390...)
+- [x] theme-bridge.ts: porta TypeScript del theme_bridge.py (NLP→engine themes, mapping molti-a-molti)
+- [x] psyche-integration.ts: integrazione Theme Bridge nel runPsycheTick
+- [x] HeartGraph3D: 32 nodi reali Psyche 3.0 con categorie (core/emotional/cognitive/social/bias/cultural/expressive)
+- [x] HeartGraph3D: 97 archi semantici (backbone identitario, regolazione emotiva, distorsioni cognitive, cross-link)
+- [x] Landing page: metriche reali (57.6% reaction accuracy, 0.647 arousal, 32 nodi, 68 archi)
+- [x] Landing page: badge "Psyche Engine v3.0 · Karpathy Calibrated"
