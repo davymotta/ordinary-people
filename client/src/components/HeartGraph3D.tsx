@@ -1,1653 +1,137 @@
 /**
- * HeartGraph3D v6b — Corna accorciate, corpo verticale
+ * HeartGraph3D — Cuore antropomorfo come grafo luminoso 3D
+ *
+ * Design:
+ * - Nodi: punti luminosi flat con glow (additive blending, sprite-like)
+ *   → rosso (#C1622F) e nero/antracite (#1a1a1a) con diverse intensità
+ * - Archi: molte linee sottili con propagazione di energia (glow direzionale)
+ * - Battito: espansione/contrazione RADIALE dei nodi periferici (non zoom camera)
+ * - Energia: impulso luminoso che viaggia lungo gli edge da nodo attivo a nodo target
  */
-import { useRef, useMemo } from "react";
+
+import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
-interface NodeDef { id:number; x:number; y:number; z:number; type:"red"|"dark"; size:number; radialDist:number; }
-type EdgeType = "strong"|"light"|"cross";
+// ─────────────────────────────────────────────────────────────────────────────
+// TOPOLOGIA — 35 nodi con coordinate 3D normalizzate
+// Centro del cuore = (0, 0, 0). Asse Y = verticale, Z = profondità.
+// "radialDist" = distanza dal centro (0–1), usata per il battito radiale.
+// "type": "red" | "dark" — colore del punto luminoso
+// ─────────────────────────────────────────────────────────────────────────────
+interface NodeDef {
+  id: number;
+  x: number; y: number; z: number;
+  type: "red" | "dark";
+  size: number;          // raggio base del glow (0.03–0.10)
+  radialDist: number;    // 0 = centro, 1 = bordo esterno
+}
 
 const NODES: NodeDef[] = [
-  {id:  0,x: 0.0044,y:-0.8010,z: 0.0057,type:"red",size:0.052,radialDist:0.825},
-  {id:  1,x:-0.0968,y:-0.7465,z: 0.0076,type:"dark",size:0.032,radialDist:0.769},
-  {id:  2,x:-0.1958,y:-0.6354,z:-0.0060,type:"dark",size:0.032,radialDist:0.671},
-  {id:  3,x:-0.3008,y:-0.5221,z: 0.0068,type:"dark",size:0.032,radialDist:0.610},
-  {id:  4,x:-0.3777,y:-0.3748,z:-0.0009,type:"dark",size:0.032,radialDist:0.550},
-  {id:  5,x:-0.4444,y:-0.1991,z:-0.0070,type:"red",size:0.052,radialDist:0.536},
-  {id:  6,x:-0.4348,y: 0.0021,z: 0.0041,type:"dark",size:0.032,radialDist:0.525},
-  {id:  7,x:-0.4023,y: 0.1475,z: 0.0063,type:"dark",size:0.032,radialDist:0.556},
-  {id:  8,x:-0.3355,y: 0.2551,z:-0.0005,type:"dark",size:0.032,radialDist:0.575},
-  {id:  9,x:-0.2473,y: 0.3345,z: 0.0029,type:"red",size:0.042,radialDist:0.588},
-  {id: 10,x:-0.1361,y: 0.3875,z:-0.0028,type:"dark",size:0.028,radialDist:0.595},
-  {id: 11,x:-0.0421,y: 0.3395,z:-0.0050,type:"dark",size:0.024,radialDist:0.519},
-  {id: 12,x: 0.0541,y: 0.3596,z:-0.0044,type:"dark",size:0.028,radialDist:0.544},
-  {id: 13,x: 0.1627,y: 0.3390,z: 0.0053,type:"red",size:0.042,radialDist:0.551},
-  {id: 14,x: 0.2632,y: 0.2370,z: 0.0053,type:"dark",size:0.032,radialDist:0.503},
-  {id: 15,x: 0.3649,y: 0.1182,z:-0.0034,type:"dark",size:0.032,radialDist:0.500},
-  {id: 16,x: 0.4229,y:-0.0258,z:-0.0048,type:"red",size:0.048,radialDist:0.505},
-  {id: 17,x: 0.3921,y:-0.1554,z: 0.0026,type:"dark",size:0.032,radialDist:0.466},
-  {id: 18,x: 0.3433,y:-0.2955,z:-0.0007,type:"dark",size:0.032,radialDist:0.465},
-  {id: 19,x: 0.2611,y:-0.4658,z:-0.0062,type:"dark",size:0.032,radialDist:0.529},
-  {id: 20,x: 0.1627,y:-0.6205,z: 0.0010,type:"red",size:0.042,radialDist:0.642},
-  {id: 21,x: 0.0642,y:-0.7178,z: 0.0009,type:"dark",size:0.032,radialDist:0.731},
-  {id: 22,x: 0.0209,y:-0.7831,z:-0.0075,type:"dark",size:0.024,radialDist:0.804},
-  {id: 23,x:-0.0810,y: 0.3954,z:-0.0015,type:"dark",size:0.028,radialDist:0.591},
-  {id: 24,x:-0.0143,y: 0.3757,z:-0.0071,type:"dark",size:0.024,radialDist:0.560},
-  {id: 25,x: 0.0365,y: 0.3767,z: 0.0026,type:"dark",size:0.024,radialDist:0.562},
-  {id: 26,x: 0.1009,y: 0.3645,z: 0.0026,type:"dark",size:0.024,radialDist:0.559},
-  {id: 27,x:-0.1015,y: 0.4358,z:-0.0053,type:"dark",size:0.028,radialDist:0.642},
-  {id: 28,x:-0.1276,y: 0.4734,z: 0.0036,type:"red",size:0.042,radialDist:0.691},
-  {id: 29,x:-0.1006,y: 0.5180,z: 0.0000,type:"dark",size:0.028,radialDist:0.737},
-  {id: 30,x:-0.0856,y: 0.5667,z:-0.0009,type:"dark",size:0.024,radialDist:0.791},
-  {id: 31,x:-0.0619,y: 0.6072,z: 0.0021,type:"red",size:0.038,radialDist:0.835},
-  {id: 32,x:-0.0622,y: 0.6384,z:-0.0061,type:"dark",size:0.020,radialDist:0.872},
-  {id: 33,x:-0.1726,y: 0.4256,z: 0.0032,type:"dark",size:0.024,radialDist:0.651},
-  {id: 34,x:-0.2037,y: 0.4701,z: 0.0045,type:"red",size:0.038,radialDist:0.712},
-  {id: 35,x:-0.1765,y: 0.5096,z:-0.0036,type:"dark",size:0.024,radialDist:0.747},
-  {id: 36,x:-0.1465,y: 0.5575,z:-0.0007,type:"dark",size:0.020,radialDist:0.792},
-  {id: 37,x: 0.0752,y: 0.4203,z: 0.0013,type:"dark",size:0.028,radialDist:0.618},
-  {id: 38,x: 0.0948,y: 0.4691,z: 0.0041,type:"dark",size:0.024,radialDist:0.679},
-  {id: 39,x: 0.1035,y: 0.5094,z: 0.0020,type:"red",size:0.038,radialDist:0.727},
-  {id: 40,x: 0.0813,y: 0.5553,z:-0.0066,type:"dark",size:0.024,radialDist:0.777},
-  {id: 41,x: 0.0587,y: 0.5830,z:-0.0001,type:"dark",size:0.020,radialDist:0.806},
-  {id: 42,x:-0.0427,y: 0.6609,z:-0.0063,type:"red",size:0.038,radialDist:0.897},
-  {id: 43,x:-0.0986,y: 0.6281,z: 0.0068,type:"dark",size:0.020,radialDist:0.864},
-  {id: 44,x: 0.0413,y: 0.5966,z: 0.0015,type:"dark",size:0.020,radialDist:0.821},
-  {id: 45,x:-0.3955,y:-0.4004,z:-0.0766,type:"dark",size:0.028,radialDist:0.584},
-  {id: 46,x:-0.3989,y:-0.3329,z:-0.0052,type:"dark",size:0.028,radialDist:0.543},
-  {id: 47,x:-0.4077,y:-0.2660,z:-0.0206,type:"dark",size:0.032,radialDist:0.518},
-  {id: 48,x:-0.4063,y:-0.2072,z:-0.0611,type:"dark",size:0.028,radialDist:0.494},
-  {id: 49,x:-0.4063,y:-0.1421,z: 0.0212,type:"dark",size:0.032,radialDist:0.481},
-  {id: 50,x:-0.4021,y:-0.0822,z:-0.0691,type:"dark",size:0.032,radialDist:0.474},
-  {id: 51,x:-0.3998,y:-0.0302,z:-0.0223,type:"dark",size:0.028,radialDist:0.477},
-  {id: 52,x:-0.4010,y: 0.0429,z:-0.0474,type:"red",size:0.038,radialDist:0.501},
-  {id: 53,x:-0.3464,y:-0.5192,z: 0.0441,type:"dark",size:0.024,radialDist:0.640},
-  {id: 54,x:-0.3532,y:-0.4511,z: 0.0221,type:"dark",size:0.032,radialDist:0.586},
-  {id: 55,x:-0.3414,y:-0.3993,z: 0.0648,type:"red",size:0.038,radialDist:0.534},
-  {id: 56,x:-0.3515,y:-0.3355,z: 0.0203,type:"dark",size:0.024,radialDist:0.498},
-  {id: 57,x:-0.3544,y:-0.2756,z: 0.0696,type:"dark",size:0.028,radialDist:0.465},
-  {id: 58,x:-0.3466,y:-0.2069,z: 0.0297,type:"red",size:0.038,radialDist:0.427},
-  {id: 59,x:-0.3428,y:-0.1547,z:-0.0541,type:"dark",size:0.024,radialDist:0.408},
-  {id: 60,x:-0.3499,y:-0.0877,z: 0.0710,type:"dark",size:0.032,radialDist:0.412},
-  {id: 61,x:-0.3543,y:-0.0254,z: 0.0750,type:"dark",size:0.032,radialDist:0.426},
-  {id: 62,x:-0.3480,y: 0.0425,z:-0.0615,type:"red",size:0.052,radialDist:0.442},
-  {id: 63,x:-0.3421,y: 0.0885,z: 0.0630,type:"dark",size:0.028,radialDist:0.460},
-  {id: 64,x:-0.3509,y: 0.1580,z: 0.0544,type:"dark",size:0.028,radialDist:0.512},
-  {id: 65,x:-0.2953,y:-0.5787,z: 0.0613,type:"dark",size:0.024,radialDist:0.662},
-  {id: 66,x:-0.2974,y:-0.5205,z: 0.0627,type:"dark",size:0.028,radialDist:0.606},
-  {id: 67,x:-0.2918,y:-0.4607,z: 0.0558,type:"red",size:0.052,radialDist:0.546},
-  {id: 68,x:-0.2866,y:-0.3991,z:-0.0338,type:"red",size:0.038,radialDist:0.487},
-  {id: 69,x:-0.3004,y:-0.3377,z:-0.0626,type:"red",size:0.042,radialDist:0.451},
-  {id: 70,x:-0.2950,y:-0.2742,z: 0.0147,type:"dark",size:0.024,radialDist:0.403},
-  {id: 71,x:-0.2984,y:-0.2142,z: 0.0560,type:"dark",size:0.028,radialDist:0.376},
-  {id: 72,x:-0.3005,y:-0.1508,z: 0.0118,type:"dark",size:0.024,radialDist:0.359},
-  {id: 73,x:-0.2865,y:-0.0939,z:-0.0582,type:"dark",size:0.024,radialDist:0.337},
-  {id: 74,x:-0.2885,y:-0.0218,z: 0.0667,type:"dark",size:0.024,radialDist:0.352},
-  {id: 75,x:-0.2931,y: 0.0407,z: 0.0440,type:"red",size:0.052,radialDist:0.382},
-  {id: 76,x:-0.2971,y: 0.0905,z:-0.0187,type:"dark",size:0.028,radialDist:0.415},
-  {id: 77,x:-0.2955,y: 0.1547,z:-0.0152,type:"red",size:0.042,radialDist:0.459},
-  {id: 78,x:-0.2862,y: 0.2254,z: 0.0294,type:"dark",size:0.028,radialDist:0.510},
-  {id: 79,x:-0.2376,y:-0.6339,z:-0.0269,type:"dark",size:0.032,radialDist:0.688},
-  {id: 80,x:-0.2362,y:-0.5823,z: 0.0244,type:"dark",size:0.032,radialDist:0.632},
-  {id: 81,x:-0.2465,y:-0.5126,z: 0.0511,type:"red",size:0.052,radialDist:0.565},
-  {id: 82,x:-0.2327,y:-0.4502,z: 0.0712,type:"red",size:0.042,radialDist:0.495},
-  {id: 83,x:-0.2439,y:-0.3923,z: 0.0387,type:"dark",size:0.032,radialDist:0.448},
-  {id: 84,x:-0.2390,y:-0.3313,z: 0.0180,type:"red",size:0.052,radialDist:0.391},
-  {id: 85,x:-0.2401,y:-0.2697,z: 0.0105,type:"dark",size:0.032,radialDist:0.346},
-  {id: 86,x:-0.2466,y:-0.2075,z:-0.0621,type:"red",size:0.052,radialDist:0.316},
-  {id: 87,x:-0.2336,y:-0.1445,z: 0.0402,type:"dark",size:0.032,radialDist:0.280},
-  {id: 88,x:-0.2455,y:-0.0931,z:-0.0148,type:"dark",size:0.028,radialDist:0.289},
-  {id: 89,x:-0.2392,y:-0.0193,z:-0.0055,type:"dark",size:0.024,radialDist:0.297},
-  {id: 90,x:-0.2322,y: 0.0385,z: 0.0039,type:"dark",size:0.032,radialDist:0.318},
-  {id: 91,x:-0.2460,y: 0.0977,z:-0.0581,type:"dark",size:0.032,radialDist:0.371},
-  {id: 92,x:-0.2348,y: 0.1542,z:-0.0787,type:"dark",size:0.028,radialDist:0.407},
-  {id: 93,x:-0.2355,y: 0.2125,z:-0.0013,type:"dark",size:0.028,radialDist:0.460},
-  {id: 94,x:-0.2346,y: 0.2737,z: 0.0687,type:"dark",size:0.032,radialDist:0.519},
-  {id: 95,x:-0.1803,y:-0.7075,z: 0.0224,type:"dark",size:0.028,radialDist:0.746},
-  {id: 96,x:-0.1915,y:-0.6322,z:-0.0546,type:"dark",size:0.024,radialDist:0.665},
-  {id: 97,x:-0.1850,y:-0.5727,z:-0.0784,type:"red",size:0.038,radialDist:0.597},
-  {id: 98,x:-0.1819,y:-0.5094,z: 0.0603,type:"red",size:0.038,radialDist:0.527},
-  {id: 99,x:-0.1914,y:-0.4610,z: 0.0318,type:"dark",size:0.028,radialDist:0.481},
-  {id:100,x:-0.1810,y:-0.3993,z: 0.0430,type:"dark",size:0.024,radialDist:0.411},
-  {id:101,x:-0.1790,y:-0.3307,z:-0.0562,type:"red",size:0.038,radialDist:0.344},
-  {id:102,x:-0.1805,y:-0.2679,z: 0.0134,type:"red",size:0.052,radialDist:0.290},
-  {id:103,x:-0.1873,y:-0.2055,z:-0.0631,type:"red",size:0.042,radialDist:0.253},
-  {id:104,x:-0.1795,y:-0.1519,z: 0.0128,type:"red",size:0.052,radialDist:0.220},
-  {id:105,x:-0.1923,y:-0.0874,z: 0.0304,type:"dark",size:0.028,radialDist:0.227},
-  {id:106,x:-0.1925,y:-0.0298,z:-0.0073,type:"red",size:0.052,radialDist:0.241},
-  {id:107,x:-0.1881,y: 0.0335,z:-0.0161,type:"dark",size:0.028,radialDist:0.271},
-  {id:108,x:-0.1941,y: 0.0949,z: 0.0137,type:"dark",size:0.028,radialDist:0.324},
-  {id:109,x:-0.1834,y: 0.1599,z:-0.0415,type:"dark",size:0.028,radialDist:0.374},
-  {id:110,x:-0.1859,y: 0.2177,z:-0.0274,type:"dark",size:0.028,radialDist:0.433},
-  {id:111,x:-0.1805,y: 0.2867,z:-0.0222,type:"dark",size:0.032,radialDist:0.502},
-  {id:112,x:-0.1363,y:-0.6946,z: 0.0032,type:"dark",size:0.032,radialDist:0.718},
-  {id:113,x:-0.1404,y:-0.6423,z:-0.0641,type:"red",size:0.052,radialDist:0.659},
-  {id:114,x:-0.1295,y:-0.5853,z:-0.0471,type:"dark",size:0.032,radialDist:0.591},
-  {id:115,x:-0.1317,y:-0.5223,z: 0.0549,type:"dark",size:0.032,radialDist:0.520},
-  {id:116,x:-0.1290,y:-0.4580,z: 0.0764,type:"dark",size:0.024,radialDist:0.448},
-  {id:117,x:-0.1412,y:-0.3984,z: 0.0333,type:"dark",size:0.032,radialDist:0.388},
-  {id:118,x:-0.1280,y:-0.3247,z:-0.0529,type:"red",size:0.042,radialDist:0.304},
-  {id:119,x:-0.1342,y:-0.2730,z: 0.0475,type:"dark",size:0.028,radialDist:0.258},
-  {id:120,x:-0.1338,y:-0.2156,z: 0.0357,type:"dark",size:0.024,radialDist:0.208},
-  {id:121,x:-0.1367,y:-0.1489,z: 0.0665,type:"red",size:0.042,radialDist:0.171},
-  {id:122,x:-0.1374,y:-0.0820,z: 0.0011,type:"red",size:0.038,radialDist:0.163},
-  {id:123,x:-0.1404,y:-0.0284,z: 0.0245,type:"dark",size:0.032,radialDist:0.185},
-  {id:124,x:-0.1336,y: 0.0393,z:-0.0202,type:"dark",size:0.032,radialDist:0.227},
-  {id:125,x:-0.1277,y: 0.0937,z: 0.0007,type:"dark",size:0.024,radialDist:0.273},
-  {id:126,x:-0.1350,y: 0.1642,z: 0.0071,type:"red",size:0.042,radialDist:0.349},
-  {id:127,x:-0.1409,y: 0.2256,z:-0.0524,type:"dark",size:0.024,radialDist:0.417},
-  {id:128,x:-0.1412,y: 0.2764,z:-0.0275,type:"dark",size:0.024,radialDist:0.473},
-  {id:129,x:-0.0804,y:-0.6958,z: 0.0279,type:"dark",size:0.032,radialDist:0.707},
-  {id:130,x:-0.0755,y:-0.6329,z: 0.0291,type:"dark",size:0.028,radialDist:0.633},
-  {id:131,x:-0.0775,y:-0.5700,z: 0.0449,type:"dark",size:0.028,radialDist:0.560},
-  {id:132,x:-0.0760,y:-0.5187,z:-0.0399,type:"dark",size:0.028,radialDist:0.501},
-  {id:133,x:-0.0722,y:-0.4556,z:-0.0658,type:"dark",size:0.032,radialDist:0.427},
-  {id:134,x:-0.0866,y:-0.3929,z:-0.0093,type:"dark",size:0.028,radialDist:0.359},
-  {id:135,x:-0.0820,y:-0.3397,z: 0.0617,type:"dark",size:0.024,radialDist:0.298},
-  {id:136,x:-0.0756,y:-0.2654,z: 0.0319,type:"dark",size:0.024,radialDist:0.214},
-  {id:137,x:-0.0780,y:-0.2043,z: 0.0402,type:"red",size:0.052,radialDist:0.153},
-  {id:138,x:-0.0875,y:-0.1503,z: 0.0087,type:"dark",size:0.024,radialDist:0.119},
-  {id:139,x:-0.0824,y:-0.0818,z: 0.0242,type:"red",size:0.042,radialDist:0.099},
-  {id:140,x:-0.0836,y:-0.0201,z: 0.0095,type:"dark",size:0.032,radialDist:0.136},
-  {id:141,x:-0.0751,y: 0.0430,z:-0.0697,type:"dark",size:0.028,radialDist:0.190},
-  {id:142,x:-0.0788,y: 0.1042,z:-0.0115,type:"red",size:0.052,radialDist:0.258},
-  {id:143,x:-0.0800,y: 0.1516,z: 0.0131,type:"dark",size:0.028,radialDist:0.311},
-  {id:144,x:-0.0877,y: 0.2180,z:-0.0671,type:"red",size:0.052,radialDist:0.388},
-  {id:145,x:-0.0760,y: 0.2807,z:-0.0285,type:"dark",size:0.032,radialDist:0.457},
-  {id:146,x:-0.0295,y:-0.6935,z: 0.0640,type:"red",size:0.052,radialDist:0.699},
-  {id:147,x:-0.0299,y:-0.6429,z: 0.0359,type:"dark",size:0.028,radialDist:0.640},
-  {id:148,x:-0.0301,y:-0.5765,z:-0.0505,type:"dark",size:0.028,radialDist:0.562},
-  {id:149,x:-0.0188,y:-0.5135,z: 0.0504,type:"dark",size:0.032,radialDist:0.487},
-  {id:150,x:-0.0317,y:-0.4540,z: 0.0580,type:"dark",size:0.028,radialDist:0.418},
-  {id:151,x:-0.0277,y:-0.4012,z: 0.0318,type:"dark",size:0.032,radialDist:0.356},
-  {id:152,x:-0.0307,y:-0.3395,z:-0.0642,type:"red",size:0.042,radialDist:0.284},
-  {id:153,x:-0.0329,y:-0.2731,z:-0.0045,type:"dark",size:0.024,radialDist:0.207},
-  {id:154,x:-0.0298,y:-0.2117,z: 0.0304,type:"red",size:0.038,radialDist:0.136},
-  {id:155,x:-0.0346,y:-0.1486,z:-0.0799,type:"red",size:0.042,radialDist:0.070},
-  {id:156,x:-0.0222,y:-0.0820,z:-0.0305,type:"dark",size:0.032,radialDist:0.034},
-  {id:157,x:-0.0237,y:-0.0306,z:-0.0311,type:"red",size:0.052,radialDist:0.086},
-  {id:158,x:-0.0273,y: 0.0384,z: 0.0633,type:"red",size:0.042,radialDist:0.166},
-  {id:159,x:-0.0345,y: 0.0913,z:-0.0799,type:"red",size:0.038,radialDist:0.229},
-  {id:160,x:-0.0308,y: 0.1586,z:-0.0609,type:"dark",size:0.032,radialDist:0.306},
-  {id:161,x:-0.0248,y: 0.2134,z: 0.0603,type:"red",size:0.038,radialDist:0.370},
-  {id:162,x:-0.0200,y: 0.2793,z: 0.0585,type:"red",size:0.052,radialDist:0.447},
-  {id:163,x: 0.0238,y:-0.6952,z: 0.0792,type:"dark",size:0.032,radialDist:0.701},
-  {id:164,x: 0.0237,y:-0.6455,z:-0.0529,type:"dark",size:0.032,radialDist:0.642},
-  {id:165,x: 0.0303,y:-0.5742,z:-0.0207,type:"red",size:0.052,radialDist:0.559},
-  {id:166,x: 0.0282,y:-0.5222,z:-0.0350,type:"dark",size:0.024,radialDist:0.498},
-  {id:167,x: 0.0345,y:-0.4629,z: 0.0232,type:"red",size:0.052,radialDist:0.429},
-  {id:168,x: 0.0207,y:-0.3874,z: 0.0850,type:"dark",size:0.028,radialDist:0.339},
-  {id:169,x: 0.0195,y:-0.3310,z: 0.0025,type:"dark",size:0.024,radialDist:0.273},
-  {id:170,x: 0.0190,y:-0.2697,z: 0.0219,type:"dark",size:0.024,radialDist:0.201},
-  {id:171,x: 0.0275,y:-0.2117,z: 0.0627,type:"red",size:0.042,radialDist:0.135},
-  {id:172,x: 0.0308,y:-0.1410,z: 0.0348,type:"dark",size:0.028,radialDist:0.060},
-  {id:173,x: 0.0270,y:-0.0890,z:-0.0042,type:"red",size:0.038,radialDist:0.034},
-  {id:174,x: 0.0296,y:-0.0319,z: 0.0697,type:"dark",size:0.032,radialDist:0.087},
-  {id:175,x: 0.0333,y: 0.0304,z:-0.0519,type:"red",size:0.052,radialDist:0.158},
-  {id:176,x: 0.0247,y: 0.0965,z: 0.0412,type:"dark",size:0.032,radialDist:0.233},
-  {id:177,x: 0.0203,y: 0.1640,z: 0.0428,type:"dark",size:0.032,radialDist:0.312},
-  {id:178,x: 0.0219,y: 0.2226,z: 0.0401,type:"red",size:0.042,radialDist:0.380},
-  {id:179,x: 0.0329,y: 0.2783,z: 0.0738,type:"dark",size:0.032,radialDist:0.447},
-  {id:180,x: 0.0785,y:-0.6984,z: 0.0244,type:"dark",size:0.032,radialDist:0.710},
-  {id:181,x: 0.0783,y:-0.6447,z:-0.0106,type:"red",size:0.042,radialDist:0.647},
-  {id:182,x: 0.0873,y:-0.5816,z: 0.0231,type:"dark",size:0.028,radialDist:0.576},
-  {id:183,x: 0.0752,y:-0.5213,z: 0.0409,type:"dark",size:0.028,radialDist:0.503},
-  {id:184,x: 0.0727,y:-0.4553,z: 0.0023,type:"red",size:0.038,radialDist:0.427},
-  {id:185,x: 0.0760,y:-0.3970,z: 0.0286,type:"dark",size:0.032,radialDist:0.361},
-  {id:186,x: 0.0878,y:-0.3248,z: 0.0675,type:"dark",size:0.024,radialDist:0.284},
-  {id:187,x: 0.0808,y:-0.2777,z:-0.0630,type:"red",size:0.052,radialDist:0.230},
-  {id:188,x: 0.0746,y:-0.2139,z: 0.0132,type:"dark",size:0.024,radialDist:0.160},
-  {id:189,x: 0.0767,y:-0.1508,z: 0.0548,type:"dark",size:0.028,radialDist:0.108},
-  {id:190,x: 0.0753,y:-0.0804,z: 0.0355,type:"dark",size:0.032,radialDist:0.092},
-  {id:191,x: 0.0855,y:-0.0314,z: 0.0620,type:"red",size:0.042,radialDist:0.129},
-  {id:192,x: 0.0834,y: 0.0406,z:-0.0020,type:"red",size:0.038,radialDist:0.192},
-  {id:193,x: 0.0759,y: 0.0908,z:-0.0187,type:"dark",size:0.032,radialDist:0.242},
-  {id:194,x: 0.0803,y: 0.1573,z: 0.0626,type:"dark",size:0.024,radialDist:0.317},
-  {id:195,x: 0.0740,y: 0.2260,z: 0.0056,type:"dark",size:0.028,radialDist:0.393},
-  {id:196,x: 0.0809,y: 0.2753,z: 0.0686,type:"red",size:0.038,radialDist:0.452},
-  {id:197,x: 0.1305,y:-0.6983,z:-0.0758,type:"red",size:0.038,radialDist:0.720},
-  {id:198,x: 0.1283,y:-0.6309,z:-0.0108,type:"dark",size:0.032,radialDist:0.643},
-  {id:199,x: 0.1401,y:-0.5800,z: 0.0315,type:"dark",size:0.032,radialDist:0.588},
-  {id:200,x: 0.1353,y:-0.5122,z:-0.0205,type:"dark",size:0.024,radialDist:0.510},
-  {id:201,x: 0.1356,y:-0.4630,z:-0.0382,type:"dark",size:0.028,radialDist:0.456},
-  {id:202,x: 0.1327,y:-0.3997,z:-0.0406,type:"red",size:0.042,radialDist:0.386},
-  {id:203,x: 0.1304,y:-0.3289,z: 0.0205,type:"dark",size:0.024,radialDist:0.310},
-  {id:204,x: 0.1329,y:-0.2640,z: 0.0231,type:"dark",size:0.032,radialDist:0.248},
-  {id:205,x: 0.1260,y:-0.2108,z:-0.0454,type:"dark",size:0.032,radialDist:0.197},
-  {id:206,x: 0.1338,y:-0.1462,z: 0.0368,type:"dark",size:0.032,radialDist:0.167},
-  {id:207,x: 0.1318,y:-0.0865,z: 0.0751,type:"dark",size:0.032,radialDist:0.156},
-  {id:208,x: 0.1320,y:-0.0239,z:-0.0011,type:"dark",size:0.032,radialDist:0.179},
-  {id:209,x: 0.1268,y: 0.0377,z:-0.0122,type:"dark",size:0.024,radialDist:0.220},
-  {id:210,x: 0.1306,y: 0.0914,z: 0.0305,type:"red",size:0.038,radialDist:0.273},
-  {id:211,x: 0.1274,y: 0.1539,z: 0.0519,type:"red",size:0.052,radialDist:0.334},
-  {id:212,x: 0.1399,y: 0.2140,z:-0.0340,type:"dark",size:0.032,radialDist:0.404},
-  {id:213,x: 0.1294,y: 0.2820,z: 0.0294,type:"dark",size:0.028,radialDist:0.474},
-  {id:214,x: 0.1896,y:-0.7076,z: 0.0746,type:"dark",size:0.028,radialDist:0.749},
-  {id:215,x: 0.1936,y:-0.6331,z: 0.0572,type:"dark",size:0.028,radialDist:0.667},
-  {id:216,x: 0.1888,y:-0.5802,z: 0.0030,type:"dark",size:0.028,radialDist:0.607},
-  {id:217,x: 0.1943,y:-0.5123,z: 0.0703,type:"dark",size:0.024,radialDist:0.536},
-  {id:218,x: 0.1860,y:-0.4592,z: 0.0443,type:"dark",size:0.032,radialDist:0.476},
-  {id:219,x: 0.1852,y:-0.3982,z:-0.0287,type:"red",size:0.042,radialDist:0.413},
-  {id:220,x: 0.1788,y:-0.3351,z: 0.0625,type:"red",size:0.042,radialDist:0.347},
-  {id:221,x: 0.1805,y:-0.2730,z: 0.0622,type:"red",size:0.052,radialDist:0.294},
-  {id:222,x: 0.1854,y:-0.2081,z:-0.0423,type:"red",size:0.052,radialDist:0.252},
-  {id:223,x: 0.1913,y:-0.1524,z: 0.0831,type:"red",size:0.052,radialDist:0.233},
-  {id:224,x: 0.1920,y:-0.0927,z: 0.0249,type:"red",size:0.038,radialDist:0.226},
-  {id:225,x: 0.1891,y:-0.0184,z: 0.0163,type:"dark",size:0.024,radialDist:0.242},
-  {id:226,x: 0.1903,y: 0.0426,z:-0.0003,type:"red",size:0.052,radialDist:0.280},
-  {id:227,x: 0.1894,y: 0.0939,z:-0.0016,type:"dark",size:0.024,radialDist:0.319},
-  {id:228,x: 0.1853,y: 0.1546,z: 0.0571,type:"dark",size:0.024,radialDist:0.370},
-  {id:229,x: 0.1810,y: 0.2248,z: 0.0418,type:"dark",size:0.024,radialDist:0.437},
-  {id:230,x: 0.1797,y: 0.2728,z:-0.0634,type:"dark",size:0.032,radialDist:0.487},
-  {id:231,x: 0.2424,y:-0.6336,z:-0.0155,type:"dark",size:0.024,radialDist:0.690},
-  {id:232,x: 0.2452,y:-0.5769,z:-0.0514,type:"dark",size:0.024,radialDist:0.631},
-  {id:233,x: 0.2361,y:-0.5122,z:-0.0651,type:"dark",size:0.028,radialDist:0.559},
-  {id:234,x: 0.2379,y:-0.4595,z: 0.0354,type:"dark",size:0.032,radialDist:0.507},
-  {id:235,x: 0.2348,y:-0.3989,z: 0.0454,type:"red",size:0.052,radialDist:0.447},
-  {id:236,x: 0.2342,y:-0.3300,z:-0.0171,type:"dark",size:0.024,radialDist:0.386},
-  {id:237,x: 0.2460,y:-0.2762,z:-0.0216,type:"dark",size:0.032,radialDist:0.356},
-  {id:238,x: 0.2438,y:-0.2089,z: 0.0258,type:"dark",size:0.032,radialDist:0.314},
-  {id:239,x: 0.2328,y:-0.1471,z: 0.0523,type:"dark",size:0.028,radialDist:0.279},
-  {id:240,x: 0.2441,y:-0.0823,z:-0.0374,type:"dark",size:0.024,radialDist:0.288},
-  {id:241,x: 0.2370,y:-0.0252,z:-0.0155,type:"red",size:0.038,radialDist:0.292},
-  {id:242,x: 0.2354,y: 0.0413,z:-0.0671,type:"red",size:0.042,radialDist:0.323},
-  {id:243,x: 0.2396,y: 0.1032,z:-0.0595,type:"dark",size:0.024,radialDist:0.370},
-  {id:244,x: 0.2351,y: 0.1604,z:-0.0501,type:"dark",size:0.028,radialDist:0.413},
-  {id:245,x: 0.2348,y: 0.2129,z:-0.0584,type:"red",size:0.038,radialDist:0.460},
-  {id:246,x: 0.2329,y: 0.2777,z:-0.0325,type:"dark",size:0.028,radialDist:0.522},
-  {id:247,x: 0.3002,y:-0.5839,z: 0.0114,type:"red",size:0.052,radialDist:0.670},
-  {id:248,x: 0.2873,y:-0.5106,z:-0.0575,type:"dark",size:0.032,radialDist:0.590},
-  {id:249,x: 0.2860,y:-0.4566,z: 0.0484,type:"dark",size:0.024,radialDist:0.538},
-  {id:250,x: 0.2982,y:-0.3990,z: 0.0794,type:"dark",size:0.032,radialDist:0.497},
-  {id:251,x: 0.2914,y:-0.3341,z: 0.0011,type:"dark",size:0.024,radialDist:0.440},
-  {id:252,x: 0.2884,y:-0.2776,z:-0.0537,type:"dark",size:0.032,radialDist:0.398},
-  {id:253,x: 0.2922,y:-0.2079,z: 0.0211,type:"dark",size:0.032,radialDist:0.366},
-  {id:254,x: 0.2906,y:-0.1495,z: 0.0703,type:"dark",size:0.028,radialDist:0.347},
-  {id:255,x: 0.2905,y:-0.0900,z:-0.0081,type:"dark",size:0.028,radialDist:0.342},
-  {id:256,x: 0.2969,y:-0.0280,z:-0.0694,type:"red",size:0.042,radialDist:0.359},
-  {id:257,x: 0.2986,y: 0.0418,z: 0.0116,type:"dark",size:0.028,radialDist:0.389},
-  {id:258,x: 0.3005,y: 0.0945,z: 0.0338,type:"red",size:0.038,radialDist:0.421},
-  {id:259,x: 0.2962,y: 0.1585,z: 0.0051,type:"red",size:0.042,radialDist:0.463},
-  {id:260,x: 0.2933,y: 0.2182,z: 0.0310,type:"dark",size:0.024,radialDist:0.509},
-  {id:261,x: 0.3446,y:-0.5152,z: 0.0422,type:"dark",size:0.032,radialDist:0.635},
-  {id:262,x: 0.3466,y:-0.4544,z:-0.0469,type:"dark",size:0.032,radialDist:0.583},
-  {id:263,x: 0.3482,y:-0.3877,z: 0.0722,type:"dark",size:0.032,radialDist:0.531},
-  {id:264,x: 0.3464,y:-0.3315,z:-0.0561,type:"dark",size:0.024,radialDist:0.490},
-  {id:265,x: 0.3453,y:-0.2774,z: 0.0219,type:"dark",size:0.032,radialDist:0.457},
-  {id:266,x: 0.3435,y:-0.2040,z: 0.0464,type:"dark",size:0.028,radialDist:0.422},
-  {id:267,x: 0.3413,y:-0.1461,z: 0.0013,type:"dark",size:0.028,radialDist:0.405},
-  {id:268,x: 0.3461,y:-0.0871,z: 0.0144,type:"red",size:0.052,radialDist:0.407},
-  {id:269,x: 0.3402,y:-0.0191,z:-0.0592,type:"red",size:0.042,radialDist:0.411},
-  {id:270,x: 0.3400,y: 0.0374,z: 0.0554,type:"dark",size:0.028,radialDist:0.431},
-  {id:271,x: 0.3392,y: 0.0968,z: 0.0294,type:"dark",size:0.024,radialDist:0.461},
-  {id:272,x: 0.3500,y: 0.1543,z: 0.0798,type:"red",size:0.042,radialDist:0.509},
-  {id:273,x: 0.3405,y: 0.2117,z:-0.0674,type:"dark",size:0.032,radialDist:0.543},
-  {id:274,x: 0.4067,y:-0.3927,z:-0.0567,type:"dark",size:0.032,radialDist:0.590},
-  {id:275,x: 0.3970,y:-0.3375,z:-0.0122,type:"red",size:0.038,radialDist:0.544},
-  {id:276,x: 0.4059,y:-0.2679,z: 0.0796,type:"red",size:0.052,radialDist:0.517},
-  {id:277,x: 0.3940,y:-0.2053,z: 0.0769,type:"dark",size:0.028,radialDist:0.480},
-  {id:278,x: 0.4075,y:-0.1455,z: 0.0067,type:"dark",size:0.032,radialDist:0.482},
-  {id:279,x: 0.3983,y:-0.0941,z:-0.0137,type:"dark",size:0.024,radialDist:0.469},
-  {id:280,x: 0.4069,y:-0.0245,z: 0.0373,type:"dark",size:0.028,radialDist:0.487},
-  {id:281,x: 0.3955,y: 0.0353,z:-0.0478,type:"red",size:0.038,radialDist:0.492},
-  {id:282,x: 0.3928,y: 0.0907,z: 0.0694,type:"red",size:0.052,radialDist:0.514},
-  {id:283,x: 0.4006,y: 0.1595,z:-0.0536,type:"dark",size:0.028,radialDist:0.562},
-  {id:284,x: 0.2260,y:-0.1105,z: 0.0393,type:"dark",size:0.028,radialDist:0.266},
-  {id:285,x:-0.0466,y: 0.1860,z:-0.0175,type:"dark",size:0.028,radialDist:0.341},
-  {id:286,x: 0.1200,y:-0.0597,z:-0.0008,type:"red",size:0.042,radialDist:0.149},
-  {id:287,x:-0.2371,y:-0.5644,z: 0.0076,type:"dark",size:0.028,radialDist:0.613},
-  {id:288,x:-0.0089,y:-0.2342,z:-0.0072,type:"red",size:0.042,radialDist:0.158},
-  {id:289,x:-0.0184,y: 0.1495,z: 0.0016,type:"red",size:0.042,radialDist:0.294},
-  {id:290,x:-0.0570,y:-0.0833,z: 0.0455,type:"dark",size:0.028,radialDist:0.070},
-  {id:291,x: 0.3501,y:-0.3224,z:-0.0096,type:"dark",size:0.028,radialDist:0.488},
-  {id:292,x:-0.2142,y: 0.0146,z:-0.0379,type:"red",size:0.042,radialDist:0.286},
-  {id:293,x:-0.1777,y:-0.5637,z: 0.0552,type:"red",size:0.042,radialDist:0.584},
-  {id:294,x: 0.2887,y: 0.0241,z: 0.0193,type:"red",size:0.042,radialDist:0.370},
-  {id:295,x:-0.1689,y:-0.3894,z:-0.0450,type:"dark",size:0.028,radialDist:0.394},
-  {id:296,x: 0.2196,y: 0.0090,z: 0.0356,type:"dark",size:0.028,radialDist:0.288},
-  {id:297,x:-0.2419,y:-0.2422,z:-0.0166,type:"red",size:0.042,radialDist:0.330},
-  {id:298,x:-0.2847,y:-0.2608,z:-0.0168,type:"dark",size:0.028,radialDist:0.385},
-  {id:299,x: 0.0002,y:-0.0751,z: 0.0506,type:"dark",size:0.028,radialDist:0.029},
-  {id:300,x: 0.2211,y:-0.2453,z:-0.0517,type:"red",size:0.042,radialDist:0.311},
-  {id:301,x: 0.0474,y:-0.1584,z: 0.0460,type:"red",size:0.042,radialDist:0.088},
-  {id:302,x: 0.3745,y: 0.1219,z: 0.0485,type:"dark",size:0.028,radialDist:0.512},
-  {id:303,x: 0.3282,y:-0.3547,z:-0.0002,type:"red",size:0.042,radialDist:0.489},
-  {id:304,x: 0.3365,y:-0.3026,z: 0.0451,type:"dark",size:0.028,radialDist:0.462},
-  {id:305,x:-0.1738,y: 0.1577,z:-0.0468,type:"dark",size:0.028,radialDist:0.366},
-  {id:306,x: 0.3491,y:-0.4174,z:-0.0041,type:"dark",size:0.028,radialDist:0.555},
-  {id:307,x:-0.0913,y: 0.0995,z:-0.0418,type:"red",size:0.042,radialDist:0.258},
-  {id:308,x:-0.2236,y:-0.1890,z: 0.0351,type:"red",size:0.042,radialDist:0.283},
-  {id:309,x:-0.2307,y:-0.4818,z:-0.0077,type:"dark",size:0.028,radialDist:0.525},
-  {id:310,x: 0.3630,y:-0.2857,z:-0.0075,type:"dark",size:0.028,radialDist:0.480},
-  {id:311,x:-0.3063,y:-0.2420,z:-0.0312,type:"red",size:0.042,radialDist:0.397},
-  {id:312,x: 0.3059,y: 0.0566,z:-0.0210,type:"red",size:0.042,radialDist:0.404},
-  {id:313,x:-0.0819,y:-0.4632,z: 0.0438,type:"dark",size:0.028,radialDist:0.438},
-  {id:314,x: 0.2206,y:-0.4745,z: 0.0429,type:"dark",size:0.028,radialDist:0.511},
-  {id:315,x: 0.2733,y:-0.3803,z: 0.0213,type:"dark",size:0.028,radialDist:0.461},
-  {id:316,x: 0.1775,y:-0.2578,z: 0.0492,type:"dark",size:0.028,radialDist:0.279},
-  {id:317,x:-0.1611,y:-0.5526,z:-0.0331,type:"dark",size:0.028,radialDist:0.565},
-  {id:318,x: 0.2209,y: 0.1622,z:-0.0354,type:"dark",size:0.028,radialDist:0.403},
-  {id:319,x: 0.2321,y: 0.2022,z: 0.0288,type:"dark",size:0.028,radialDist:0.448},
-  {id:320,x:-0.0138,y: 0.2245,z:-0.0441,type:"dark",size:0.028,radialDist:0.382},
-  {id:321,x:-0.0848,y: 0.2194,z: 0.0477,type:"dark",size:0.028,radialDist:0.389},
-  {id:322,x: 0.1238,y: 0.0877,z:-0.0571,type:"red",size:0.042,radialDist:0.265},
-  {id:323,x:-0.3397,y:-0.3394,z: 0.0366,type:"red",size:0.042,radialDist:0.489},
-  {id:324,x: 0.1959,y:-0.4327,z: 0.0445,type:"dark",size:0.028,radialDist:0.454},
-  {id:325,x: 0.2196,y:-0.4355,z:-0.0301,type:"red",size:0.042,radialDist:0.472},
-  {id:326,x: 0.1877,y:-0.1863,z: 0.0033,type:"dark",size:0.028,radialDist:0.243},
-  {id:327,x: 0.2445,y:-0.3389,z: 0.0162,type:"red",size:0.042,radialDist:0.402},
-  {id:328,x:-0.1336,y:-0.5146,z:-0.0268,type:"red",size:0.042,radialDist:0.512},
-  {id:329,x:-0.3193,y:-0.5386,z: 0.0454,type:"dark",size:0.028,radialDist:0.638},
-  {id:330,x: 0.1028,y:-0.1906,z: 0.0202,type:"dark",size:0.028,radialDist:0.161},
-  {id:331,x: 0.2309,y:-0.4281,z:-0.0386,type:"red",size:0.042,radialDist:0.472},
-  {id:332,x: 0.2663,y:-0.5870,z: 0.0384,type:"dark",size:0.028,radialDist:0.653},
-  {id:333,x:-0.1538,y:-0.1463,z:-0.0232,type:"dark",size:0.028,radialDist:0.189},
-  {id:334,x:-0.2842,y:-0.0367,z: 0.0195,type:"dark",size:0.028,radialDist:0.343},
-  {id:335,x:-0.3183,y:-0.4546,z:-0.0064,type:"dark",size:0.028,radialDist:0.561},
-  {id:336,x: 0.2048,y:-0.2348,z: 0.0004,type:"dark",size:0.028,radialDist:0.288},
-  {id:337,x: 0.0772,y: 0.0105,z:-0.0515,type:"dark",size:0.028,radialDist:0.159},
-  {id:338,x: 0.3073,y: 0.2234,z:-0.0104,type:"dark",size:0.028,radialDist:0.525},
-  {id:339,x: 0.2039,y: 0.0507,z: 0.0227,type:"dark",size:0.028,radialDist:0.298},
-  {id:340,x: 0.2391,y: 0.2184,z:-0.0243,type:"dark",size:0.028,radialDist:0.468},
-  {id:341,x: 0.3054,y: 0.1631,z:-0.0174,type:"dark",size:0.028,radialDist:0.474},
-  {id:342,x: 0.2500,y: 0.0131,z:-0.0121,type:"dark",size:0.028,radialDist:0.323},
-  {id:343,x: 0.4434,y: 0.0955,z: 0.0064,type:"dark",size:0.028,radialDist:0.570},
-  {id:344,x: 0.3259,y: 0.1943,z:-0.0080,type:"dark",size:0.028,radialDist:0.517},
+  // ── Aorta sinistra (sommità) ──
+  { id: 0,  x: -0.22, y:  0.90, z:  0.05, type: "dark", size: 0.055, radialDist: 0.95 },
+  { id: 1,  x: -0.38, y:  0.75, z:  0.10, type: "red",  size: 0.075, radialDist: 0.85 },
+  { id: 2,  x: -0.28, y:  0.65, z: -0.05, type: "dark", size: 0.038, radialDist: 0.72 },
+  { id: 3,  x: -0.12, y:  0.80, z:  0.08, type: "dark", size: 0.038, radialDist: 0.82 },
+  // ── Aorta destra (sommità) ──
+  { id: 4,  x:  0.10, y:  0.95, z:  0.00, type: "red",  size: 0.068, radialDist: 0.97 },
+  { id: 5,  x:  0.26, y:  0.88, z:  0.05, type: "dark", size: 0.038, radialDist: 0.90 },
+  { id: 6,  x:  0.18, y:  0.75, z: -0.05, type: "dark", size: 0.055, radialDist: 0.78 },
+  { id: 7,  x:  0.32, y:  0.72, z:  0.10, type: "dark", size: 0.038, radialDist: 0.80 },
+  // ── Spalla destra (bulge atriale) ──
+  { id: 8,  x:  0.56, y:  0.58, z:  0.08, type: "dark", size: 0.038, radialDist: 0.82 },
+  { id: 9,  x:  0.68, y:  0.42, z:  0.05, type: "dark", size: 0.055, radialDist: 0.88 },
+  { id: 10, x:  0.72, y:  0.25, z:  0.00, type: "red",  size: 0.082, radialDist: 0.92 },
+  { id: 11, x:  0.62, y:  0.10, z:  0.05, type: "dark", size: 0.038, radialDist: 0.80 },
+  // ── Fianco destro ──
+  { id: 12, x:  0.78, y: -0.05, z: -0.05, type: "dark", size: 0.055, radialDist: 0.95 },
+  { id: 13, x:  0.68, y: -0.25, z:  0.05, type: "dark", size: 0.038, radialDist: 0.88 },
+  { id: 14, x:  0.56, y: -0.42, z:  0.10, type: "red",  size: 0.075, radialDist: 0.82 },
+  // ── Apice (punta inferiore) ──
+  { id: 15, x:  0.22, y: -0.78, z:  0.00, type: "dark", size: 0.055, radialDist: 0.90 },
+  { id: 16, x:  0.00, y: -0.95, z:  0.05, type: "dark", size: 0.038, radialDist: 0.98 },
+  { id: 17, x: -0.22, y: -0.78, z: -0.05, type: "dark", size: 0.055, radialDist: 0.90 },
+  // ── Fianco sinistro ──
+  { id: 18, x: -0.56, y: -0.42, z:  0.10, type: "red",  size: 0.075, radialDist: 0.82 },
+  { id: 19, x: -0.66, y: -0.22, z:  0.05, type: "dark", size: 0.038, radialDist: 0.88 },
+  { id: 20, x: -0.76, y:  0.00, z: -0.05, type: "dark", size: 0.055, radialDist: 0.95 },
+  { id: 21, x: -0.66, y:  0.22, z:  0.05, type: "red",  size: 0.082, radialDist: 0.85 },
+  // ── Spalla sinistra ──
+  { id: 22, x: -0.58, y:  0.42, z:  0.08, type: "dark", size: 0.038, radialDist: 0.78 },
+  { id: 23, x: -0.48, y:  0.56, z:  0.05, type: "dark", size: 0.055, radialDist: 0.72 },
+  // ── Nodi interni — strato medio ──
+  { id: 24, x: -0.05, y:  0.58, z:  0.15, type: "dark", size: 0.055, radialDist: 0.45 },
+  { id: 25, x:  0.22, y:  0.48, z:  0.10, type: "red",  size: 0.082, radialDist: 0.42 },
+  { id: 26, x: -0.22, y:  0.32, z:  0.12, type: "dark", size: 0.038, radialDist: 0.35 },
+  { id: 27, x:  0.12, y:  0.18, z:  0.20, type: "dark", size: 0.055, radialDist: 0.28 },
+  { id: 28, x: -0.32, y:  0.08, z:  0.15, type: "red",  size: 0.075, radialDist: 0.38 },
+  { id: 29, x:  0.36, y: -0.02, z:  0.10, type: "dark", size: 0.038, radialDist: 0.40 },
+  { id: 30, x: -0.10, y: -0.18, z:  0.18, type: "dark", size: 0.055, radialDist: 0.30 },
+  { id: 31, x:  0.26, y: -0.32, z:  0.12, type: "red",  size: 0.075, radialDist: 0.42 },
+  { id: 32, x: -0.26, y: -0.52, z:  0.08, type: "dark", size: 0.038, radialDist: 0.58 },
+  { id: 33, x:  0.42, y:  0.32, z: -0.10, type: "dark", size: 0.038, radialDist: 0.52 },
+  { id: 34, x: -0.42, y: -0.12, z: -0.12, type: "red",  size: 0.068, radialDist: 0.48 },
 ];
 
-const EDGES: Array<[number,number,EdgeType]> = [
-  [146,147,"strong"],
-  [162,321,"light"],
-  [226,242,"strong"],
-  [ 90, 91,"strong"],
-  [164,181,"strong"],
-  [294,312,"strong"],
-  [125,126,"strong"],
-  [235,315,"light"],
-  [210,226,"strong"],
-  [  6, 62,"light"],
-  [338,341,"strong"],
-  [ 65,329,"light"],
-  [189,235,"cross"],
-  [ 54,335,"light"],
-  [243,318,"light"],
-  [269,281,"strong"],
-  [145,321,"light"],
-  [121,166,"cross"],
-  [ 23, 27,"strong"],
-  [ 47, 56,"strong"],
-  [ 53, 67,"strong"],
-  [236,251,"strong"],
-  [263,306,"light"],
-  [188,288,"light"],
-  [128,321,"light"],
-  [222,336,"light"],
-  [102,120,"strong"],
-  [ 64, 78,"strong"],
-  [134,151,"strong"],
-  [261,332,"light"],
-  [192,193,"strong"],
-  [  3, 65,"light"],
-  [171,288,"light"],
-  [ 58, 71,"strong"],
-  [207,286,"light"],
-  [ 18,318,"cross"],
-  [128,145,"strong"],
-  [124,125,"strong"],
-  [264,291,"light"],
-  [ 96,114,"strong"],
-  [  7, 77,"light"],
-  [ 20,215,"light"],
-  [107,124,"strong"],
-  [255,269,"strong"],
-  [ 24,155,"cross"],
-  [ 19,262,"light"],
-  [154,288,"light"],
-  [142,159,"strong"],
-  [190,286,"light"],
-  [268,280,"strong"],
-  [ 48,311,"light"],
-  [253,254,"strong"],
-  [146,180,"strong"],
-  [169,187,"strong"],
-  [  0,  1,"strong"],
-  [232,233,"strong"],
-  [249,263,"strong"],
-  [153,170,"strong"],
-  [201,325,"light"],
-  [ 15,272,"light"],
-  [164,165,"strong"],
-  [243,244,"strong"],
-  [  4, 45,"light"],
-  [294,296,"strong"],
-  [ 85,102,"strong"],
-  [ 18,252,"light"],
-  [ 22,163,"light"],
-  [225,296,"light"],
-  [147,164,"strong"],
-  [251,291,"light"],
-  [245,273,"strong"],
-  [239,253,"strong"],
-  [179,195,"strong"],
-  [ 15,302,"light"],
-  [254,267,"strong"],
-  [ 17,268,"light"],
-  [ 79, 95,"strong"],
-  [158,174,"strong"],
-  [209,226,"strong"],
-  [216,332,"light"],
-  [ 14,340,"light"],
-  [ 88, 89,"strong"],
-  [107,292,"light"],
-  [123,245,"cross"],
-  [238,336,"light"],
-  [ 19,314,"light"],
-  [ 46, 56,"strong"],
-  [256,342,"light"],
-  [187,203,"strong"],
-  [224,286,"light"],
-  [178,320,"light"],
-  [134,135,"strong"],
-  [ 90,292,"light"],
-  [ 15,283,"light"],
-  [221,336,"light"],
-  [113,114,"strong"],
-  [186,220,"strong"],
-  [255,284,"light"],
-  [119,135,"strong"],
-  [198,214,"strong"],
-  [ 18,304,"light"],
-  [ 32, 43,"light"],
-  [ 17,279,"light"],
-  [ 45, 46,"strong"],
-  [ 62, 76,"strong"],
-  [287,309,"strong"],
-  [ 20,199,"light"],
-  [107,108,"strong"],
-  [181,198,"strong"],
-  [139,140,"strong"],
-  [ 49, 58,"strong"],
-  [ 39, 40,"strong"],
-  [118,119,"strong"],
-  [223,284,"light"],
-  [ 90,108,"strong"],
-  [ 81,309,"light"],
-  [201,202,"strong"],
-  [153,154,"strong"],
-  [105,122,"strong"],
-  [205,330,"light"],
-  [132,328,"light"],
-  [ 12, 37,"strong"],
-  [232,247,"strong"],
-  [167,185,"strong"],
-  [160,204,"cross"],
-  [ 95,112,"strong"],
-  [209,210,"strong"],
-  [130,147,"strong"],
-  [115,328,"light"],
-  [ 23, 27,"light"],
-  [241,242,"strong"],
-  [258,272,"strong"],
-  [219,324,"light"],
-  [222,237,"strong"],
-  [141,142,"strong"],
-  [220,221,"strong"],
-  [237,251,"strong"],
-  [192,210,"strong"],
-  [ 73, 89,"strong"],
-  [124,141,"strong"],
-  [235,314,"light"],
-  [ 19,249,"light"],
-  [108,124,"strong"],
-  [156,173,"strong"],
-  [ 50, 52,"strong"],
-  [ 67, 82,"strong"],
-  [214,215,"strong"],
-  [270,294,"light"],
-  [186,204,"strong"],
-  [297,298,"strong"],
-  [249,250,"strong"],
-  [122,333,"light"],
-  [239,326,"light"],
-  [170,187,"strong"],
-  [ 66,334,"cross"],
-  [218,314,"light"],
-  [276,277,"strong"],
-  [ 64, 76,"strong"],
-  [  4,301,"cross"],
-  [251,327,"light"],
-  [ 28, 29,"strong"],
-  [118,152,"strong"],
-  [ 70,298,"light"],
-  [222,326,"light"],
-  [ 26, 37,"light"],
-  [226,243,"strong"],
-  [ 56, 70,"strong"],
-  [255,267,"strong"],
-  [ 61,334,"light"],
-  [ 81,293,"light"],
-  [259,344,"light"],
-  [163,249,"cross"],
-  [161,285,"light"],
-  [ 85,119,"strong"],
-  [ 22,180,"light"],
-  [268,278,"strong"],
-  [103,297,"light"],
-  [ 48, 59,"strong"],
-  [ 84, 85,"strong"],
-  [ 49, 72,"strong"],
-  [169,185,"strong"],
-  [ 83,203,"cross"],
-  [116,117,"strong"],
-  [144,285,"light"],
-  [ 88,106,"strong"],
-  [ 95, 96,"strong"],
-  [ 86,297,"light"],
-  [ 19,331,"light"],
-  [169,186,"strong"],
-  [215,231,"strong"],
-  [ 99,117,"strong"],
-  [ 27, 28,"strong"],
-  [134,152,"strong"],
-  [103,317,"cross"],
-  [ 17,266,"light"],
-  [244,341,"light"],
-  [272,302,"light"],
-  [ 19,233,"light"],
-  [258,278,"cross"],
-  [ 68,335,"light"],
-  [249,315,"light"],
-  [241,256,"strong"],
-  [126,142,"strong"],
-  [220,235,"strong"],
-  [135,136,"strong"],
-  [ 20,216,"light"],
-  [ 25, 37,"light"],
-  [139,157,"strong"],
-  [238,326,"light"],
-  [201,219,"strong"],
-  [  5, 58,"light"],
-  [236,327,"light"],
-  [129,130,"strong"],
-  [ 31, 44,"light"],
-  [  9, 78,"light"],
-  [112,129,"strong"],
-  [200,312,"cross"],
-  [226,307,"cross"],
-  [ 20,197,"light"],
-  [  2, 80,"light"],
-  [  4, 46,"light"],
-  [195,213,"strong"],
-  [258,259,"strong"],
-  [116,150,"strong"],
-  [239,254,"strong"],
-  [179,196,"strong"],
-  [252,264,"strong"],
-  [322,337,"strong"],
-  [237,238,"strong"],
-  [ 29, 35,"strong"],
-  [264,303,"light"],
-  [ 95,129,"strong"],
-  [210,322,"light"],
-  [ 90,106,"strong"],
-  [ 37, 38,"strong"],
-  [262,303,"light"],
-  [189,301,"light"],
-  [273,338,"light"],
-  [169,170,"strong"],
-  [231,232,"strong"],
-  [ 90,107,"strong"],
-  [ 46, 57,"strong"],
-  [152,169,"strong"],
-  [246,340,"light"],
-  [184,200,"strong"],
-  [178,319,"cross"],
-  [259,272,"strong"],
-  [172,301,"light"],
-  [ 84,100,"strong"],
-  [ 10, 11,"strong"],
-  [247,332,"light"],
-  [152,170,"strong"],
-  [277,278,"strong"],
-  [229,340,"light"],
-  [ 81,329,"light"],
-  [161,321,"light"],
-  [157,173,"strong"],
-  [ 78,110,"strong"],
-  [103,333,"light"],
-  [192,208,"strong"],
-  [155,157,"strong"],
-  [ 56, 57,"strong"],
-  [ 67,334,"cross"],
-  [283,302,"light"],
-  [  2,113,"light"],
-  [262,274,"strong"],
-  [262,306,"light"],
-  [184,202,"strong"],
-  [ 67, 81,"strong"],
-  [112,113,"strong"],
-  [186,203,"strong"],
-  [144,145,"strong"],
-  [123,124,"strong"],
-  [254,284,"light"],
-  [234,325,"light"],
-  [159,307,"light"],
-  [ 70,297,"light"],
-  [ 84,298,"light"],
-  [242,312,"light"],
-  [267,278,"strong"],
-  [256,269,"strong"],
-  [127,145,"strong"],
-  [209,322,"light"],
-  [219,325,"light"],
-  [222,238,"strong"],
-  [300,328,"cross"],
-  [237,252,"strong"],
-  [  4,323,"light"],
-  [121,138,"strong"],
-  [142,307,"light"],
-  [303,306,"strong"],
-  [296,339,"light"],
-  [100,117,"strong"],
-  [202,325,"light"],
-  [ 67, 83,"strong"],
-  [241,296,"light"],
-  [135,153,"strong"],
-  [225,342,"light"],
-  [242,256,"strong"],
-  [232,332,"light"],
-  [ 78, 94,"strong"],
-  [129,146,"strong"],
-  [ 25, 26,"strong"],
-  [240,241,"strong"],
-  [161,178,"strong"],
-  [ 48, 60,"cross"],
-  [196,213,"strong"],
-  [129,147,"strong"],
-  [114,328,"light"],
-  [140,157,"strong"],
-  [175,192,"strong"],
-  [ 20,214,"light"],
-  [106,292,"light"],
-  [179,213,"strong"],
-  [ 33, 34,"strong"],
-  [265,266,"strong"],
-  [ 97,328,"light"],
-  [118,134,"strong"],
-  [296,342,"light"],
-  [ 15,271,"light"],
-  [ 31, 42,"light"],
-  [ 61, 75,"strong"],
-  [ 86,298,"light"],
-  [115,313,"light"],
-  [273,283,"strong"],
-  [  5, 48,"light"],
-  [124,255,"cross"],
-  [263,303,"light"],
-  [  7, 52,"light"],
-  [239,284,"light"],
-  [174,190,"strong"],
-  [ 69,298,"light"],
-  [ 75,334,"light"],
-  [ 12, 26,"light"],
-  [ 52, 62,"strong"],
-  [ 28,142,"cross"],
-  [174,191,"strong"],
-  [ 31, 41,"strong"],
-  [ 60,334,"light"],
-  [265,277,"strong"],
-  [104,122,"strong"],
-  [161,289,"light"],
-  [172,299,"light"],
-  [ 27, 33,"light"],
-  [258,302,"light"],
-  [235,324,"light"],
-  [ 12, 25,"strong"],
-  [216,276,"cross"],
-  [161,162,"strong"],
-  [ 82, 99,"strong"],
-  [112,130,"strong"],
-  [ 10, 33,"light"],
-  [193,210,"strong"],
-  [226,339,"light"],
-  [151,152,"strong"],
-  [ 51, 52,"strong"],
-  [138,155,"strong"],
-  [ 37, 39,"strong"],
-  [ 56,156,"cross"],
-  [117,134,"strong"],
-  [101,118,"strong"],
-  [  2,112,"light"],
-  [206,331,"cross"],
-  [244,259,"strong"],
-  [184,201,"strong"],
-  [242,243,"strong"],
-  [259,273,"strong"],
-  [163,180,"strong"],
-  [  1,129,"light"],
-  [ 42, 43,"strong"],
-  [ 36, 78,"cross"],
-  [ 21, 22,"strong"],
-  [ 80,293,"light"],
-  [106,122,"strong"],
-  [129,163,"strong"],
-  [  9,111,"light"],
-  [ 85,101,"strong"],
-  [142,219,"cross"],
-  [226,342,"light"],
-  [157,175,"strong"],
-  [168,185,"strong"],
-  [241,294,"light"],
-  [203,220,"strong"],
-  [183,199,"strong"],
-  [124,292,"light"],
-  [ 63, 77,"strong"],
-  [ 71,308,"light"],
-  [ 82, 83,"strong"],
-  [ 85,297,"light"],
-  [162,178,"strong"],
-  [260,341,"light"],
-  [109,110,"strong"],
-  [245,340,"light"],
-  [110,305,"light"],
-  [285,321,"strong"],
-  [253,265,"strong"],
-  [108,305,"light"],
-  [138,139,"strong"],
-  [217,218,"strong"],
-  [ 93,305,"light"],
-  [267,279,"strong"],
-  [  6,104,"cross"],
-  [ 47,311,"light"],
-  [287,317,"strong"],
-  [ 11, 23,"strong"],
-  [149,150,"strong"],
-  [101,102,"strong"],
-  [  2, 96,"light"],
-  [184,185,"strong"],
-  [240,284,"light"],
-  [ 98,309,"light"],
-  [227,243,"strong"],
-  [ 31, 41,"light"],
-  [ 67,329,"light"],
-  [260,344,"light"],
-  [ 55,323,"light"],
-  [157,158,"strong"],
-  [266,277,"strong"],
-  [ 41, 44,"strong"],
-  [ 12, 24,"light"],
-  [142,289,"light"],
-  [291,310,"strong"],
-  [168,169,"strong"],
-  [ 89,106,"strong"],
-  [140,158,"strong"],
-  [251,252,"strong"],
-  [104,120,"strong"],
-  [247,261,"strong"],
-  [ 14,245,"light"],
-  [ 83, 99,"strong"],
-  [315,331,"strong"],
-  [151,169,"strong"],
-  [245,246,"strong"],
-  [259,341,"light"],
-  [166,183,"strong"],
-  [201,218,"strong"],
-  [160,320,"light"],
-  [  8, 64,"light"],
-  [ 94,110,"strong"],
-  [ 25,242,"cross"],
-  [ 31, 43,"light"],
-  [ 24, 25,"strong"],
-  [127,334,"cross"],
-  [149,183,"strong"],
-  [ 38, 39,"strong"],
-  [263,304,"light"],
-  [270,271,"strong"],
-  [  8, 94,"light"],
-  [191,208,"strong"],
-  [123,139,"strong"],
-  [  1,146,"light"],
-  [ 49, 50,"strong"],
-  [209,337,"light"],
-  [ 98,293,"light"],
-  [185,202,"strong"],
-  [282,302,"light"],
-  [143,285,"light"],
-  [192,337,"light"],
-  [ 27, 34,"light"],
-  [ 11,145,"light"],
-  [105,106,"strong"],
-  [218,324,"light"],
-  [210,227,"strong"],
-  [270,282,"strong"],
-  [263,315,"light"],
-  [225,241,"strong"],
-  [ 89, 90,"strong"],
-  [175,337,"light"],
-  [109,127,"strong"],
-  [249,261,"strong"],
-  [204,336,"light"],
-  [234,235,"strong"],
-  [ 68, 69,"strong"],
-  [218,325,"light"],
-  [289,320,"strong"],
-  [248,331,"light"],
-  [261,339,"cross"],
-  [143,307,"light"],
-  [236,252,"strong"],
-  [144,320,"light"],
-  [212,318,"light"],
-  [166,167,"strong"],
-  [ 87,104,"strong"],
-  [285,289,"strong"],
-  [230,245,"strong"],
-  [224,225,"strong"],
-  [117,135,"strong"],
-  [ 14,338,"light"],
-  [149,167,"strong"],
-  [265,304,"light"],
-  [235,327,"light"],
-  [156,157,"strong"],
-  [  8, 78,"light"],
-  [ 11, 23,"light"],
-  [115,293,"light"],
-  [ 56,323,"light"],
-  [224,284,"light"],
-  [ 42, 44,"strong"],
-  [160,285,"light"],
-  [319,340,"light"],
-  [ 71, 87,"strong"],
-  [ 18,310,"light"],
-  [ 15,281,"light"],
-  [122,140,"strong"],
-  [185,186,"strong"],
-  [  3,309,"light"],
-  [154,171,"strong"],
-  [ 14,319,"light"],
-  [106,123,"strong"],
-  [  4, 54,"light"],
-  [217,324,"light"],
-  [212,213,"strong"],
-  [247,248,"strong"],
-  [ 61,191,"cross"],
-  [100,116,"strong"],
-  [ 17,277,"light"],
-  [158,299,"light"],
-  [227,322,"light"],
-  [168,186,"strong"],
-  [188,330,"light"],
-  [160,307,"light"],
-  [243,312,"light"],
-  [ 85,298,"light"],
-  [111,127,"strong"],
-  [162,179,"strong"],
-  [ 92,110,"strong"],
-  [ 54, 68,"strong"],
-  [173,190,"strong"],
-  [253,266,"strong"],
-  [266,276,"strong"],
-  [188,204,"strong"],
-  [  9, 94,"light"],
-  [ 87, 88,"strong"],
-  [167,183,"strong"],
-  [ 68, 83,"strong"],
-  [ 31, 32,"strong"],
-  [ 66, 67,"strong"],
-  [143,321,"light"],
-  [ 86,311,"light"],
-  [151,167,"strong"],
-  [ 11, 24,"strong"],
-  [ 18,264,"light"],
-  [258,270,"strong"],
-  [251,303,"light"],
-  [261,306,"light"],
-  [213,229,"strong"],
-  [126,321,"light"],
-  [ 26,196,"light"],
-  [207,223,"strong"],
-  [106,107,"strong"],
-  [ 16,269,"light"],
-  [266,278,"strong"],
-  [ 11,162,"light"],
-  [133,134,"strong"],
-  [225,339,"light"],
-  [105,123,"strong"],
-  [220,316,"light"],
-  [218,234,"strong"],
-  [ 89,107,"strong"],
-  [141,307,"light"],
-  [232,248,"strong"],
-  [290,299,"strong"],
-  [ 53,329,"light"],
-  [203,316,"light"],
-  [ 83,100,"strong"],
-  [271,282,"strong"],
-  [166,184,"strong"],
-  [124,307,"light"],
-  [173,174,"strong"],
-  [208,239,"cross"],
-  [231,332,"light"],
-  [ 94,111,"strong"],
-  [104,308,"light"],
-  [318,319,"strong"],
-  [ 55,335,"light"],
-  [152,153,"strong"],
-  [317,328,"strong"],
-  [300,336,"strong"],
-  [242,342,"light"],
-  [156,290,"light"],
-  [ 16,281,"light"],
-  [ 87,308,"light"],
-  [171,188,"strong"],
-  [ 19,153,"cross"],
-  [283,343,"light"],
-  [150,167,"strong"],
-  [ 72,308,"light"],
-  [ 49, 51,"strong"],
-  [ 66, 81,"strong"],
-  [ 29, 30,"strong"],
-  [139,290,"light"],
-  [126,305,"light"],
-  [185,203,"strong"],
-  [  8,  9,"strong"],
-  [ 57,323,"light"],
-  [212,230,"strong"],
-  [ 78,209,"cross"],
-  [176,192,"strong"],
-  [128,144,"strong"],
-  [316,326,"strong"],
-  [227,339,"light"],
-  [211,228,"strong"],
-  [ 19,261,"light"],
-  [ 54, 55,"strong"],
-  [ 30, 36,"strong"],
-  [190,207,"strong"],
-  [162,196,"strong"],
-  [ 74,334,"light"],
-  [193,322,"light"],
-  [ 48, 49,"strong"],
-  [195,211,"strong"],
-  [147,163,"strong"],
-  [ 87,105,"strong"],
-  [ 68,130,"cross"],
-  [230,246,"strong"],
-  [275,310,"light"],
-  [254,266,"strong"],
-  [ 70,311,"light"],
-  [171,172,"strong"],
-  [ 11, 24,"light"],
-  [205,326,"light"],
-  [ 92,109,"strong"],
-  [246,338,"light"],
-  [ 26,213,"light"],
-  [150,151,"strong"],
-  [326,336,"strong"],
-  [312,342,"light"],
-  [275,291,"light"],
-  [ 15,282,"light"],
-  [  4, 55,"light"],
-  [138,290,"light"],
-  [107,320,"cross"],
-  [133,151,"strong"],
-  [238,316,"light"],
-  [ 17,278,"light"],
-  [151,187,"cross"],
-  [  4, 56,"light"],
-  [ 51, 60,"strong"],
-  [246,319,"light"],
-  [ 12, 37,"light"],
-  [240,255,"strong"],
-  [232,295,"cross"],
-  [131,293,"light"],
-  [153,232,"cross"],
-  [238,239,"strong"],
-  [190,191,"strong"],
-  [ 30, 43,"light"],
-  [221,316,"light"],
-  [111,128,"strong"],
-  [ 29, 36,"strong"],
-  [ 65,183,"cross"],
-  [229,319,"light"],
-  [  3, 22,"cross"],
-  [105,121,"strong"],
-  [175,187,"cross"],
-  [204,316,"light"],
-  [253,267,"strong"],
-  [188,205,"strong"],
-  [167,184,"strong"],
-  [208,337,"light"],
-  [160,289,"light"],
-  [174,290,"light"],
-  [  3, 54,"light"],
-  [271,312,"light"],
-  [151,168,"strong"],
-  [ 59, 73,"strong"],
-  [193,337,"light"],
-  [257,258,"strong"],
-  [178,195,"strong"],
-  [110,126,"strong"],
-  [258,271,"strong"],
-  [251,304,"light"],
-  [ 89,292,"light"],
-  [245,318,"light"],
-  [ 50, 59,"strong"],
-  [224,240,"strong"],
-  [258,294,"light"],
-  [ 92, 93,"strong"],
-  [ 73, 88,"strong"],
-  [ 52, 76,"strong"],
-  [ 71, 72,"strong"],
-  [303,304,"strong"],
-  [207,224,"strong"],
-  [140,290,"light"],
-  [281,312,"light"],
-  [165,166,"strong"],
-  [135,151,"strong"],
-  [300,326,"strong"],
-  [238,300,"light"],
-  [218,235,"strong"],
-  [ 10, 23,"strong"],
-  [ 76, 77,"strong"],
-  [ 60,193,"cross"],
-  [ 55, 56,"strong"],
-  [ 56, 69,"strong"],
-  [  2, 95,"light"],
-  [314,317,"cross"],
-  [223,239,"strong"],
-  [303,315,"strong"],
-  [176,289,"light"],
-  [267,268,"strong"],
-  [109,126,"strong"],
-  [297,308,"strong"],
-  [167,168,"strong"],
-  [101,297,"light"],
-  [ 88,105,"strong"],
-  [143,220,"cross"],
-  [136,154,"strong"],
-  [204,330,"light"],
-  [159,289,"light"],
-  [231,247,"strong"],
-  [171,189,"strong"],
-  [178,179,"strong"],
-  [283,344,"light"],
-  [ 99,116,"strong"],
-  [150,168,"strong"],
-  [ 55, 67,"strong"],
-  [244,340,"light"],
-  [161,179,"strong"],
-  [249,314,"light"],
-  [ 61, 84,"cross"],
-  [ 93,110,"strong"],
-  [241,255,"strong"],
-  [176,193,"strong"],
-  [155,288,"light"],
-  [106,117,"cross"],
-  [ 34, 35,"strong"],
-  [139,156,"strong"],
-  [ 29, 35,"light"],
-  [111,145,"strong"],
-  [197,198,"strong"],
-  [280,281,"strong"],
-  [297,311,"strong"],
-  [ 48, 50,"strong"],
-  [ 77, 93,"strong"],
-  [ 16,279,"light"],
-  [142,143,"strong"],
-  [  2, 79,"light"],
-  [144,160,"strong"],
-  [195,212,"strong"],
-  [ 76, 91,"strong"],
-  [187,340,"cross"],
-  [ 74, 75,"strong"],
-  [125,143,"strong"],
-  [ 40, 44,"strong"],
-  [ 53, 54,"strong"],
-  [206,223,"strong"],
-  [ 32, 42,"strong"],
-  [ 54, 67,"strong"],
-  [206,330,"light"],
-  [ 11, 25,"light"],
-  [200,216,"strong"],
-  [ 99,100,"strong"],
-  [259,271,"strong"],
-  [189,330,"light"],
-  [214,231,"strong"],
-  [  6, 51,"light"],
-  [ 93, 94,"strong"],
-  [172,173,"strong"],
-  [ 82,100,"strong"],
-  [  7, 64,"light"],
-  [176,177,"strong"],
-  [255,256,"strong"],
-  [ 72, 73,"strong"],
-  [271,302,"light"],
-  [ 51, 61,"strong"],
-  [155,156,"strong"],
-  [251,265,"strong"],
-  [ 70,323,"light"],
-  [240,256,"strong"],
-  [212,245,"strong"],
-  [224,239,"strong"],
-  [260,338,"light"],
-  [ 10, 23,"light"],
-  [ 19,325,"light"],
-  [205,222,"strong"],
-  [287,293,"strong"],
-  [ 31, 36,"light"],
-  [  3,287,"light"],
-  [ 63, 64,"strong"],
-  [282,343,"light"],
-  [ 81, 98,"strong"],
-  [195,196,"strong"],
-  [274,275,"strong"],
-  [234,324,"light"],
-  [  4, 68,"light"],
-  [206,207,"strong"],
-  [294,342,"light"],
-  [268,269,"strong"],
-  [127,144,"strong"],
-  [178,196,"strong"],
-  [102,297,"light"],
-  [189,206,"strong"],
-  [ 90,334,"light"],
-  [228,318,"light"],
-  [121,137,"strong"],
-  [130,131,"strong"],
-  [257,312,"light"],
-  [228,319,"light"],
-  [ 73,334,"light"],
-  [248,262,"strong"],
-  [183,200,"strong"],
-  [ 18,291,"light"],
-  [ 78, 93,"strong"],
-  [  0, 21,"strong"],
-  [ 58, 72,"strong"],
-  [161,177,"strong"],
-  [212,229,"strong"],
-  [170,171,"strong"],
-  [ 45, 54,"strong"],
-  [ 72, 87,"strong"],
-  [234,249,"strong"],
-  [170,193,"cross"],
-  [ 72, 88,"strong"],
-  [202,219,"strong"],
-  [ 51,309,"cross"],
-  [ 35,292,"cross"],
-  [ 81, 82,"strong"],
-  [306,315,"strong"],
-  [274,291,"light"],
-  [226,227,"strong"],
-  [ 60, 61,"strong"],
-  [ 77, 91,"strong"],
-  [ 40, 44,"light"],
-  [ 61, 74,"strong"],
-  [151,313,"light"],
-  [127,128,"strong"],
-  [189,190,"strong"],
-  [ 79, 96,"strong"],
-  [233,325,"light"],
-  [117,295,"light"],
-  [ 28, 35,"strong"],
-  [244,255,"cross"],
-  [ 12, 25,"light"],
-  [141,159,"strong"],
-  [ 93,111,"strong"],
-  [172,190,"strong"],
-  [176,194,"strong"],
-  [265,276,"strong"],
-  [  1, 95,"light"],
-  [100,295,"light"],
-  [183,184,"strong"],
-  [ 18,275,"light"],
-  [104,121,"strong"],
-  [155,173,"strong"],
-  [115,131,"strong"],
-  [ 60, 72,"strong"],
-  [ 85,311,"light"],
-  [293,317,"strong"],
-  [237,327,"light"],
-  [ 65,287,"light"],
-  [ 98,115,"strong"],
-  [250,303,"light"],
-  [ 32, 44,"light"],
-  [ 82, 98,"strong"],
-  [270,280,"strong"],
-  [ 16,280,"light"],
-  [  6, 50,"light"],
-  [223,224,"strong"],
-  [ 70, 71,"strong"],
-  [220,327,"light"],
-  [ 49, 59,"strong"],
-  [264,274,"strong"],
-  [202,203,"strong"],
-  [123,140,"strong"],
-  [ 45, 68,"strong"],
-  [265,310,"light"],
-  [206,224,"strong"],
-  [ 32, 43,"strong"],
-  [276,304,"light"],
-  [134,295,"light"],
-  [258,312,"light"],
-  [237,300,"light"],
-  [211,227,"strong"],
-  [173,301,"light"],
-  [150,313,"light"],
-  [ 58, 59,"strong"],
-  [137,138,"strong"],
-  [230,340,"light"],
-  [200,277,"cross"],
-  [ 59, 72,"strong"],
-  [291,304,"strong"],
-  [  6, 52,"light"],
-  [178,194,"strong"],
-  [ 13,213,"light"],
-  [ 69, 70,"strong"],
-  [ 69,311,"light"],
-  [ 46,323,"light"],
-  [ 51, 62,"strong"],
-  [104,105,"strong"],
-  [241,342,"light"],
-  [116,311,"cross"],
-  [198,199,"strong"],
-  [219,236,"strong"],
-  [170,188,"strong"],
-  [318,340,"light"],
-  [  0,146,"light"],
-  [ 98, 99,"strong"],
-  [ 64, 77,"strong"],
-  [177,178,"strong"],
-  [ 77, 78,"strong"],
-  [302,343,"light"],
-  [ 81, 99,"strong"],
-  [285,320,"strong"],
-  [ 70, 85,"strong"],
-  [315,327,"strong"],
-  [189,207,"strong"],
-  [ 79,113,"strong"],
-  [ 41, 44,"light"],
-  [ 86,103,"strong"],
-  [200,201,"strong"],
-  [279,280,"strong"],
-  [ 59,311,"light"],
-  [132,148,"strong"],
-  [338,344,"strong"],
-  [ 67,250,"cross"],
-  [ 26, 37,"strong"],
-  [ 28, 35,"light"],
-  [ 13,246,"light"],
-  [192,322,"light"],
-  [ 10, 27,"light"],
-  [222,300,"light"],
-  [148,166,"strong"],
-  [  1,112,"light"],
-  [ 75, 89,"strong"],
-  [194,211,"strong"],
-  [ 17,267,"light"],
-  [104,333,"light"],
-  [ 69,209,"cross"],
-  [  0, 22,"strong"],
-  [126,143,"strong"],
-  [ 53,335,"light"],
-  [ 51,155,"cross"],
-  [257,294,"light"],
-  [ 69, 84,"strong"],
-  [ 13, 92,"cross"],
-  [234,250,"strong"],
-  [219,331,"light"],
-  [172,189,"strong"],
-  [ 46, 47,"strong"],
-  [131,147,"strong"],
-  [ 30, 31,"strong"],
-  [275,331,"cross"],
-  [ 18,303,"light"],
-  [132,317,"light"],
-  [ 77, 92,"strong"],
-  [ 80,287,"light"],
-  [122,290,"light"],
-  [154,155,"strong"],
-  [ 25, 37,"strong"],
-  [ 79, 97,"strong"],
-  [158,176,"strong"],
-  [134,313,"light"],
-  [  8, 93,"light"],
-  [283,341,"light"],
-  [ 65, 66,"strong"],
-  [ 31, 44,"strong"],
-  [298,311,"strong"],
-  [ 13,230,"light"],
-  [ 15,245,"cross"],
-  [132,133,"strong"],
-  [194,195,"strong"],
-  [ 18,276,"light"],
-  [274,303,"light"],
-  [ 84,101,"strong"],
-  [251,315,"light"],
-  [198,216,"strong"],
-  [ 98,116,"strong"],
-  [177,195,"strong"],
-  [ 60, 74,"strong"],
-  [244,318,"light"],
-  [192,209,"strong"],
-  [339,342,"strong"],
-  [188,189,"strong"],
-  [120,136,"strong"],
-  [ 49, 60,"strong"],
-  [227,318,"light"],
-  [175,209,"strong"],
-  [261,262,"strong"],
-  [  3,335,"light"],
-  [ 45, 69,"strong"],
-  [182,199,"strong"],
-  [217,234,"strong"],
-  [228,229,"strong"],
-  [ 75, 76,"strong"],
-  [149,166,"strong"],
-  [ 79,287,"light"],
-  [ 96,317,"light"],
-  [274,306,"light"],
-  [  8, 77,"light"],
-  [ 50, 73,"strong"],
-  [211,229,"strong"],
-  [ 48, 58,"strong"],
-  [235,249,"strong"],
-  [122,139,"strong"],
-  [154,170,"strong"],
-  [216,232,"strong"],
-  [115,146,"cross"],
-  [ 70, 84,"strong"],
-  [115,116,"strong"],
-  [ 65, 80,"strong"],
-  [ 28, 33,"light"],
-  [264,310,"light"],
-  [226,296,"light"],
-  [105,333,"light"],
-  [148,164,"strong"],
-  [236,315,"light"],
-  [ 47, 48,"strong"],
-  [ 21,163,"light"],
-  [133,295,"light"],
-  [ 66,329,"light"],
-  [140,234,"cross"],
-  [194,210,"strong"],
-  [109,305,"light"],
-  [203,204,"strong"],
-  [175,193,"strong"],
-  [257,342,"light"],
-  [225,286,"light"],
-  [103,104,"strong"],
-  [182,183,"strong"],
-  [249,306,"light"],
-  [ 91,292,"light"],
-  [113,317,"light"],
-  [ 92,305,"light"],
-  [102,308,"light"],
-  [ 99,295,"light"],
-  [199,214,"strong"],
-  [ 81,287,"light"],
-  [240,342,"light"],
-  [ 20,293,"cross"],
-  [208,286,"light"],
-  [259,338,"light"],
-  [165,183,"strong"],
-  [137,288,"light"],
-  [259,260,"strong"],
-  [180,197,"strong"],
-  [ 85,222,"cross"],
-  [ 85,308,"light"],
-  [ 53, 65,"strong"],
-  [  5, 49,"light"],
-  [ 75, 90,"strong"],
-  [341,344,"strong"],
-  [122,123,"strong"],
-  [ 91,108,"strong"],
-  [250,263,"strong"],
-  [ 28, 34,"strong"],
-  [ 15,343,"light"],
-  [164,266,"cross"],
-  [ 31, 42,"strong"],
-  [174,299,"light"],
-  [275,303,"light"],
-  [133,328,"light"],
-  [216,217,"strong"],
-  [278,279,"strong"],
-  [199,216,"strong"],
-  [132,152,"cross"],
-  [260,319,"light"],
-  [157,299,"light"],
-  [ 61,204,"cross"],
-  [ 12, 26,"strong"],
-  [ 57, 58,"strong"],
-  [216,247,"strong"],
-  [131,148,"strong"],
-  [324,325,"strong"],
-  [118,295,"light"],
-  [110,127,"strong"],
-  [ 74, 89,"strong"],
-  [114,148,"strong"],
-  [177,194,"strong"],
-  [ 67,335,"light"],
-  [101,295,"light"],
-  [ 27, 33,"strong"],
-  [189,272,"cross"],
-  [ 63, 75,"strong"],
-  [ 35, 36,"strong"],
-  [180,181,"strong"],
-  [ 30, 36,"light"],
-  [ 10, 33,"strong"],
-  [  3, 66,"light"],
-  [159,160,"strong"],
-  [ 99,309,"light"],
-  [ 71,298,"light"],
-  [281,343,"light"],
-  [257,270,"strong"],
-  [191,192,"strong"],
-  [ 84,102,"strong"],
-  [163,181,"strong"],
-  [309,335,"strong"],
-  [ 91, 92,"strong"],
-  [ 57, 70,"strong"],
-  [238,253,"strong"],
-  [267,277,"strong"],
-  [ 82,309,"light"],
-  [ 21,180,"light"],
-  [ 89,334,"light"],
-  [252,300,"light"],
-  [199,200,"strong"],
-  [120,137,"strong"],
-  [ 74,326,"cross"],
-  [203,221,"strong"],
-  [301,330,"strong"],
-  [216,231,"strong"],
-  [131,132,"strong"],
-  [210,211,"strong"],
-  [182,200,"strong"],
-  [110,111,"strong"],
-  [ 61, 63,"strong"],
-  [316,336,"strong"],
-  [125,141,"strong"],
-  [114,132,"strong"],
-  [208,225,"strong"],
-  [163,214,"cross"],
-  [180,214,"strong"],
-  [103,308,"light"],
-  [266,267,"strong"],
-  [187,204,"strong"],
-  [325,331,"strong"],
-  [304,310,"strong"],
-  [235,250,"strong"],
-  [ 86,308,"light"],
-  [119,136,"strong"],
-  [ 29, 36,"light"],
-  [165,181,"strong"],
-  [216,233,"strong"],
-  [ 28, 34,"light"],
-  [ 97,113,"strong"],
-  [148,165,"strong"],
-  [  5, 47,"light"],
-  [ 21,164,"light"],
-  [ 85, 86,"strong"],
-  [ 15,341,"light"],
-  [190,301,"light"],
-  [120,121,"strong"],
-  [ 88,334,"light"],
-  [ 13, 26,"strong"],
-  [ 14,246,"light"],
-  [291,303,"strong"],
-  [  3, 53,"light"],
-  [164,180,"strong"],
-  [ 23, 26,"cross"],
-  [265,291,"light"],
-  [199,215,"strong"],
-  [208,209,"strong"],
-  [191,286,"light"],
-  [180,198,"strong"],
-  [269,280,"strong"],
-  [145,320,"light"],
-  [269,312,"light"],
-  [187,188,"strong"],
-  [108,125,"strong"],
-  [193,209,"strong"],
-  [ 53, 66,"strong"],
-  [ 38, 40,"strong"],
-  [195,284,"cross"],
-  [119,120,"strong"],
-  [181,182,"strong"],
-  [ 91,109,"strong"],
-  [102,119,"strong"],
-  [137,154,"strong"],
-  [ 31, 43,"strong"],
-  [ 21,197,"light"],
-  [ 58, 70,"strong"],
-  [233,248,"strong"],
-  [227,228,"strong"],
-  [ 58,311,"light"],
-  [199,217,"strong"],
-  [149,313,"light"],
-  [ 96,113,"strong"],
-  [ 62, 91,"strong"],
-  [255,268,"strong"],
-  [136,288,"light"],
-  [142,158,"strong"],
-  [131,149,"strong"],
-  [210,228,"strong"],
-  [268,279,"strong"],
-  [138,333,"light"],
-  [314,324,"strong"],
-  [110,128,"strong"],
-  [234,314,"light"],
-  [ 74, 90,"strong"],
-  [153,169,"strong"],
-  [204,221,"strong"],
-  [ 47, 58,"strong"],
-  [ 83, 84,"strong"],
-  [314,325,"strong"],
-  [233,331,"light"],
-  [175,328,"cross"],
-  [121,333,"light"],
-  [217,314,"light"],
-  [136,153,"strong"],
-  [ 18,251,"light"],
-  [ 63, 76,"strong"],
-  [182,198,"strong"],
-  [223,326,"light"],
-  [ 14,260,"light"],
-  [273,341,"light"],
-  [  3,329,"light"],
-  [  3, 67,"light"],
-  [ 19,234,"light"],
-  [108,109,"strong"],
-  [114,130,"strong"],
-  [143,289,"light"],
-  [257,271,"strong"],
-  [206,326,"light"],
-  [141,157,"strong"],
-  [ 93,109,"strong"],
-  [170,288,"light"],
-  [ 40, 41,"strong"],
-  [ 57, 71,"strong"],
-  [238,254,"strong"],
-  [102,103,"strong"],
-  [ 25, 38,"light"],
-  [114,317,"light"],
-  [ 21,181,"light"],
-  [133,313,"light"],
-  [188,301,"light"],
-  [153,288,"light"],
-  [ 45,335,"light"],
-  [114,182,"cross"],
-  [120,138,"strong"],
-  [ 32, 42,"light"],
-  [ 96, 97,"strong"],
-  [ 62, 75,"strong"],
-  [ 20,198,"light"],
-  [272,282,"strong"],
-  [ 97,317,"light"],
-  [181,197,"strong"],
-  [116,313,"light"],
-  [171,301,"light"],
-  [ 80, 81,"strong"],
-  [125,307,"light"],
-  [225,226,"strong"],
-  [276,310,"light"],
-  [ 76, 90,"strong"],
-  [146,163,"strong"],
-  [273,344,"light"],
-  [ 13, 26,"light"],
-  [204,205,"strong"],
-  [164,197,"strong"],
-  [177,289,"light"],
-  [125,142,"strong"],
-  [190,299,"light"],
-  [236,237,"strong"],
-  [215,332,"light"],
-  [136,137,"strong"],
-  [215,216,"strong"],
-  [187,205,"strong"],
-  [ 68, 84,"strong"],
-  [237,336,"light"],
-  [173,299,"light"],
-  [127,305,"light"],
-  [130,146,"strong"],
-  [270,312,"light"],
-  [119,137,"strong"],
-  [ 18,265,"light"],
-  [244,245,"strong"],
-  [213,230,"strong"],
-  [165,182,"strong"],
-  [156,299,"light"],
-  [271,272,"strong"],
-  [  7, 63,"light"],
-  [124,140,"strong"],
-  [ 39, 41,"strong"],
-  [  3, 81,"light"],
-  [ 19,248,"light"],
-  [159,175,"strong"],
-  [ 23, 24,"strong"],
-  [ 97,114,"strong"],
-  [ 50, 51,"strong"],
-  [191,207,"strong"],
-  [ 38,109,"cross"],
-  [264,275,"strong"],
-  [ 20,231,"light"],
-  [221,238,"strong"],
-  [ 20,182,"light"],
-  [ 79, 80,"strong"],
-  [234,331,"light"],
-  [102,118,"strong"],
-  [  3,189,"cross"],
-  [  6, 61,"light"],
-  [250,315,"light"],
+// ─────────────────────────────────────────────────────────────────────────────
+// ARCHI — molti più edge per densità visiva
+// ─────────────────────────────────────────────────────────────────────────────
+type EdgeType = "strong" | "light" | "cross";
+const EDGES: Array<[number, number, EdgeType]> = [
+  // Contorno esterno (strong)
+  [0, 1, "strong"], [1, 2, "strong"], [2, 3, "strong"], [3, 0, "strong"],
+  [3, 4, "strong"], [4, 5, "strong"], [5, 6, "strong"], [6, 7, "strong"],
+  [7, 8, "strong"], [8, 9, "strong"], [9, 10, "strong"], [10, 11, "strong"],
+  [11, 12, "strong"], [12, 13, "strong"], [13, 14, "strong"],
+  [14, 15, "strong"], [15, 16, "strong"], [16, 17, "strong"],
+  [17, 18, "strong"], [18, 19, "strong"], [19, 20, "strong"],
+  [20, 21, "strong"], [21, 22, "strong"], [22, 23, "strong"],
+  [23, 1, "strong"],
+  // Diagonali esterne
+  [0, 3, "light"], [1, 23, "light"], [4, 6, "light"], [5, 7, "light"],
+  [7, 9, "light"], [8, 10, "light"], [9, 11, "light"], [10, 12, "light"],
+  [11, 13, "light"], [12, 14, "light"], [13, 15, "light"], [14, 17, "light"],
+  [15, 32, "light"], [16, 32, "light"], [17, 19, "light"], [18, 20, "light"],
+  [19, 21, "light"], [20, 22, "light"], [21, 23, "light"], [22, 1, "light"],
+  // Connessioni bordo→interno
+  [0, 24, "light"], [3, 24, "light"], [4, 25, "light"], [6, 25, "light"],
+  [7, 33, "light"], [8, 33, "light"], [9, 33, "light"], [10, 33, "light"],
+  [11, 29, "light"], [12, 29, "light"], [13, 31, "light"], [14, 31, "light"],
+  [15, 32, "light"], [17, 30, "light"], [18, 34, "light"], [19, 34, "light"],
+  [20, 34, "light"], [21, 28, "light"], [22, 28, "light"], [23, 26, "light"],
+  [1, 26, "light"], [2, 26, "light"],
+  // Rete interna forte
+  [24, 25, "strong"], [25, 27, "strong"], [27, 30, "strong"],
+  [30, 32, "strong"], [32, 17, "strong"], [31, 15, "strong"],
+  [28, 21, "strong"], [26, 23, "strong"], [24, 6, "strong"],
+  [25, 10, "strong"], [27, 29, "strong"], [29, 14, "strong"],
+  [28, 20, "strong"], [30, 18, "strong"],
+  // Rete interna leggera
+  [24, 26, "light"], [25, 33, "light"], [26, 28, "light"],
+  [27, 31, "light"], [28, 30, "light"], [29, 31, "light"],
+  [30, 34, "light"], [31, 32, "light"], [33, 29, "light"],
+  [34, 32, "light"], [24, 27, "light"], [25, 26, "light"],
+  [27, 28, "light"], [26, 30, "light"], [33, 27, "light"],
+  // Cross-link lunghi (effetto grafo cognitivo)
+  [0, 25, "cross"], [4, 24, "cross"], [1, 21, "cross"], [10, 28, "cross"],
+  [14, 30, "cross"], [20, 31, "cross"], [12, 27, "cross"], [18, 26, "cross"],
+  [21, 31, "cross"], [9, 34, "cross"], [5, 33, "cross"], [23, 30, "cross"],
+  [6, 28, "cross"], [11, 32, "cross"], [3, 25, "cross"], [7, 29, "cross"],
+  [22, 34, "cross"], [16, 30, "cross"], [8, 27, "cross"], [13, 28, "cross"],
+  [19, 32, "cross"], [2, 27, "cross"], [17, 34, "cross"],
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Colori
+// ─────────────────────────────────────────────────────────────────────────────
 const COL_RED       = new THREE.Color("#C1622F");
 const COL_DARK      = new THREE.Color("#1C1C1C");
 const COL_GLOW_RED  = new THREE.Color("#E8541A");
 const COL_GLOW_DARK = new THREE.Color("#3a3a3a");
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shader nodi (punti luminosi flat)
+// Shader per punto luminoso flat (glow additivo)
 // ─────────────────────────────────────────────────────────────────────────────
 const VERT_GLOW = /* glsl */`
   attribute float aSize;
@@ -1656,7 +140,7 @@ const VERT_GLOW = /* glsl */`
   void main() {
     vIntensity = aIntensity;
     vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * (500.0 / -mvPos.z);
+    gl_PointSize = aSize * (480.0 / -mvPos.z);
     gl_Position = projectionMatrix * mvPos;
   }
 `;
@@ -1669,21 +153,25 @@ const FRAG_GLOW = /* glsl */`
     vec2 uv = gl_PointCoord - 0.5;
     float d = length(uv);
     if (d > 0.5) discard;
-    float core  = smoothstep(0.10, 0.0, d);
-    float inner = smoothstep(0.25, 0.0, d) * 0.70;
-    float outer = smoothstep(0.50, 0.08, d) * 0.30;
-    float alpha = (core + inner + outer) * (0.45 + vIntensity * 0.55);
-    vec3 col = mix(uColor, uGlowColor, vIntensity * 0.55);
-    gl_FragColor = vec4(col, alpha);
+    // Core solido (punto duro al centro)
+    float core = smoothstep(0.12, 0.0, d);
+    // Alone interno
+    float inner = smoothstep(0.28, 0.0, d) * 0.75;
+    // Glow esterno sfumato
+    float outer = smoothstep(0.5, 0.08, d) * 0.35;
+    float totalAlpha = (core + inner + outer) * (0.5 + vIntensity * 0.5);
+    // Su sfondo chiaro: colore scuro con alone
+    vec3 col = mix(uColor, uGlowColor, vIntensity * 0.5);
+    gl_FragColor = vec4(col, totalAlpha);
   }
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shader archi (propagazione energia)
+// Shader per edge con propagazione energia (glow direzionale)
 // ─────────────────────────────────────────────────────────────────────────────
 const VERT_EDGE = /* glsl */`
-  attribute float aProgress;
-  attribute float aEnergy;
+  attribute float aProgress;   // 0 = nodo A, 1 = nodo B
+  attribute float aEnergy;     // 0–1: quanto energia sta passando
   varying float vProgress;
   varying float vEnergy;
   void main() {
@@ -1696,169 +184,344 @@ const VERT_EDGE = /* glsl */`
 const FRAG_EDGE = /* glsl */`
   uniform vec3 uBaseColor;
   uniform vec3 uGlowColor;
-  uniform float uPulseHead;
+  uniform float uPulseHead;  // posizione testa impulso 0–1
   varying float vProgress;
   varying float vEnergy;
   void main() {
-    float baseAlpha = 0.20;
-    float dist  = abs(vProgress - uPulseHead);
-    float pulse = exp(-dist * dist * 45.0) * vEnergy;
+    // Opacità base dell'arco
+    float baseAlpha = 0.30;
+    // Impulso: alone gaussiano attorno alla testa
+    float dist = abs(vProgress - uPulseHead);
+    float pulse = exp(-dist * dist * 50.0) * vEnergy;
+    // Scia dietro la testa
     float trail = 0.0;
     if (vProgress < uPulseHead) {
-      float td = uPulseHead - vProgress;
-      trail = exp(-td * td * 10.0) * vEnergy * 0.45;
+      float trailDist = uPulseHead - vProgress;
+      trail = exp(-trailDist * trailDist * 12.0) * vEnergy * 0.5;
     }
-    float alpha = baseAlpha + (pulse + trail) * 0.88;
-    vec3 col = mix(uBaseColor, uGlowColor, pulse + trail * 0.4);
+    float alpha = baseAlpha + (pulse + trail) * 0.9;
+    vec3 col = mix(uBaseColor, uGlowColor, pulse + trail * 0.5);
     gl_FragColor = vec4(col, alpha);
   }
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Stato runtime
+// Stato runtime per ogni nodo
 // ─────────────────────────────────────────────────────────────────────────────
-interface NodeState { intensity: number; targetIntensity: number; pulseTimer: number; }
-interface EdgeState { pulseHead: number; energy: number; active: boolean; direction: number; cooldown: number; }
+interface NodeState {
+  intensity: number;       // 0–1 luminosità corrente
+  targetIntensity: number; // 0–1 obiettivo
+  phase: number;           // fase personale [0, 2π]
+  pulseTimer: number;      // timer per pulsazione individuale
+}
+
+// Stato runtime per ogni edge
+interface EdgeState {
+  pulseHead: number;   // 0–1 posizione testa impulso
+  energy: number;      // 0–1 energia corrente
+  active: boolean;     // sta propagando?
+  direction: number;   // +1 A→B, -1 B→A
+  cooldown: number;    // secondi prima del prossimo impulso
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Scena
+// Componente scena
 // ─────────────────────────────────────────────────────────────────────────────
 function HeartGraphScene() {
+  const clockRef = useRef(0);
+
+  // Stato nodi
   const nodeStates = useRef<NodeState[]>(
-    NODES.map(() => ({ intensity: 0.3 + Math.random()*0.4, targetIntensity: 0.3 + Math.random()*0.4, pulseTimer: Math.random()*3 }))
+    NODES.map((n) => ({
+      intensity: 0.3 + Math.random() * 0.4,
+      targetIntensity: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+      pulseTimer: Math.random() * 3,
+    }))
   );
+
+  // Stato edge
   const edgeStates = useRef<EdgeState[]>(
-    EDGES.map(() => ({ pulseHead: 0, energy: 0, active: false, direction: 1, cooldown: Math.random()*2.5 }))
+    EDGES.map(() => ({
+      pulseHead: 0,
+      energy: 0,
+      active: false,
+      direction: 1,
+      cooldown: 0.5 + Math.random() * 4,
+    }))
   );
 
-  const { nodeGeo, nodeMatRed, nodeMatDark, redNodeIds, darkNodeIds } = useMemo(() => {
-    const redNodes  = NODES.filter(n => n.type === "red");
-    const darkNodes = NODES.filter(n => n.type === "dark");
-    const redIds    = redNodes.map(n => n.id);
-    const darkIds   = darkNodes.map(n => n.id);
+  // ── Geometria nodi (Points con shader) ──
+  const { nodeGeo, nodeMatRed, nodeMatDark } = useMemo(() => {
+    const redNodes  = NODES.filter((n) => n.type === "red");
+    const darkNodes = NODES.filter((n) => n.type === "dark");
 
-    function buildGeo(ns: NodeDef[]) {
-      const pos = new Float32Array(ns.length*3);
-      const sz  = new Float32Array(ns.length);
-      const its = new Float32Array(ns.length);
-      ns.forEach((n,i) => { pos[i*3]=n.x; pos[i*3+1]=n.y; pos[i*3+2]=n.z; sz[i]=n.size; its[i]=0.5; });
-      const g = new THREE.BufferGeometry();
-      g.setAttribute("position",   new THREE.BufferAttribute(pos,3));
-      g.setAttribute("aSize",      new THREE.BufferAttribute(sz,1));
-      g.setAttribute("aIntensity", new THREE.BufferAttribute(its,1));
-      return g;
+    function buildPointsGeo(nodes: NodeDef[]) {
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(nodes.length * 3);
+      const sizes = new Float32Array(nodes.length);
+      const intensities = new Float32Array(nodes.length);
+      nodes.forEach((n, i) => {
+        pos[i * 3]     = n.x;
+        pos[i * 3 + 1] = n.y;
+        pos[i * 3 + 2] = n.z;
+        sizes[i]       = n.size;
+        intensities[i] = 0.5;
+      });
+      geo.setAttribute("position",   new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute("aSize",      new THREE.BufferAttribute(sizes, 1));
+      geo.setAttribute("aIntensity", new THREE.BufferAttribute(intensities, 1));
+      return geo;
     }
 
-    const mRed = new THREE.ShaderMaterial({
-      vertexShader:VERT_GLOW, fragmentShader:FRAG_GLOW,
-      uniforms:{ uColor:{value:COL_RED}, uGlowColor:{value:COL_GLOW_RED} },
-      transparent:true, blending:THREE.NormalBlending, depthWrite:false,
-    });
-    const mDark = new THREE.ShaderMaterial({
-      vertexShader:VERT_GLOW, fragmentShader:FRAG_GLOW,
-      uniforms:{ uColor:{value:COL_DARK}, uGlowColor:{value:COL_GLOW_DARK} },
-      transparent:true, blending:THREE.NormalBlending, depthWrite:false,
+    const geoRed  = buildPointsGeo(redNodes);
+    const geoDark = buildPointsGeo(darkNodes);
+
+    const matRed = new THREE.ShaderMaterial({
+      vertexShader: VERT_GLOW,
+      fragmentShader: FRAG_GLOW,
+      uniforms: {
+        uColor:     { value: COL_RED },
+        uGlowColor: { value: COL_GLOW_RED },
+      },
+      transparent: true,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      alphaTest: 0.01,
     });
 
-    return { nodeGeo:{red:buildGeo(redNodes),dark:buildGeo(darkNodes)}, nodeMatRed:mRed, nodeMatDark:mDark, redNodeIds:redIds, darkNodeIds:darkIds };
+    const matDark = new THREE.ShaderMaterial({
+      vertexShader: VERT_GLOW,
+      fragmentShader: FRAG_GLOW,
+      uniforms: {
+        uColor:     { value: COL_DARK },
+        uGlowColor: { value: COL_GLOW_DARK },
+      },
+      transparent: true,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      alphaTest: 0.01,
+    });
+
+    return {
+      nodeGeo: { red: geoRed, dark: geoDark },
+      nodeMatRed: matRed,
+      nodeMatDark: matDark,
+      redNodes,
+      darkNodes,
+    };
   }, []);
 
-  const edgeObjects = useMemo(() => EDGES.map(([a,b,type]) => {
-    const nA=NODES[a], nB=NODES[b];
-    const N=16;
-    const pos=new Float32Array(N*2*3), prog=new Float32Array(N*2), eng=new Float32Array(N*2);
-    for(let i=0;i<N;i++){
-      const t0=i/N,t1=(i+1)/N;
-      pos[(i*2)*3]=nA.x+(nB.x-nA.x)*t0; pos[(i*2)*3+1]=nA.y+(nB.y-nA.y)*t0; pos[(i*2)*3+2]=nA.z+(nB.z-nA.z)*t0;
-      pos[(i*2+1)*3]=nA.x+(nB.x-nA.x)*t1; pos[(i*2+1)*3+1]=nA.y+(nB.y-nA.y)*t1; pos[(i*2+1)*3+2]=nA.z+(nB.z-nA.z)*t1;
-      prog[i*2]=t0; prog[i*2+1]=t1;
-    }
-    const g=new THREE.BufferGeometry();
-    g.setAttribute("position",  new THREE.BufferAttribute(pos,3));
-    g.setAttribute("aProgress", new THREE.BufferAttribute(prog,1));
-    g.setAttribute("aEnergy",   new THREE.BufferAttribute(eng,1));
-    const baseCol = type==="strong" ? new THREE.Color("#7A3A1A") : type==="cross" ? new THREE.Color("#C1622F") : new THREE.Color("#5A2A10");
-    const mat=new THREE.ShaderMaterial({
-      vertexShader:VERT_EDGE, fragmentShader:FRAG_EDGE,
-      uniforms:{ uBaseColor:{value:baseCol}, uGlowColor:{value:COL_GLOW_RED}, uPulseHead:{value:-1.0} },
-      transparent:true, blending:THREE.NormalBlending, depthWrite:false,
+  // Mappa nodeId → indice nei rispettivi array red/dark
+  const redNodeIds  = useMemo(() => NODES.filter((n) => n.type === "red").map((n) => n.id), []);
+  const darkNodeIds = useMemo(() => NODES.filter((n) => n.type === "dark").map((n) => n.id), []);
+
+  // ── Geometria edge (LineSegments con shader) ──
+  const edgeObjects = useMemo(() => {
+    return EDGES.map(([a, b, type], idx) => {
+      const nA = NODES[a];
+      const nB = NODES[b];
+      // Suddividi ogni edge in N segmenti per animare la testa dell'impulso
+      const N = 20;
+      const positions = new Float32Array(N * 2 * 3);
+      const progress  = new Float32Array(N * 2);
+      const energies  = new Float32Array(N * 2);
+
+      for (let i = 0; i < N; i++) {
+        const t0 = i / N;
+        const t1 = (i + 1) / N;
+        // Punto A del segmento
+        positions[(i * 2)     * 3 + 0] = nA.x + (nB.x - nA.x) * t0;
+        positions[(i * 2)     * 3 + 1] = nA.y + (nB.y - nA.y) * t0;
+        positions[(i * 2)     * 3 + 2] = nA.z + (nB.z - nA.z) * t0;
+        // Punto B del segmento
+        positions[(i * 2 + 1) * 3 + 0] = nA.x + (nB.x - nA.x) * t1;
+        positions[(i * 2 + 1) * 3 + 1] = nA.y + (nB.y - nA.y) * t1;
+        positions[(i * 2 + 1) * 3 + 2] = nA.z + (nB.z - nA.z) * t1;
+        progress[i * 2]     = t0;
+        progress[i * 2 + 1] = t1;
+        energies[i * 2]     = 0;
+        energies[i * 2 + 1] = 0;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position",  new THREE.BufferAttribute(positions, 3));
+      geo.setAttribute("aProgress", new THREE.BufferAttribute(progress, 1));
+      geo.setAttribute("aEnergy",   new THREE.BufferAttribute(energies, 1));
+
+      const baseColor = type === "strong"
+        ? new THREE.Color("#8B5A3A")
+        : type === "cross"
+          ? new THREE.Color("#C1622F")
+          : new THREE.Color("#7A4A2A");
+
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: VERT_EDGE,
+        fragmentShader: FRAG_EDGE,
+        uniforms: {
+          uBaseColor:  { value: baseColor },
+          uGlowColor:  { value: COL_GLOW_RED },
+          uPulseHead:  { value: -1.0 },
+        },
+        transparent: true,
+        blending: THREE.NormalBlending,
+        depthWrite: false,
+      });
+
+      const lines = new THREE.LineSegments(geo, mat);
+      return { lines, geo, mat, nodeA: a, nodeB: b };
     });
-    return { lines:new THREE.LineSegments(g,mat), geo:g, mat, nodeA:a, nodeB:b };
-  }), []);
+  }, []);
 
-  const origPos = useMemo(() => NODES.map(n => new THREE.Vector3(n.x,n.y,n.z)), []);
+  // ── Posizioni originali dei nodi (per battito radiale) ──
+  const origPositions = useMemo(() =>
+    NODES.map((n) => new THREE.Vector3(n.x, n.y, n.z)), []);
 
-  useFrame((_,delta) => {
-    const ns=nodeStates.current, es=edgeStates.current;
+  // ── Refs per i Points objects ──
+  const pointsRedRef  = useRef<THREE.Points>(null!);
+  const pointsDarkRef = useRef<THREE.Points>(null!);
 
-    // Battito lub-dub 68 BPM
-    const t = performance.now() / 1000;
-    const cycle = (t * 68/60) % 1;
+  // ── Loop animazione ──
+  useFrame((_, delta) => {
+    clockRef.current += delta;
+    const t = clockRef.current;
+
+    const ns = nodeStates.current;
+    const es = edgeStates.current;
+
+    // ── 1. Battito cardiaco radiale ──
+    // Forma lub-dub: due picchi ravvicinati ogni ~0.88s (68 BPM)
+    const bpm = 68;
+    const cycle = (t * bpm / 60) % 1; // [0,1] per ciclo
     let heartbeat = 0;
-    if      (cycle < 0.06) heartbeat = Math.sin((cycle/0.06)*Math.PI)*0.22;
-    else if (cycle < 0.14) heartbeat = -Math.sin(((cycle-0.06)/0.08)*Math.PI)*0.07;
-    else if (cycle < 0.22) heartbeat = Math.sin(((cycle-0.14)/0.08)*Math.PI)*0.12;
-
-    // Onda radiale
-    const wavePhase = cycle < 0.22 ? cycle/0.22 : 0;
-    const waveFront = wavePhase * 3.5;
-
-    // Aggiorna intensità nodi
-    ns.forEach(s => {
-      s.pulseTimer -= delta;
-      if(s.pulseTimer<=0){ s.targetIntensity=0.2+Math.random()*0.8; s.pulseTimer=0.6+Math.random()*2.2; }
-      s.intensity += (s.targetIntensity-s.intensity)*delta*2.8;
+    if (cycle < 0.06) {
+      heartbeat = Math.sin((cycle / 0.06) * Math.PI) * 0.18;
+    } else if (cycle < 0.14) {
+      heartbeat = -Math.sin(((cycle - 0.06) / 0.08) * Math.PI) * 0.06;
+    } else if (cycle < 0.22) {
+      heartbeat = Math.sin(((cycle - 0.14) / 0.08) * Math.PI) * 0.10;
+    }
+    // Applica espansione radiale: i nodi periferici si spostano verso l'esterno
+    // proporzionalmente alla loro distanza dal centro
+    NODES.forEach((n, i) => {
+      const orig = origPositions[i];
+      const radial = n.radialDist;
+      // Vettore dal centro al nodo (normalizzato)
+      const len = orig.length();
+      if (len < 0.001) return;
+      const dir = orig.clone().divideScalar(len);
+      // Spostamento radiale: più esterno = più si muove
+      const displacement = heartbeat * radial * 0.22;
+      // Aggiorna posizione nel buffer geometry
+      // (gestiamo tramite i Points objects)
     });
 
-    // Nodi rossi
-    const rPos=nodeGeo.red.attributes.position as THREE.BufferAttribute;
-    const rInt=nodeGeo.red.attributes.aIntensity as THREE.BufferAttribute;
-    redNodeIds.forEach((nodeId,idx) => {
-      const orig=origPos[nodeId], len=orig.length(), radial=NODES[nodeId].radialDist;
-      const act=Math.max(0,waveFront-radial);
-      const exp=Math.min(act,1)*heartbeat*radial*0.20;
-      if(len>0.001){ rPos.array[idx*3]=orig.x+(orig.x/len)*exp; rPos.array[idx*3+1]=orig.y+(orig.y/len)*exp; rPos.array[idx*3+2]=orig.z+(orig.z/len)*exp; }
-      rInt.array[idx]=Math.min(1,ns[nodeId].intensity+radial*Math.min(act,1)*heartbeat*2.0);
+    // ── 2. Aggiornamento intensità nodi ──
+    ns.forEach((state, i) => {
+      state.pulseTimer -= delta;
+      if (state.pulseTimer <= 0) {
+        // Nuova pulsazione casuale
+        state.targetIntensity = 0.25 + Math.random() * 0.75;
+        state.pulseTimer = 0.8 + Math.random() * 2.5;
+      }
+      // Lerp verso target
+      state.intensity += (state.targetIntensity - state.intensity) * delta * 2.5;
     });
-    rPos.needsUpdate=true; rInt.needsUpdate=true;
 
-    // Nodi scuri
-    const dPos=nodeGeo.dark.attributes.position as THREE.BufferAttribute;
-    const dInt=nodeGeo.dark.attributes.aIntensity as THREE.BufferAttribute;
-    darkNodeIds.forEach((nodeId,idx) => {
-      const orig=origPos[nodeId], len=orig.length(), radial=NODES[nodeId].radialDist;
-      const act=Math.max(0,waveFront-radial);
-      const exp=Math.min(act,1)*heartbeat*radial*0.20;
-      if(len>0.001){ dPos.array[idx*3]=orig.x+(orig.x/len)*exp; dPos.array[idx*3+1]=orig.y+(orig.y/len)*exp; dPos.array[idx*3+2]=orig.z+(orig.z/len)*exp; }
-      dInt.array[idx]=Math.min(1,ns[nodeId].intensity+radial*Math.min(act,1)*heartbeat*1.6);
+    // Aggiorna attributo aIntensity per nodi rossi
+    const redIntArr = nodeGeo.red.attributes.aIntensity as THREE.BufferAttribute;
+    redNodeIds.forEach((nodeId, idx) => {
+      const state = ns[nodeId];
+      // Battito: i nodi periferici pulsano di più
+      const radialPulse = NODES[nodeId].radialDist * heartbeat * 2.5;
+      redIntArr.array[idx] = Math.min(1.0, state.intensity + radialPulse);
     });
-    dPos.needsUpdate=true; dInt.needsUpdate=true;
+    redIntArr.needsUpdate = true;
 
-    // Propagazione energia archi
-    es.forEach((estate,i) => {
-      const {nodeA,nodeB,mat,geo}=edgeObjects[i];
-      if(!estate.active){
-        estate.cooldown-=delta;
-        if(estate.cooldown<=0){
-          estate.active=true;
-          estate.direction=ns[nodeA].intensity>=ns[nodeB].intensity?1:-1;
-          estate.pulseHead=estate.direction>0?0:1;
-          estate.energy=0.4+Math.random()*0.6;
-          estate.cooldown=0;
+    // Aggiorna attributo aIntensity per nodi scuri
+    const darkIntArr = nodeGeo.dark.attributes.aIntensity as THREE.BufferAttribute;
+    darkNodeIds.forEach((nodeId, idx) => {
+      const state = ns[nodeId];
+      const radialPulse = NODES[nodeId].radialDist * heartbeat * 2.0;
+      darkIntArr.array[idx] = Math.min(1.0, state.intensity + radialPulse);
+    });
+    darkIntArr.needsUpdate = true;
+
+    // ── 3. Battito radiale: sposta posizioni nodi ──
+    const redPosArr  = nodeGeo.red.attributes.position as THREE.BufferAttribute;
+    const darkPosArr = nodeGeo.dark.attributes.position as THREE.BufferAttribute;
+
+    redNodeIds.forEach((nodeId, idx) => {
+      const orig = origPositions[nodeId];
+      const len = orig.length();
+      if (len < 0.001) return;
+      const radial = NODES[nodeId].radialDist;
+      const disp = heartbeat * radial * 0.18;
+      redPosArr.array[idx * 3]     = orig.x + (orig.x / len) * disp;
+      redPosArr.array[idx * 3 + 1] = orig.y + (orig.y / len) * disp;
+      redPosArr.array[idx * 3 + 2] = orig.z + (orig.z / len) * disp;
+    });
+    redPosArr.needsUpdate = true;
+
+    darkNodeIds.forEach((nodeId, idx) => {
+      const orig = origPositions[nodeId];
+      const len = orig.length();
+      if (len < 0.001) return;
+      const radial = NODES[nodeId].radialDist;
+      const disp = heartbeat * radial * 0.18;
+      darkPosArr.array[idx * 3]     = orig.x + (orig.x / len) * disp;
+      darkPosArr.array[idx * 3 + 1] = orig.y + (orig.y / len) * disp;
+      darkPosArr.array[idx * 3 + 2] = orig.z + (orig.z / len) * disp;
+    });
+    darkPosArr.needsUpdate = true;
+
+    // ── 4. Propagazione energia lungo gli edge ──
+    es.forEach((estate, i) => {
+      const { nodeA, nodeB } = edgeObjects[i];
+      const mat = edgeObjects[i].mat;
+
+      if (!estate.active) {
+        estate.cooldown -= delta;
+        if (estate.cooldown <= 0) {
+          // Attiva impulso: parte dal nodo più luminoso
+          const intA = ns[nodeA].intensity;
+          const intB = ns[nodeB].intensity;
+          estate.active    = true;
+          estate.direction = intA >= intB ? 1 : -1;
+          estate.pulseHead = estate.direction > 0 ? 0 : 1;
+          estate.energy    = 0.5 + Math.random() * 0.5;
+          estate.cooldown  = 0;
         }
       } else {
-        estate.pulseHead+=estate.direction*delta*(1.0+Math.random()*0.4);
-        mat.uniforms.uPulseHead.value=estate.pulseHead;
-        const eAttr=geo.attributes.aEnergy as THREE.BufferAttribute;
-        for(let v=0;v<eAttr.count;v++) eAttr.array[v]=estate.energy;
-        eAttr.needsUpdate=true;
-        if(estate.pulseHead>1.2||estate.pulseHead<-0.2){
-          estate.active=false; estate.energy=0; estate.pulseHead=0;
-          estate.cooldown=0.15+Math.random()*2.0;
-          mat.uniforms.uPulseHead.value=-2.0;
-          const dest=estate.direction>0?nodeB:nodeA;
-          ns[dest].targetIntensity=0.65+Math.random()*0.35;
-          ns[dest].pulseTimer=0.4+Math.random()*1.2;
+        // Avanza la testa dell'impulso
+        const speed = 1.2 + Math.random() * 0.5;
+        estate.pulseHead += estate.direction * delta * speed;
+
+        // Aggiorna uniform
+        mat.uniforms.uPulseHead.value = estate.pulseHead;
+        mat.uniforms.uGlowColor.value = EDGES[i][2] === "cross"
+          ? COL_GLOW_DARK
+          : COL_GLOW_RED;
+
+        // Aggiorna energy attribute (tutti i vertici dell'edge)
+        const energyAttr = edgeObjects[i].geo.attributes.aEnergy as THREE.BufferAttribute;
+        for (let v = 0; v < energyAttr.count; v++) {
+          energyAttr.array[v] = estate.energy;
+        }
+        energyAttr.needsUpdate = true;
+
+        // Fine impulso
+        if (estate.pulseHead > 1.2 || estate.pulseHead < -0.2) {
+          estate.active    = false;
+          estate.energy    = 0;
+          estate.pulseHead = 0;
+          estate.cooldown  = 0.3 + Math.random() * 3.5;
+          mat.uniforms.uPulseHead.value = -2.0; // fuori range = invisibile
+
+          // Accendi il nodo destinazione
+          const destNode = estate.direction > 0 ? nodeB : nodeA;
+          ns[destNode].targetIntensity = 0.7 + Math.random() * 0.3;
+          ns[destNode].pulseTimer = 0.5 + Math.random() * 1.5;
         }
       }
     });
@@ -1866,27 +529,62 @@ function HeartGraphScene() {
 
   return (
     <group>
-      {edgeObjects.map((obj,i) => <primitive key={`e${i}`} object={obj.lines}/>)}
-      <points geometry={nodeGeo.red}  material={nodeMatRed}/>
-      <points geometry={nodeGeo.dark} material={nodeMatDark}/>
+      {/* Luci ambientali */}
+      <ambientLight intensity={0.15} />
+      <pointLight position={[0, 0, 3]} intensity={0.3} color="#ff6030" />
+
+      {/* Edge */}
+      {edgeObjects.map((obj, i) => (
+        <primitive key={`edge-${i}`} object={obj.lines} />
+      ))}
+
+      {/* Nodi rossi */}
+      <points ref={pointsRedRef} geometry={nodeGeo.red} material={nodeMatRed} />
+
+      {/* Nodi scuri */}
+      <points ref={pointsDarkRef} geometry={nodeGeo.dark} material={nodeMatDark} />
     </group>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Export
+// Componente pubblico
 // ─────────────────────────────────────────────────────────────────────────────
-interface HeartGraph3DProps { className?: string; width?: number|string; height?: number|string; }
+interface HeartGraph3DProps {
+  className?: string;
+  width?: number | string;
+  height?: number | string;
+}
 
-export default function HeartGraph3D({ className="", width="100%", height="100%" }: HeartGraph3DProps) {
+export default function HeartGraph3D({
+  className = "",
+  width = "100%",
+  height = "100%",
+}: HeartGraph3DProps) {
   return (
-    <div className={className} style={{width,height,cursor:"grab"}} aria-label="Grafo psicologico animato a forma di cuore anatomico">
-      <Canvas camera={{position:[0,0,1.9],fov:55}} gl={{antialias:true,alpha:true}} style={{background:"transparent"}} dpr={[1,2]}>
-        <HeartGraphScene/>
-        <OrbitControls enableZoom={false} enablePan={false}
-          autoRotate autoRotateSpeed={0.4}
-          minPolarAngle={Math.PI*0.15} maxPolarAngle={Math.PI*0.85}
-          rotateSpeed={0.55} dampingFactor={0.07} enableDamping/>
+    <div
+      className={className}
+      style={{ width, height, cursor: "grab" }}
+      aria-label="Grafo psicologico animato a forma di cuore"
+    >
+      <Canvas
+        camera={{ position: [0, 0, 2.6], fov: 48 }}
+        gl={{ antialias: true, alpha: true }}
+        style={{ background: "transparent" }}
+        dpr={[1, 2]}
+      >
+        <HeartGraphScene />
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          autoRotate
+          autoRotateSpeed={0.5}
+          minPolarAngle={Math.PI * 0.2}
+          maxPolarAngle={Math.PI * 0.8}
+          rotateSpeed={0.6}
+          dampingFactor={0.07}
+          enableDamping
+        />
       </Canvas>
     </div>
   );
