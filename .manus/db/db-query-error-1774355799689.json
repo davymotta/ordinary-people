@@ -1,0 +1,12 @@
+{
+  "query": "\nALTER TABLE \"agentBrandStates\" \n  ADD COLUMN IF NOT EXISTS \"psyche_state\" JSONB,\n  ADD COLUMN IF NOT EXISTS \"psyche_last_tick\" TIMESTAMP,\n  ADD COLUMN IF NOT EXISTS \"psyche_active_biases\" TEXT[],\n  ADD COLUMN IF NOT EXISTS \"psyche_mood\" TEXT;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 23k7DxJkvxWkDiS.cfce7a4d6a95 --database BrhNBieBfyzPV9fR7mMkGf --execute \nALTER TABLE \"agentBrandStates\" \n  ADD COLUMN IF NOT EXISTS \"psyche_state\" JSONB,\n  ADD COLUMN IF NOT EXISTS \"psyche_last_tick\" TIMESTAMP,\n  ADD COLUMN IF NOT EXISTS \"psyche_active_biases\" TEXT[],\n  ADD COLUMN IF NOT EXISTS \"psyche_mood\" TEXT;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 2: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 30 near \"\"agentBrandStates\" ",
+    "  ADD COLUMN IF NOT EXISTS \"psyche_state\" JSONB,",
+    "  ADD COLUMN IF NOT EXISTS \"psyche_last_tick\" TIMESTAMP,",
+    "  ADD COLUMN IF NOT EXISTS \"psyche_active_biases\" TEXT[],",
+    "  ADD COLUMN IF NOT EXISTS \"psyche_mood\" TEXT\""
+  ]
+}

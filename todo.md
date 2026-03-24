@@ -547,3 +547,29 @@
 - [x] VT.3 — Vitest: 8 test computeFrequencyResponseCurve (Zajonc effect, saturation, irritation)
 - [x] VT.4 — Vitest: 3 test temporal decay behavior (half-life formulas)
 - [x] TOTALE: 24/24 test passati
+
+## Sprint 16 — Port TypeScript Motore Psyche
+
+- [x] SP16.1 — server/psyche/topology.ts: topologia come costante TypeScript (32 nodi, 68 edge)
+- [x] SP16.2 — server/psyche/engine.ts: initializeFromProfile, applyDecay, applyCircadian, injectStimulus, propagate, readState, tick, serialize/deserialize, stateToPrompt
+- [x] SP16.3 — server/psyche/perceptual-router.ts: keyword detection 40+ temi IT/EN + wound/shadow triggers
+- [x] SP16.4 — server/psyche/perceptual-router.ts: OP_THEME_TO_PSYCHE bridge (mapOPThemesToPsyche)
+- [x] SP16.5 — Migrazione DB: colonne psycheState, psycheLastTick, psycheActiveBiases, psycheMood su agentBrandStates
+- [x] SP16.6 — Vitest: 39/39 test passati (7 suite: initializeFromProfile, decay, circadian, inject, propagate, readState, tick, serialize, PerceptualRouter, mapOPThemes)
+- [x] TOTALE SUITE: 204/204 test passati
+
+## Sprint 17 — Integrazione Psyche nel Campaign Engine
+
+- [ ] SP17.1 — processAgentCampaignReaction: carica psyche_state dal DB, esegue tick(), inietta [PSYCHE_STATE] nel prompt
+- [ ] SP17.2 — Salva psyche_state aggiornato nel DB dopo ogni reazione
+- [ ] SP17.3 — applyExposureAdjustment: usa psyche_state.arousal e active_biases invece dei campi scalari
+- [ ] SP17.4 — UI: visualizzazione PSYCHE_STATE nella pagina reazione agente (bias dominanti, mood, arousal)
+- [ ] SP17.5 — Vitest: test integrazione Campaign Engine + Psyche
+
+## Sprint 18 — Integrazione Psyche nel World Engine e Social Influence
+
+- [ ] SP18.1 — processAgentEvent: traduce evento in temi Psyche, esegue tick(), aggiorna stato
+- [ ] SP18.2 — Mapping eventi → temi Psyche (crisi economica, notizia positiva, evento sociale, lutto, ecc.)
+- [ ] SP18.3 — social-influence.ts: reazioni contatti → stimoli Psyche (social_proof, conformity_pressure, criticism)
+- [ ] SP18.4 — UI Lab: visualizzatore grafo Psyche in tempo reale (nodi colorati per activation)
+- [ ] SP18.5 — Vitest: test World Engine + Psyche, Social Influence + Psyche

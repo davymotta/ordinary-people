@@ -828,6 +828,11 @@ export const agentBrandStates = mysqlTable("agentBrandStates", {
   currentEmotionalState: varchar("currentEmotionalState", { length: 100 }), // "curiosità"|"fiducia"|"irritazione"|...
   // Touchpoint history (per journey simulation)
   touchpointHistory: json("touchpointHistory"), // [{ campaignId, score, timestamp, channel }]
+  // Psyche Engine: stato interno del grafo psicologico (32 nodi)
+  psycheState: json("psycheState"), // GraphState serializzato (nodi × activation + valence)
+  psycheLastTick: timestamp("psycheLastTick"), // Timestamp ultimo tick (per calcolo elapsed_minutes)
+  psycheActiveBiases: json("psycheActiveBiases"), // string[] — bias dominanti ultimo tick
+  psycheMood: varchar("psycheMood", { length: 50 }), // mood label ultimo tick
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
