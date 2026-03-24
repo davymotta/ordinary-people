@@ -24,6 +24,8 @@ import {
   getWorldEventById,
 } from "./agents-db";
 import type { Agent, AgentState, WorldEvent } from "../drizzle/schema";
+import { runPsycheTick, savePsycheState } from "./psyche/psyche-integration";
+import { worldEventToPsycheStimulus } from "./psyche/world-psyche-bridge";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -33,6 +35,8 @@ export interface EventProcessingResult {
   reaction: string;
   stateChanges: StateChanges;
   memoryCreated: boolean;
+  psycheMood?: string | null;
+  psycheWoundActive?: boolean;
 }
 
 export interface StateChanges {
@@ -72,7 +76,7 @@ export async function processAgentEvent(
   agent: Agent,
   state: AgentState | null,
   event: WorldEvent
-): Promise<{ reaction: string; stateChanges: StateChanges; memoryCreated: boolean }> {
+): Promise<{ reaction: string; stateChanges: StateChanges; memoryCreated: boolean; psycheMood?: string | null; psycheWoundActive?: boolean }> {
   
   const currentState = state ?? {
     moodValence: 0,
@@ -85,7 +89,28 @@ export async function processAgentEvent(
     regimePerception: {},
   };
 
+  // ─── Psyche tick: traduce l'evento in stimolo cognitivo interno ──────────────────────
+  const eventStimulus = worldEventToPsycheStimulus(event);
+  let psycheResult: Awaited<ReturnType<typeof runPsycheTick>> | null = null;
+  try {
+    // runPsycheTick(agent, brandAgentId, campaignTopics, campaignText, campaignTone)
+    // Per gli eventi del mondo: brandAgentId=null (no brand), temi come topics, testo dell'evento, tone=null
+    psycheResult = await runPsycheTick(
+      agent,
+      null, // World events non sono legati a un brand
+      eventStimulus.themes,
+      `${event.title}: ${event.description ?? ""}`,
+      event.eventType ?? null
+    );
+    console.log(`[WorldEngine] Psyche tick per ${agent.slug}: ${eventStimulus.description}`);
+  } catch (err) {
+    console.warn(`[WorldEngine] Psyche tick fallito per ${agent.slug}:`, err);
+  }
+
   const systemPrompt = agent.systemPrompt ?? buildFallbackSystemPrompt(agent);
+  const psycheSection = psycheResult?.psychePrompt
+    ? `\n\n${psycheResult.psychePrompt}`
+    : "";
   
   const userPrompt = buildEventPrompt(agent, currentState, event);
 
@@ -93,7 +118,7 @@ export async function processAgentEvent(
   try {
     const response = await invokeLLM({
       messages: [
-        { role: "system", content: systemPrompt },
+        { role: "system", content: systemPrompt + psycheSection },
         { role: "user", content: userPrompt },
       ],
       response_format: {
@@ -190,6 +215,8 @@ export async function processAgentEvent(
     reaction: parsed.reaction ?? "Nessuna reazione.",
     stateChanges,
     memoryCreated: parsed.creates_memory ?? false,
+    psycheMood: psycheResult?.psycheState?.mood ?? null,
+    psycheWoundActive: psycheResult?.psycheState?.wound_active ?? false,
   };
 }
 
@@ -220,7 +247,7 @@ export async function processWorldEvent(
     });
 
     try {
-      const { reaction, stateChanges, memoryCreated } = await processAgentEvent(agent, state, event);
+      const { reaction, stateChanges, memoryCreated, psycheMood, psycheWoundActive } = await processAgentEvent(agent, state, event);
 
       // Update agent state
       await upsertAgentState(agent.id, stateChanges);
@@ -255,6 +282,8 @@ export async function processWorldEvent(
         reaction,
         stateChanges,
         memoryCreated,
+        psycheMood: psycheMood ?? null,
+        psycheWoundActive: psycheWoundActive ?? false,
       });
     } catch (error) {
       console.error(`[WorldEngine] Error processing agent ${agent.slug}:`, error);

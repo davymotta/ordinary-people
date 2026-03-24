@@ -578,3 +578,13 @@
 - [ ] SP18.3 — social-influence.ts: reazioni contatti → stimoli Psyche (social_proof, conformity_pressure, criticism)
 - [ ] SP18.4 — UI Lab: visualizzatore grafo Psyche in tempo reale (nodi colorati per activation)
 - [ ] SP18.5 — Vitest: test World Engine + Psyche, Social Influence + Psyche
+
+## Sprint 18 — Psyche × World Engine + Social Influence
+
+- [x] SP18.1 — server/psyche/world-psyche-bridge.ts: mapping 35+ tipi evento → temi Psyche + intensità + scope + impatto economico
+- [x] SP18.2 — world-engine.ts: tick Psyche in processAgentEvent (worldEventToPsycheStimulus + runPsycheTick)
+- [x] SP18.3 — world-engine.ts: iniezione [PSYCHE_STATE] nel system prompt dell'agente
+- [x] SP18.4 — world-engine.ts: psycheMood + psycheWoundActive nel return di processAgentEvent e EventProcessingResult
+- [x] SP18.5 — social-influence.ts: getPsycheSocialStimulus (social_proof, peer_pressure, conformity, disagreement)
+- [x] SP18.6 — UI WorldEvents.tsx: badge mood (colorati) + badge "ferita attiva" + delta moodValence nei risultati
+- [x] TOTALE: 204/204 test passati, 0 errori TypeScript

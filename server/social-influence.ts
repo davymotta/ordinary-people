@@ -23,6 +23,7 @@
  */
 
 import type { Agent } from "../drizzle/schema";
+import { socialInfluenceToPsycheStimulus } from "./psyche/world-psyche-bridge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -313,6 +314,46 @@ Ora che hai visto come hanno reagito le persone che conosci, la tua opinione cam
 Rispondi nel formato JSON richiesto, aggiornando il tuo score e la tua reflection se necessario.
 Sii onesto: potresti confermare la tua posizione, lasciarti influenzare, o resistere consapevolmente alla pressione sociale.
 `.trim();
+}
+
+// ─── Psyche Social Stimulus ─────────────────────────────────────────────────
+
+/**
+ * Restituisce lo stimolo Psyche corrispondente al contesto di influenza sociale.
+ * Usato dal Campaign Engine Pass 2 per aggiornare il grafo cognitivo dell'agente
+ * dopo aver visto le reazioni dei contatti.
+ *
+ * Bowlby: le reazioni degli altri attivano il sistema di attaccamento.
+ * Cialdini: la social proof modifica la valutazione del rischio.
+ */
+export function getPsycheSocialStimulus(
+  context: SocialInfluenceContext
+): { themes: string[]; stimulusStrength: number } | null {
+  if (context.contactReactions.length === 0) return null;
+
+  // Determina il tipo di influenza dominante
+  const signal = context.majoritySignal;
+  const pressure = context.socialPressure;
+
+  if (Math.abs(pressure) < 0.15) {
+    // Pressione mista/neutra — conformity lieve
+    const stimulus = socialInfluenceToPsycheStimulus("conformity", 0.2);
+    return { themes: stimulus.themes, stimulusStrength: stimulus.stimulusStrength };
+  }
+
+  if (signal === "positive") {
+    const stimulus = socialInfluenceToPsycheStimulus("social_proof", Math.abs(pressure) * 0.6);
+    return { themes: stimulus.themes, stimulusStrength: stimulus.stimulusStrength };
+  }
+
+  if (signal === "negative") {
+    const stimulus = socialInfluenceToPsycheStimulus("peer_pressure", Math.abs(pressure) * 0.6);
+    return { themes: stimulus.themes, stimulusStrength: stimulus.stimulusStrength };
+  }
+
+  // Mixed: uncertainty + conformity
+  const stimulus = socialInfluenceToPsycheStimulus("disagreement", 0.3);
+  return { themes: stimulus.themes, stimulusStrength: stimulus.stimulusStrength };
 }
 
 // ─── Statistiche di influenza sociale ────────────────────────────────────────

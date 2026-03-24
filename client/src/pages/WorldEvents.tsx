@@ -360,11 +360,44 @@ export default function WorldEvents() {
                       {r.agentSlug.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium">{r.agentSlug}</div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-medium">{r.agentSlug}</span>
+                        {r.psycheMood && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            r.psycheMood === "anxious" ? "bg-amber-100 text-amber-700" :
+                            r.psycheMood === "defensive" ? "bg-orange-100 text-orange-700" :
+                            r.psycheMood === "activated" ? "bg-rose-100 text-rose-700" :
+                            r.psycheMood === "curious" ? "bg-sky-100 text-sky-700" :
+                            r.psycheMood === "resonant" ? "bg-violet-100 text-violet-700" :
+                            "bg-gray-100 text-gray-600"
+                          }`}>
+                            {r.psycheMood}
+                          </span>
+                        )}
+                        {r.psycheWoundActive && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 font-medium">
+                            ferita attiva
+                          </span>
+                        )}
+                        {r.memoryCreated && (
+                          <span className="text-[10px]">💾</span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{r.reaction}</div>
                     </div>
-                    <div className={`text-xs font-semibold shrink-0 ${r.stateChanges?.moodValence !== undefined ? (r.stateChanges.moodValence > 0 ? "text-emerald-600" : r.stateChanges.moodValence < 0 ? "text-red-600" : "text-gray-500") : "text-gray-500"}`}>
-                      {r.memoryCreated ? "💾" : ""}
+                    <div className={`text-xs font-semibold shrink-0 ${
+                      r.stateChanges?.moodValence !== undefined
+                        ? r.stateChanges.moodValence > 0 ? "text-emerald-600"
+                        : r.stateChanges.moodValence < 0 ? "text-red-600"
+                        : "text-gray-500"
+                        : "text-gray-500"
+                    }`}>
+                      {r.stateChanges?.moodValence !== undefined
+                        ? r.stateChanges.moodValence > 0 ? "+" : ""
+                        : ""}
+                      {r.stateChanges?.moodValence !== undefined
+                        ? r.stateChanges.moodValence.toFixed(2)
+                        : ""}
                     </div>
                   </div>
                 ))}
