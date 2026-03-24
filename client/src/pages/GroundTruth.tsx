@@ -9,8 +9,96 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader2, Plus, Target, TrendingUp, Upload, RefreshCw,
-  BarChart3, CheckCircle, AlertTriangle, Info, Zap,
+  BarChart3, CheckCircle, AlertTriangle, Info, Zap, FlaskConical, Activity,
 } from "lucide-react";
+
+// ─── Karpathy Loop Data (iter_01 — 20260324_142049) ─────────────────────────
+
+const KARPATHY_META = {
+  loopId: "20260324_142049",
+  date: "2026-03-24",
+  nAgents: 200,
+  nInteractions: 10000,
+  iterationsRun: 1,
+  iterationsPlanned: 8,
+  converged: true,
+  totalTimeSec: 168.3,
+};
+
+const KARPATHY_STATS = {
+  engagementMean: 0.2940,
+  engagementStdev: 0.2506,
+  arousalMean: 0.6466,
+  arousalStdev: 0.3719,
+  reactionAccuracy: 0.5758,
+  neutralEngagementMean: 0.4929,
+  hyperdefensiveRatio: 0.0,
+};
+
+const KARPATHY_CONVERGENCE = [
+  { criterion: "Engagement neutro", target: "[0.4, 0.6]", value: 0.493, passed: true },
+  { criterion: "Reaction accuracy", target: "> 0.35", value: 0.576, passed: true },
+  { criterion: "Agenti iperdifensivi", target: "< 0.05", value: 0.000, passed: true },
+  { criterion: "Engagement std dev", target: "> 0.05", value: 0.251, passed: true },
+];
+
+const KARPATHY_NODE_DELTAS = [
+  { id: "identity",          label: "Identity",           category: "core",      base: 0.455, prev: 0.700, delta: -0.245 },
+  { id: "shadow",            label: "Shadow",             category: "core",      base: 0.130, prev: 0.130, delta: 0.000 },
+  { id: "core_wound",        label: "Core Wound",         category: "core",      base: 0.098, prev: 0.100, delta: -0.002 },
+  { id: "core_desire",       label: "Core Desire",        category: "core",      base: 0.260, prev: 0.260, delta: 0.000 },
+  { id: "current_mood",      label: "Current Mood",       category: "emotional", base: 0.325, prev: 0.350, delta: -0.025 },
+  { id: "stress_level",      label: "Stress Level",       category: "emotional", base: 0.130, prev: 0.130, delta: 0.000 },
+  { id: "energy",            label: "Energy",             category: "emotional", base: 0.455, prev: 0.700, delta: -0.245 },
+  { id: "emotional_arousal", label: "Emotional Arousal",  category: "emotional", base: 0.130, prev: 0.130, delta: 0.000 },
+  { id: "attention_filter",  label: "Attention Filter",   category: "cognitive", base: 0.325, prev: 0.350, delta: -0.025 },
+  { id: "confirmation_engine",label:"Confirmation Engine",category: "cognitive", base: 0.260, prev: 0.260, delta: 0.000 },
+  { id: "risk_calculator",   label: "Risk Calculator",    category: "cognitive", base: 0.195, prev: 0.200, delta: -0.005 },
+  { id: "aspiration_engine", label: "Aspiration Engine",  category: "cognitive", base: 0.195, prev: 0.200, delta: -0.005 },
+  { id: "critical_thinking", label: "Critical Thinking",  category: "cognitive", base: 0.260, prev: 0.260, delta: 0.000 },
+  { id: "inner_voice",       label: "Inner Voice",        category: "cognitive", base: 0.325, prev: 0.325, delta: 0.000 },
+  { id: "loss_aversion",     label: "Loss Aversion",      category: "bias",      base: 0.050, prev: 0.180, delta: -0.130 },
+  { id: "bandwagon_bias",    label: "Bandwagon",          category: "bias",      base: 0.050, prev: 0.050, delta: 0.000 },
+  { id: "authority_bias",    label: "Authority Bias",     category: "bias",      base: 0.050, prev: 0.050, delta: 0.000 },
+  { id: "scarcity_bias",     label: "Scarcity Bias",      category: "bias",      base: 0.050, prev: 0.050, delta: 0.000 },
+  { id: "cultural_lens",     label: "Cultural Lens",      category: "cultural",  base: 0.390, prev: 0.500, delta: -0.110 },
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  core: "text-red-600 bg-red-50 border-red-200",
+  emotional: "text-orange-600 bg-orange-50 border-orange-200",
+  cognitive: "text-stone-600 bg-stone-50 border-stone-200",
+  social: "text-blue-600 bg-blue-50 border-blue-200",
+  bias: "text-red-800 bg-red-50 border-red-300",
+  cultural: "text-amber-700 bg-amber-50 border-amber-200",
+  expressive: "text-rose-600 bg-rose-50 border-rose-200",
+};
+
+function DeltaBar({ base, prev }: { base: number; prev: number }) {
+  const delta = base - prev;
+  const pctBase = base * 100;
+  const pctPrev = prev * 100;
+  const isDown = delta < 0;
+  return (
+    <div className="space-y-0.5">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden relative">
+          <div className="absolute h-full bg-stone-300 rounded-full" style={{ width: `${pctPrev}%` }} />
+          <div className="absolute h-full bg-[#8B3A2A] rounded-full" style={{ width: `${pctBase}%` }} />
+        </div>
+        <span className={`text-[10px] font-mono font-bold w-14 text-right ${
+          delta < -0.01 ? "text-emerald-600" : delta > 0.01 ? "text-red-600" : "text-muted-foreground"
+        }`}>
+          {delta < -0.01 ? "▼" : delta > 0.01 ? "▲" : "="} {Math.abs(delta).toFixed(3)}
+        </span>
+      </div>
+      <div className="flex justify-between text-[9px] text-muted-foreground/60">
+        <span>prev {prev.toFixed(3)}</span>
+        <span>calibrated {base.toFixed(3)}</span>
+      </div>
+    </div>
+  );
+}
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -174,11 +262,117 @@ export default function GroundTruth() {
         )}
       </div>
 
-      <Tabs defaultValue="gte">
+      <Tabs defaultValue="karpathy">
         <TabsList className="h-8 text-xs">
+          <TabsTrigger value="karpathy" className="text-xs">Karpathy Loop</TabsTrigger>
           <TabsTrigger value="gte" className="text-xs">GTE — Calibrazione Brand</TabsTrigger>
           <TabsTrigger value="legacy" className="text-xs">Legacy — Segment Scores</TabsTrigger>
         </TabsList>
+
+        {/* ─── KARPATHY LOOP TAB ──────────────────────────────────────────────────────────────────────── */}
+        <TabsContent value="karpathy" className="space-y-5 mt-4">
+
+          {/* Header meta */}
+          <Card className="border border-border/50 shadow-none">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="h-4 w-4 text-[#8B3A2A]" />
+                    <h3 className="text-sm font-bold tracking-[-0.02em]">Loop {KARPATHY_META.loopId}</h3>
+                    <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 text-[10px]">Convergenza raggiunta</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {KARPATHY_META.nAgents.toLocaleString()} agenti · {KARPATHY_META.nInteractions.toLocaleString()} interazioni · {KARPATHY_META.iterationsRun}/{KARPATHY_META.iterationsPlanned} iterazioni · {KARPATHY_META.totalTimeSec}s
+                  </p>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-mono">{KARPATHY_META.date}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* KPI grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Reaction Accuracy", value: (KARPATHY_STATS.reactionAccuracy * 100).toFixed(1) + "%", sub: "target > 35%", ok: true },
+              { label: "Arousal Medio", value: KARPATHY_STATS.arousalMean.toFixed(3), sub: "std ±" + KARPATHY_STATS.arousalStdev.toFixed(3), ok: true },
+              { label: "Engagement Neutro", value: KARPATHY_STATS.neutralEngagementMean.toFixed(3), sub: "target [0.4, 0.6]", ok: true },
+              { label: "Iperdifensivi", value: (KARPATHY_STATS.hyperdefensiveRatio * 100).toFixed(0) + "%", sub: "target < 5%", ok: true },
+            ].map((kpi) => (
+              <Card key={kpi.label} className="border border-border/50 shadow-none">
+                <CardContent className="p-3 space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
+                  <p className="text-xl font-extrabold tracking-[-0.04em] text-[#8B3A2A]">{kpi.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{kpi.sub}</p>
+                  {kpi.ok && <CheckCircle className="h-3 w-3 text-emerald-500" />}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Convergence criteria */}
+          <Card className="border border-border/50 shadow-none">
+            <CardContent className="p-4 space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Criteri di Convergenza</h3>
+              <div className="space-y-2">
+                {KARPATHY_CONVERGENCE.map((c) => (
+                  <div key={c.criterion} className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
+                    <div className="flex items-center gap-2">
+                      {c.passed
+                        ? <CheckCircle className="h-3 w-3 text-emerald-500 shrink-0" />
+                        : <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />}
+                      <span className="text-xs">{c.criterion}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-right">
+                      <span className="text-[10px] text-muted-foreground">target {c.target}</span>
+                      <span className="text-xs font-mono font-bold">{c.value.toFixed(3)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Node deltas */}
+          <Card className="border border-border/50 shadow-none">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-3.5 w-3.5 text-[#8B3A2A]" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Delta Nodi — Prev vs Calibrated</h3>
+              </div>
+              <p className="text-[10px] text-muted-foreground">Grigio = valore precedente · Terracotta = valore calibrato · ▼ verde = riduzione (calibrazione verso il basso)</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                {KARPATHY_NODE_DELTAS.map((n) => (
+                  <div key={n.id} className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className={`text-[9px] px-1 py-0 border ${CATEGORY_COLORS[n.category] ?? ""}`}>{n.category}</Badge>
+                      <span className="text-xs font-medium">{n.label}</span>
+                    </div>
+                    <DeltaBar base={n.base} prev={n.prev} />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Insight callout */}
+          <Card className="border border-[#8B3A2A]/20 bg-[#8B3A2A]/5 shadow-none">
+            <CardContent className="p-4">
+              <div className="flex gap-3">
+                <Info className="h-4 w-4 text-[#8B3A2A] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold">Insight calibrazione iter_01</p>
+                  <p className="text-xs text-muted-foreground">
+                    I nodi con delta maggiore sono <strong>identity</strong> (−0.245), <strong>energy</strong> (−0.245), <strong>loss_aversion</strong> (−0.130) e <strong>cultural_lens</strong> (−0.110).
+                    Il modello iniziale sovrastimava l'attivazione basale di questi nodi, producendo agenti troppo reattivi e difensivi.
+                    La calibrazione ha portato il sistema verso comportamenti più realistici: engagement neutro 0.493 (nel range target), zero agenti iperdifensivi.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        </TabsContent>
 
         {/* ─── GTE Tab ─────────────────────────────────────────────────────── */}
         <TabsContent value="gte" className="space-y-5 mt-4">

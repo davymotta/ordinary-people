@@ -622,3 +622,9 @@
 - [x] HeartGraph3D: 97 archi semantici (backbone identitario, regolazione emotiva, distorsioni cognitive, cross-link)
 - [x] Landing page: metriche reali (57.6% reaction accuracy, 0.647 arousal, 32 nodi, 68 archi)
 - [x] Landing page: badge "Psyche Engine v3.0 · Karpathy Calibrated"
+
+## Sprint Psyche 3.0 — Prossimi Passi
+
+- [ ] Ground Truth page: aggiornare con dati reali Karpathy Report iter_01 (8 agenti, 2 campagne, delta base_activation)
+- [ ] HeartGraph3D: tooltip hover sui nodi con nome nodo Psyche e valore base_activation calibrato
+- [ ] UI Simulazione: pannello Theme Bridge che mostra temi NLP attivati e mapping ai nodi del grafo

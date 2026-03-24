@@ -9,8 +9,8 @@
  * - Energia: impulso luminoso che viaggia lungo gli edge da nodo attivo a nodo target
  */
 
-import { useRef, useMemo, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useCallback, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -584,9 +584,92 @@ function HeartGraphScene() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────
+// Tooltip overlay — proietta nodi 3D in coordinate schermo
+// ──────────────────────────────────────────────────────────────────────────────────
+
+interface HoveredNode {
+  node: NodeDef;
+  screenX: number;
+  screenY: number;
+}
+
+const CATEGORY_LABEL: Record<string, string> = {
+  core: "Core",
+  emotional: "Emotional",
+  cognitive: "Cognitive",
+  social: "Social",
+  bias: "Bias",
+  cultural: "Cultural",
+  expressive: "Expressive",
+};
+
+const CATEGORY_COLOR: Record<string, string> = {
+  core: "#C1622F",
+  emotional: "#8B6A3A",
+  cognitive: "#5A5A5A",
+  social: "#4A6A8B",
+  bias: "#8B2A2A",
+  cultural: "#7A6A3A",
+  expressive: "#8B4A5A",
+};
+
+function NodeTooltipDetector({
+  onHover,
+}: {
+  onHover: (node: HoveredNode | null) => void;
+}) {
+  const { camera, gl } = useThree();
+  const _vec = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame(() => {
+    // Aggiornato tramite event listener sul canvas
+  });
+
+  // Registra il mouse move sul canvas
+  useMemo(() => {
+    const canvas = gl.domElement;
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      let closest: HoveredNode | null = null;
+      let minDist = 0.08; // soglia in NDC
+
+      NODES.forEach((node) => {
+        _vec.set(node.x, node.y, node.z);
+        _vec.project(camera);
+        const dx = _vec.x - mouseX;
+        const dy = _vec.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDist) {
+          minDist = dist;
+          // Converti NDC in coordinate pixel del canvas
+          const screenX = ((_vec.x + 1) / 2) * rect.width;
+          const screenY = ((-_vec.y + 1) / 2) * rect.height;
+          closest = { node, screenX, screenY };
+        }
+      });
+      onHover(closest);
+    };
+
+    const handleMouseLeave = () => onHover(null);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
+    return () => {
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [camera, gl, onHover, _vec]);
+
+  return null;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────────
 // Componente pubblico
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────
+
 interface HeartGraph3DProps {
   className?: string;
   width?: number | string;
@@ -598,10 +681,13 @@ export default function HeartGraph3D({
   width = "100%",
   height = "100%",
 }: HeartGraph3DProps) {
+  const [hovered, setHovered] = useState<HoveredNode | null>(null);
+  const handleHover = useCallback((h: HoveredNode | null) => setHovered(h), []);
+
   return (
     <div
       className={className}
-      style={{ width, height, cursor: "grab" }}
+      style={{ width, height, cursor: hovered ? "default" : "grab", position: "relative" }}
       aria-label="Grafo psicologico animato a forma di cuore"
     >
       <Canvas
@@ -611,6 +697,7 @@ export default function HeartGraph3D({
         dpr={[1, 2]}
       >
         <HeartGraphScene />
+        <NodeTooltipDetector onHover={handleHover} />
         <OrbitControls
           enableZoom={false}
           enablePan={false}
@@ -623,6 +710,77 @@ export default function HeartGraph3D({
           enableDamping
         />
       </Canvas>
+
+      {/* Tooltip overlay HTML */}
+      {hovered && (
+        <div
+          style={{
+            position: "absolute",
+            left: hovered.screenX + 12,
+            top: hovered.screenY - 8,
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.96)",
+              border: `1.5px solid ${CATEGORY_COLOR[hovered.node.category] ?? "#ccc"}`,
+              borderRadius: 8,
+              padding: "6px 10px",
+              minWidth: 140,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: CATEGORY_COLOR[hovered.node.category] ?? "#888",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
+                {hovered.node.label}
+              </span>
+            </div>
+            <div style={{ fontSize: 10, color: "#888", marginBottom: 4 }}>
+              <span style={{ color: CATEGORY_COLOR[hovered.node.category] ?? "#888", fontWeight: 600 }}>
+                {CATEGORY_LABEL[hovered.node.category] ?? hovered.node.category}
+              </span>
+              {" · "}
+              <span style={{ fontFamily: "monospace" }}>{hovered.node.psycheId}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#888" }}>base activation</span>
+              <div
+                style={{
+                  flex: 1,
+                  height: 4,
+                  background: "#eee",
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${hovered.node.baseActivation * 100}%`,
+                    background: CATEGORY_COLOR[hovered.node.category] ?? "#888",
+                    borderRadius: 2,
+                  }}
+                />
+              </div>
+              <span style={{ fontSize: 10, fontFamily: "monospace", fontWeight: 700, color: "#1a1a1a" }}>
+                {hovered.node.baseActivation.toFixed(3)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
