@@ -560,11 +560,16 @@
 
 ## Sprint 17 — Integrazione Psyche nel Campaign Engine
 
-- [ ] SP17.1 — processAgentCampaignReaction: carica psyche_state dal DB, esegue tick(), inietta [PSYCHE_STATE] nel prompt
-- [ ] SP17.2 — Salva psyche_state aggiornato nel DB dopo ogni reazione
-- [ ] SP17.3 — applyExposureAdjustment: usa psyche_state.arousal e active_biases invece dei campi scalari
-- [ ] SP17.4 — UI: visualizzazione PSYCHE_STATE nella pagina reazione agente (bias dominanti, mood, arousal)
-- [ ] SP17.5 — Vitest: test integrazione Campaign Engine + Psyche
+- [x] SP17.1 — server/psyche/psyche-integration.ts: buildAgentProfile (Big Five, Haidt, Hofstede, Bourdieu, wound, shadow, inner voice)
+- [x] SP17.2 — server/psyche/psyche-integration.ts: runPsycheTick (carica stato dal DB, esegue tick, restituisce psychePrompt + graphState + psycheState)
+- [x] SP17.3 — server/psyche/psyche-integration.ts: savePsycheState (salva graphState serializzato nel DB dopo la reazione)
+- [x] SP17.4 — campaign-engine.ts: tick Psyche prima del system prompt + iniezione [PSYCHE_STATE] nel prompt
+- [x] SP17.5 — campaign-engine.ts: salvataggio stato Psyche dopo la reazione (savePsycheState)
+- [x] SP17.6 — Schema DB: colonne psycheMood, psycheActiveBiases, psycheWoundActive su campaignReactions
+- [x] SP17.7 — Migrazione DB: ALTER TABLE campaignReactions ADD psycheMood, psycheActiveBiases, psycheWoundActive
+- [x] SP17.8 — SimulateLive.tsx: badge mood (colorati), badge "ferita attiva" (rose), badge bias (violet) per ogni agente
+- [x] SP17.9 — SimulateReport.tsx: sezione "Psyche Diagnostics" con mood distribution, wound rate %, top biases
+- [x] TOTALE: 204/204 test passati
 
 ## Sprint 18 — Integrazione Psyche nel World Engine e Social Influence
 

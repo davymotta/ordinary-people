@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `campaignReactions` ADD `psycheMood` varchar(50);\nALTER TABLE `campaignReactions` ADD `psycheActiveBiases` json;\nALTER TABLE `campaignReactions` ADD `psycheWoundActive` boolean DEFAULT false;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 23k7DxJkvxWkDiS.cfce7a4d6a95 --database BrhNBieBfyzPV9fR7mMkGf --execute ALTER TABLE `campaignReactions` ADD `psycheMood` varchar(50);\nALTER TABLE `campaignReactions` ADD `psycheActiveBiases` json;\nALTER TABLE `campaignReactions` ADD `psycheWoundActive` boolean DEFAULT false;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1967
+}

@@ -27,6 +27,7 @@ import {
   BarChart3,
   Lightbulb,
   Download,
+  Brain,
 } from "lucide-react";
 import {
   Radar,
@@ -187,6 +188,34 @@ export default function SimulateReport() {
     .filter((r: any) => r.quote)
     .sort((a: any, b: any) => Math.abs(b.overallScore ?? 0) - Math.abs(a.overallScore ?? 0))
     .slice(0, 6);
+
+  // Psyche diagnostics aggregates
+  const psycheReactions = completed.filter((r: any) => r.psycheMood);
+  const hasPsyche = psycheReactions.length > 0;
+
+  const moodCounts: Record<string, number> = {};
+  for (const r of psycheReactions) {
+    const m = String(r.psycheMood);
+    moodCounts[m] = (moodCounts[m] ?? 0) + 1;
+  }
+  const topMoods = Object.entries(moodCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  const woundActiveCount = completed.filter((r: any) => r.psycheWoundActive).length;
+  const woundRate = n > 0 ? Math.round((woundActiveCount / n) * 100) : 0;
+
+  const biasCounts: Record<string, number> = {};
+  for (const r of completed) {
+    if (Array.isArray(r.psycheActiveBiases)) {
+      for (const b of r.psycheActiveBiases as string[]) {
+        biasCounts[b] = (biasCounts[b] ?? 0) + 1;
+      }
+    }
+  }
+  const topBiases = Object.entries(biasCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
 
   // Big Five radar data from reactions
   const bigFiveKeys = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"] as const;
@@ -471,6 +500,70 @@ export default function SimulateReport() {
               <p className="text-xs text-muted-foreground text-center mt-2">
                 Valori medi Big Five degli agenti che hanno risposto (0–100)
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Psyche Diagnostics */}
+        {hasPsyche && (
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Brain className="w-4 h-4 text-violet-500" />
+                Psyche Diagnostics
+                <Badge variant="outline" className="text-xs ml-auto">Motore cognitivo interno</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Mood distribution */}
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-3">Distribuzione mood</p>
+                  <div className="space-y-2">
+                    {topMoods.map(([mood, count]) => (
+                      <div key={mood} className="flex items-center gap-2">
+                        <div
+                          className="h-2 rounded-full bg-violet-400 flex-shrink-0"
+                          style={{ width: `${Math.round((count / psycheReactions.length) * 100)}%`, minWidth: "4px", maxWidth: "80px" }}
+                        />
+                        <span className="text-xs text-foreground capitalize">{mood}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Wound activation */}
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-3">Ferita primaria attivata</p>
+                  <div className="flex items-end gap-3">
+                    <p className={`text-3xl font-bold ${woundRate > 50 ? "text-rose-600" : woundRate > 25 ? "text-amber-600" : "text-emerald-600"}`}>
+                      {woundRate}%
+                    </p>
+                    <p className="text-xs text-muted-foreground pb-1">
+                      {woundActiveCount} / {n} agenti<br />
+                      {woundRate > 50 ? "⚠ Campagna divisiva" : woundRate > 25 ? "Attenzione moderata" : "Bassa attivazione"}
+                    </p>
+                  </div>
+                </div>
+                {/* Top biases */}
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-3">Bias cognitivi dominanti</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {topBiases.map(([bias, count]) => (
+                      <span
+                        key={bias}
+                        className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200"
+                        title={`${count} agenti`}
+                      >
+                        {bias}
+                      </span>
+                    ))}
+                    {topBiases.length === 0 && (
+                      <span className="text-xs text-muted-foreground">Nessun bias rilevato</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

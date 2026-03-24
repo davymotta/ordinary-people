@@ -57,6 +57,7 @@ import { computeSalience } from "./scoring/salience-calculator";
 import type { CampaignSignals } from "./scoring/salience-calculator";
 import { DEFAULT_SYSTEM_PARAMS } from "./scoring/system-params";
 import type { CampaignTag } from "./scoring/salience-calculator";
+import { runPsycheTick, savePsycheState } from "./psyche/psyche-integration";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -91,6 +92,12 @@ export interface AgentReactionResult {
   };
   rationalAdjustment?: number;
   socialAdjustment?: number;
+  // Psyche Engine diagnostics
+  psycheMood?: string;
+  psycheActiveBiases?: string[];
+  psycheWoundActive?: boolean;
+  psycheGraphState?: import("./psyche/engine").GraphState | null;
+  psycheStateResult?: import("./psyche/engine").PsycheState | null;
 }
 
 export interface CampaignTestProgress {
@@ -167,6 +174,9 @@ export async function runCampaignTest(
 
       // Save reaction to DB
       await updateCampaignReaction(reactionId, {
+        psycheMood: result.psycheMood ?? undefined,
+        psycheActiveBiases: result.psycheActiveBiases as any ?? undefined,
+        psycheWoundActive: result.psycheWoundActive ?? false,
         overallScore: result.overallScore,
         buyProbability: result.buyProbability,
         shareProbability: result.shareProbability,
@@ -195,6 +205,20 @@ export async function runCampaignTest(
       });
 
       reactions.push(result);
+
+      // ─── SP17: Save Psyche state after reaction ───────────────────────────────
+      if (result.psycheGraphState && result.psycheStateResult && brandAgentIdForExposure) {
+        try {
+          await savePsycheState(
+            agent.id,
+            brandAgentIdForExposure,
+            result.psycheGraphState,
+            result.psycheStateResult
+          );
+        } catch (err) {
+          console.warn(`[CampaignEngine] Could not save Psyche state for agent ${agent.slug}:`, err);
+        }
+      }
 
       // ─── AES.4: Update exposure state after reaction ──────────────────
       if (brandAgentIdForExposure && brandState) {
@@ -320,11 +344,42 @@ export async function processAgentCampaignReaction(
   // IMPORTANTE: usa sempre buildFallbackSystemPrompt (che include Kahneman, Bourdieu, Veblen, Maslow, Thaler)
   // come base psicologica ricca. Il systemPrompt del DB è un prompt narrativo basico generato dal seed
   // e viene aggiunto come contesto aggiuntivo ("voce" dell'agente) se disponibile.
+  // ─── Psyche Engine: tick interno prima del prompt ──────────────────────
+  // Esegui il tick Psyche per questo agente con i temi della campagna.
+  // Il risultato [PSYCHE_STATE] viene iniettato nel system prompt come
+  // contesto cognitivo-emotivo deterministico.
+  let psychePrompt = "";
+  let psycheGraphState: import("./psyche/engine").GraphState | null = null;
+  let psycheStateResult: import("./psyche/engine").PsycheState | null = null;
+  let psycheProfileResult: import("./psyche/engine").AgentProfile | null = null;
+  const brandAgentIdForPsyche = (campaign as any).brandAgentId as number | null | undefined;
+  try {
+    const campaignTopicsForPsyche = (campaign.topics as string[]) ?? [];
+    const campaignTextForPsyche = `${campaign.name ?? ""} ${campaign.copyText ?? ""}`;
+    const psycheResult = await runPsycheTick(
+      agent,
+      brandAgentIdForPsyche,
+      campaignTopicsForPsyche,
+      campaignTextForPsyche,
+      campaign.tone ?? null
+    );
+    psychePrompt = psycheResult.psychePrompt;
+    psycheGraphState = psycheResult.graphState;
+    psycheStateResult = psycheResult.psycheState;
+    psycheProfileResult = psycheResult.profile;
+  } catch (err) {
+    console.warn(`[CampaignEngine] Psyche tick failed for agent ${agent.slug}:`, err);
+  }
+
   let systemPrompt = buildFallbackSystemPrompt(agent);
   if (agent.systemPrompt && agent.systemPrompt.length > 50) {
     // Aggiungi solo la parte narrativa del systemPrompt del DB (non ripetere i dati demografici)
     // Il systemPrompt del DB contiene la "voce" dell'agente e il suo archetipo
     systemPrompt = systemPrompt + `\n\n[Nota narrativa: ${agent.systemPrompt}]`;
+  }
+  // Inietta lo stato Psyche nel system prompt (se disponibile)
+  if (psychePrompt) {
+    systemPrompt = systemPrompt + "\n\n" + psychePrompt;
   }
 
   // Perceptual Filter: if a digest is available, enrich the system prompt with
@@ -622,6 +677,12 @@ export async function processAgentCampaignReaction(
     gutReactionScore,
     emotionalSignature,
     rationalAdjustment,
+    // Psyche Engine diagnostics
+    psycheMood: psycheStateResult?.mood ?? undefined,
+    psycheActiveBiases: psycheStateResult?.active_biases ?? undefined,
+    psycheWoundActive: psycheStateResult?.wound_active ?? false,
+    psycheGraphState,
+    psycheStateResult,
   };
 }
 

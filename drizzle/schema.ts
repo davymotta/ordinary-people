@@ -309,6 +309,10 @@ export const campaignReactions = mysqlTable("campaignReactions", {
   emotionalSignature: json("emotionalSignature"), // L2: {activatedVars: [{name, value, resonance, direction}], dominantTags: string[]}
   rationalAdjustment: float("rationalAdjustment"), // L3: aggiustamento razionale [-1,+1]
   socialAdjustment: float("socialAdjustment"), // L4: influenza sociale [-1,+1]
+  // Psyche Engine diagnostics (SP17)
+  psycheMood: varchar("psycheMood", { length: 50 }), // mood label al momento della reazione
+  psycheActiveBiases: json("psycheActiveBiases"), // string[] — bias cognitivi dominanti
+  psycheWoundActive: boolean("psycheWoundActive").default(false), // ferita primaria attivata
   status: mysqlEnum("status", ["pending", "processing", "complete", "failed"]).default("pending"),
   processedAt: timestamp("processedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

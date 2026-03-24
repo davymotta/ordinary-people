@@ -22,7 +22,27 @@ import {
   AlertCircle,
   Clock,
   MessageSquareQuote,
+  Brain,
+  Zap,
 } from "lucide-react";
+
+// ─── Psyche helpers ───────────────────────────────────────────────────────────────────
+
+const MOOD_COLORS: Record<string, string> = {
+  serene:     "bg-sky-50 text-sky-700 border-sky-200",
+  alert:      "bg-amber-50 text-amber-700 border-amber-200",
+  anxious:    "bg-orange-50 text-orange-700 border-orange-200",
+  defensive:  "bg-red-50 text-red-700 border-red-200",
+  euphoric:   "bg-purple-50 text-purple-700 border-purple-200",
+  depressed:  "bg-slate-100 text-slate-600 border-slate-300",
+  conflicted: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  neutral:    "bg-muted text-muted-foreground border-border",
+};
+
+function moodBadgeClass(mood: string | null | undefined): string {
+  if (!mood) return MOOD_COLORS.neutral;
+  return MOOD_COLORS[mood] ?? MOOD_COLORS.neutral;
+}
 
 // ─── Score color helper ───────────────────────────────────────────────
 
@@ -294,6 +314,28 @@ export default function SimulateLive() {
                         {String(reaction.gutReaction)}
                       </p>
                     ) : null}
+                    {/* Psyche Engine diagnostics */}
+                    {(reaction.psycheMood || (Array.isArray(reaction.psycheActiveBiases) && (reaction.psycheActiveBiases as string[]).length > 0) || reaction.psycheWoundActive) && (
+                      <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/50">
+                        {reaction.psycheMood && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${moodBadgeClass(reaction.psycheMood as string)}`}>
+                            <Brain className="w-3 h-3" />
+                            {String(reaction.psycheMood)}
+                          </span>
+                        )}
+                        {reaction.psycheWoundActive && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1">
+                            <Zap className="w-3 h-3" />
+                            ferita attiva
+                          </span>
+                        )}
+                        {(Array.isArray(reaction.psycheActiveBiases) ? reaction.psycheActiveBiases as string[] : []).slice(0, 2).map((bias: string, i: number) => (
+                          <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
+                            {bias}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     {/* Attractions / Repulsions */}
                     {(reaction.attractions || reaction.repulsions) && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
